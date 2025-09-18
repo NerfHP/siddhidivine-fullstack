@@ -4,8 +4,8 @@
 import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
-import config from '../config';
-import ApiError from '../utils/AppError';
+import config from '../config/index.js';
+import ApiError from '../utils/AppError.js';
 import { userService } from '../services';
 
 export const auth = async (req: Request, _res: Response, next: NextFunction) => {
