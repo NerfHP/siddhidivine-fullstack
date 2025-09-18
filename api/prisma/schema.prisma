@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Change this from "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tokens    Token[]
+  reviews   Review[]
+  orders    Order[] // **THE FIX**: Added relation back to orders
+}
+
+model Token {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  type        String
+  expires     DateTime
+  blacklisted Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  type        String
+  image       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  parentId    String?
+  parent      Category?   @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]  @relation("ParentChild")
+  items       ContentItem[]
+}
+
+model ContentItem {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String
+  content         String?
+  price           Float?
+  salePrice       Float?
+  images          String
+  type            String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  categories      Category[]
+  vendor          String?
+  sku             String?
+  availability    String?
+  attributes      String?
+  specifications  String?
+  benefits        String?
+  variants        String?
+  howToUse        String?
+  packageContents String?
+  reviews         Review[]
+  orderItems      OrderItem[] // **THE FIX**: Added relation back to order items
+  stock           Int      @default(0)
+  isPublished     Boolean  @default(true)
+}
+
+model FormSubmission {
+  id        String   @id @default(cuid())
+  type      String
+  data      String
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        String      @id @default(cuid())
+  rating    Int
+  comment   String?
+  imageUrl  String?
+  createdAt DateTime    @default(now())
+  productId String
+  product   ContentItem @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([userId])
+}
+
+model Discount {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  discountType String
+  value        Float
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  total           Float
+  status          String      @default("PENDING")
+  customerName    String
+  customerPhone   String
+  shippingAddress String
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String      @id @default(cuid())
+  quantity  Int
+  price     Float
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   ContentItem @relation(fields: [productId], references: [id])
+}
+
