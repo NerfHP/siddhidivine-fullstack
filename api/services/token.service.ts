@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
-import httpStatus from 'http-status';
 import { User } from '@prisma/client';
 import config from '../config';
-import ApiError from '../utils/AppError';
 
 /**
  * Generate token

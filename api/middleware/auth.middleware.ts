@@ -8,7 +8,7 @@ import config from '../config';
 import ApiError from '../utils/AppError';
 import { userService } from '../services';
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+export const auth = async (req: Request, _res: Response, next: NextFunction) => {
   let token;
   if (
     req.headers.authorization &&

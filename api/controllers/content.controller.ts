@@ -32,27 +32,27 @@ const getItemBySlug = catchAsync(async (req: Request, res: Response) => {
   res.send(item);
 });
 
-const getCategories = catchAsync(async (req: Request, res: Response) => {
+const getCategories = catchAsync(async (_req: Request, res: Response) => {
   const categories = await contentSerivce.getCategories();
   res.send(categories);
 });
 
-const getFeaturedItems = catchAsync(async (req: Request, res: Response) => {
+const getFeaturedItems = catchAsync(async (_req: Request, res: Response) => {
   const items = await contentSerivce.getFeaturedItems();
   res.send(items);
 });
 
-const getBestsellers = catchAsync(async (req: Request, res: Response) => {
+const getBestsellers = catchAsync(async (_req: Request, res: Response) => {
   const items = await contentSerivce.getBestsellers();
   res.send(items);
 });
 
-const getFaqs = catchAsync(async (req: Request, res: Response) => {
+const getFaqs = catchAsync(async (_req: Request, res: Response) => {
   const faqs = await contentSerivce.getFaqs();
   res.send(faqs);
 });
 
-const getAllServices = catchAsync(async (req: Request, res: Response) => {
+const getAllServices = catchAsync(async (_req: Request, res: Response) => {
     const items = await contentSerivce.getAllServices();
     res.send(items);
 });

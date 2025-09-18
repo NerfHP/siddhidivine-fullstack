@@ -4,7 +4,7 @@ import { z, ZodSchema } from 'zod';
 import ApiError from '../utils/AppError';
 
 export const validate =
-  (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
+  (schema: ZodSchema) => (req: Request, _res: Response, next: NextFunction) => {
     try {
       schema.parse({
         body: req.body,

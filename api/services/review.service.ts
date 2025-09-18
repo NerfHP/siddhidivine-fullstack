@@ -14,7 +14,7 @@ const categoryHierarchyInclude = {
 };
 
 // --- HELPER FUNCTIONS ---
-async function getCategoryAncestry(categoryId: string | null): Promise<Category[]> {
+export async function getCategoryAncestry(categoryId: string | null): Promise<Category[]> {
   if (!categoryId) return [];
   try {
     const category = await prisma.category.findUnique({

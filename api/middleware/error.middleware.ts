@@ -7,8 +7,8 @@ import ApiError from '../utils/AppError';
 
 export const errorConverter = (
   err: any,
-  req: Request,
-  res: Response,
+  _req: Request,
+  _res: Response,
   next: NextFunction,
 ) => {
   let error = err;
@@ -25,9 +25,9 @@ export const errorConverter = (
 
 export const errorHandler = (
   err: ApiError,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ) => {
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {

@@ -29,7 +29,7 @@ if (config.env === 'development') {
 
 // Health check route for the base URL.
 // THIS MUST BE BEFORE THE '/api' routes and the 404 handler.
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     message: 'Welcome to the Siddhidivine API!',
     status: 'ok',
@@ -43,7 +43,7 @@ app.use('/api', apiRoutes);
 // --- Error Handling ---
 
 // Send back a 404 error for any unknown API request that isn't caught by a router
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((_req: Request, _res: Response, next: NextFunction) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
 
