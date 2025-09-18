@@ -1,5 +1,5 @@
 import express from 'express';
-import { reviewController } from '../controllers';
+import { reviewController } from '../controllers/index.js';
 import { auth } from '../middleware/auth.middleware';
 // You would add your auth middleware here to protect the create route
 // import { authMiddleware } from '../middleware/auth.middleware';

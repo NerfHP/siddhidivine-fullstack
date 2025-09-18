@@ -1,5 +1,5 @@
 import express from 'express';
-import { formController } from '../controllers';
+import { formController } from '../controllers/index.js';
 import { validate } from '../middleware/validate.middleware';
 import { formValidation } from '../validation';
 
