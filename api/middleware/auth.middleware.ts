@@ -6,7 +6,7 @@ import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
 import ApiError from '../utils/AppError.js';
-import { userService } from '../services';
+import { userService } from '../services/index.js';
 
 export const auth = async (req: Request, _res: Response, next: NextFunction) => {
   let token;

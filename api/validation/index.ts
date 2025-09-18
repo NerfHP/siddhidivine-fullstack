@@ -1,2 +1,2 @@
-export * from './auth.validation';
-export * from './form.validation';
+export * from './auth.validation.js';
+export * from './form.validation.js';
