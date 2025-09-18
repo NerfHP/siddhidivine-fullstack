@@ -18,8 +18,12 @@ const envVarsSchema = z.object({
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
   JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
-  // This is the critical fix. .optional() tells Zod that this variable is allowed to be missing.
-  CLIENT_ORIGIN: z.string().optional(), 
+  CLIENT_ORIGIN: z.string().optional(),
+  RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
+  // --- ADDED RAZORPAY KEYS ---
+  // These are now required environment variables for your application to start.
+  RAZORPAY_KEY_ID: z.string().min(1, 'RAZORPAY_KEY_ID is required'),
+  RAZORPAY_KEY_SECRET: z.string().min(1, 'RAZORPAY_KEY_SECRET is required'),
 });
 
 // Zod's .parse() will throw a detailed error if validation fails, which is perfect for debugging.
@@ -37,6 +41,12 @@ const config = {
     refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
   },
   clientOrigin: envVars.CLIENT_ORIGIN,
+  resendApiKey: envVars.RESEND_API_KEY,
+  // --- MAKE RAZORPAY KEYS AVAILABLE IN THE CONFIG OBJECT ---
+  razorpay: {
+    keyId: envVars.RAZORPAY_KEY_ID,
+    keySecret: envVars.RAZORPAY_KEY_SECRET,
+  },
 };
 
 // This is the standard ES Module way to export a default object.
