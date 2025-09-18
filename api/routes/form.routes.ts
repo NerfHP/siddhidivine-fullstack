@@ -1,7 +1,7 @@
 import express from 'express';
 import { formController } from '../controllers/index.js';
-import { validate } from '../middleware/validate.middleware';
-import { formValidation } from '../validation';
+import { validate } from '../middleware/validate.middleware.js';
+import { formValidation } from '../validation/index.js';
 
 const router = express.Router();
 

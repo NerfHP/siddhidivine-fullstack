@@ -1,6 +1,6 @@
 import express from 'express';
 // Import the createRazorpayOrder function from the controller we just made
-import { createRazorpayOrder } from '../controllers/index.js/payment.controller';
+import { createRazorpayOrder } from '../controllers/payment.controller';
 
 const router = express.Router();
 
