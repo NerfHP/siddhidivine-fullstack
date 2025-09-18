@@ -1,11 +1,11 @@
 import express from 'express';
-import authRoutes from './auth.routes';
-import contentRoutes from './content.routes';
-import formRoutes from './form.routes';
-import reviewRoutes from './review.routes';
-import searchRoute from './search.route';
-import orderRoute from './order.route';
-import paymentRoute from './payment.route';
+import authRoutes from './auth.routes.js';
+import contentRoutes from './content.routes.js';
+import formRoutes from './form.routes.js';
+import reviewRoutes from './review.routes.js';
+import searchRoute from './search.route.js';
+import orderRoute from './order.route.js';
+import paymentRoute from './payment.route.js';
 
 const router = express.Router();
 

@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status';
 import { Prisma } from '@prisma/client';
 import config from '../config/index.js';
-import logger from '../utils/logger.js';
-import ApiError from '../utils/AppError.js';
+import logger from '../utils/logger';
+import ApiError from '../utils/AppError';
 
 export const errorConverter = (
   err: any,
