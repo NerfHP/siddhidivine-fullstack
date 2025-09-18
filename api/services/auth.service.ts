@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import ApiError from '../utils/AppError';
+import ApiError from '../utils/AppError.js';
 import { userService } from './user.service.js';
 import { tokenService } from './token.service.js';
 
