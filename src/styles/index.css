@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Campton';
+  src: url('/fonts/Campton-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Campton';
+  src: url('/fonts/Campton-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-transparent text-text-main font-sans antialiased;
+  }
+}

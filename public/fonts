@@ -1,0 +1,21 @@
+/* Add this to the top of the file */
+@font-face {
+  font-family: 'Campton';
+  src: url('/fonts/Campton-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Campton';
+  src: url('/fonts/Campton-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* Keep the existing Tailwind directives below */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ... */
