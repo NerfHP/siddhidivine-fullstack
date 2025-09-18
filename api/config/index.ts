@@ -1,8 +1,15 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { z } from 'zod';
+// These are needed for the modern ESM way to get the directory path.
+import { fileURLToPath } from 'url';
 
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+// This is the ESM equivalent of __dirname, which is required for path resolution.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// This line correctly finds your .env file from the project root.
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
 
 const envVarsSchema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test']),
@@ -11,12 +18,13 @@ const envVarsSchema = z.object({
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
   JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
-  CLIENT_ORIGIN: z.string().url(),
+  CLIENT_ORIGIN: z.string(), // Allowing any string for flexibility with multiple Vercel URLs
 });
 
+// Zod's .parse() will throw a detailed error if validation fails, which is perfect for debugging.
 const envVars = envVarsSchema.parse(process.env);
 
-export default {
+const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   db: {
@@ -29,3 +37,7 @@ export default {
   },
   clientOrigin: envVars.CLIENT_ORIGIN,
 };
+
+// This is the standard ES Module way to export a default object.
+export default config;
+
