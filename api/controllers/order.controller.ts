@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 // 1. Import the new, single email function from the service you just created
-import { sendOrderEmails } from '../services/email.service';
+import { sendOrderEmails } from '../services/email.service.js';
 
 const prisma = new PrismaClient();
 
