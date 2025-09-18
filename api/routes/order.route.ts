@@ -1,6 +1,6 @@
 import express from 'express';
 // Import the createOrder function from the controller we just made
-import { createOrder } from '../controllers/order.controller';
+import { createOrder } from '../controllers/order.controller.js';
 
 const router = express.Router();
 
