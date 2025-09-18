@@ -2,7 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import httpStatus from 'http-status';
-import config from './config';
+import config from './config/index.js';
 import { errorConverter, errorHandler } from './middleware/error.middleware';
 import ApiError from './utils/AppError';
 import apiRoutes from './routes'; // This is your master router
