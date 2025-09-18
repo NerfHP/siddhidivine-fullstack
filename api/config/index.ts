@@ -18,7 +18,8 @@ const envVarsSchema = z.object({
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
   JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
-  CLIENT_ORIGIN: z.string(), // Allowing any string for flexibility with multiple Vercel URLs
+  // This is the critical fix. .optional() tells Zod that this variable is allowed to be missing.
+  CLIENT_ORIGIN: z.string().optional(), 
 });
 
 // Zod's .parse() will throw a detailed error if validation fails, which is perfect for debugging.
