@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 // Make sure your seed-content.json is in the correct path
-import seedContent from '../src/utils/seed-content.json';
+import seedContent from './seed-content.json';
 
 const prisma = new PrismaClient();
 

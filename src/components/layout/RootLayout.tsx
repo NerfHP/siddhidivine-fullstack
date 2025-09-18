@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import CartDrawer from '../shared/CartDrawer';
-import { ReactLenis } from 'lenis/react';
+import { ReactLenis } from '@studio-freight/react-lenis'; 
 import ParticleBackground from '../shared/ParticleBackground';
 import SearchModal from '../shared/SearchModal'; // Using the correct import path for the new modal
 

@@ -6,7 +6,7 @@ import { formatCurrency } from '../../lib/utils';
 import Button from './Button';
 import { CartItem } from '../../types';
 import { useEffect } from 'react';
-import { useLenis } from 'lenis/react';
+import { useLenis } from '@studio-freight/react-lenis'; 
 
 // Quantity Selector
 function QuantitySelector({ item }: { item: CartItem }) {
