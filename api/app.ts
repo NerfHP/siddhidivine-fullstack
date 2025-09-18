@@ -4,8 +4,8 @@ import morgan from 'morgan';
 import httpStatus from 'http-status';
 import config from './config/index.js';
 import { errorConverter, errorHandler } from './middleware/error.middleware';
-import ApiError from './utils/AppError';
-import apiRoutes from './routes'; // This is your master router
+import ApiError from './utils/AppError.js'; // Added .js for consistency
+import apiRoutes from './routes/index.js';
 
 const app: Express = express();
 
