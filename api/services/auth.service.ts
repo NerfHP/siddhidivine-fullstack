@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import ApiError from '../utils/AppError';
-import { userService } from './user.service';
-import { tokenService } from './token.service';
+import { userService } from './user.service.js';
+import { tokenService } from './token.service.js';
 
 /**
  * Login with username and password

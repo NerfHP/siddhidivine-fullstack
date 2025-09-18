@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { catchAsync } from '../utils/catchAsync';
+import { catchAsync } from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
-import logger from '../utils/logger';
+import logger from '../utils/logger.js';
 
 const handleContactForm = catchAsync(async (req: Request, res: Response) => {
   const { name, email, message } = req.body;

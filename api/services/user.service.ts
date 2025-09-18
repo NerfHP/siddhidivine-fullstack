@@ -1,9 +1,9 @@
 import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import httpStatus from 'http-status';
-import ApiError from '../utils/AppError';
+import ApiError from '../utils/AppError.js';
 import { z } from 'zod';
-import { authValidation } from '../validation';
+import { authValidation } from '../validation/index.js';
 
 const prisma = new PrismaClient();
 

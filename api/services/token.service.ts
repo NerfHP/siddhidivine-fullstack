@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import { User } from '@prisma/client';
-import config from '../config';
+import config from '../config/index.js';
 
 /**
  * Generate token

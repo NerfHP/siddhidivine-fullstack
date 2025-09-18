@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { catchAsync } from '../utils/catchAsync';
-import { reviewService } from '../services';
+import { catchAsync } from '../utils/catchAsync.js';
+import { reviewService } from '../services/index.js';
 
 const getReviewsByProductId = catchAsync(async (req: Request, res: Response) => {
   const reviews = await reviewService.getReviewsByProductId(req.params.productId);
