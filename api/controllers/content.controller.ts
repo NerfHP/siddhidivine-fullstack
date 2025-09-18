@@ -1,7 +1,7 @@
 // server/src/controllers/content.controller.ts
 import { Request, Response } from 'express';
-import { catchAsync } from '../utils/catchAsync';
-import { contentSerivce } from '../services';
+import { catchAsync } from '../utils/catchAsync.js';
+import { contentSerivce } from '../services/index.js';
 
 const getCategoryPageData = catchAsync(async (req: Request, res: Response) => {
   const fullPath = req.params[0];
