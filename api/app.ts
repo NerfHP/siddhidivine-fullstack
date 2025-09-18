@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import httpStatus from 'http-status';
 import config from './config/index.js';
-import { errorConverter, errorHandler } from './middleware/error.middleware';
+import { errorConverter, errorHandler } from './middleware/error.middleware.js';
 import ApiError from './utils/AppError.js'; // Added .js for consistency
 import apiRoutes from './routes/index.js';
 
