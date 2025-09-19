@@ -29,17 +29,17 @@ interface FaqItem {
 // --- API CALLS (NOW CORRECTED FOR UNIFIED VERCEL SETUP) ---
 // In the new full-stack setup, all API calls must go to the /api path.
 const fetchFeaturedItems = async () => {
-  const { data } = await api.get('/content/featured');
+  const { data } = await api.get('/api/content/featured');
   return data as FeaturedData;
 };
 
 const fetchBestsellers = async () => {
-  const { data } = await api.get('/content/bestsellers');
+  const { data } = await api.get('/api/content/bestsellers');
   return data as ContentItem[];
 };
 
 const fetchFaqs = async () => {
-  const { data } = await api.get('/content/faqs');
+  const { data } = await api.get('/api/content/faqs');
   return data as FaqItem[];
 };
 
@@ -68,16 +68,10 @@ export default function HomePage() {
     toast.success(`${item.name} added to cart!`);
   };
 
-  // --- THE MAIN FIX ---
-  // If ANY of the essential page data is still loading, we show a single, page-level spinner.
-  // This is the cleanest way to prevent the component from trying to render with undefined data.
-  if (isFeaturedLoading || isBestsellersLoading || isFaqsLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner />
-      </div>
-    );
-  }
+  // --- PERFORMANCE FIX ---
+  // We have REMOVED the top-level loading check.
+  // The page will now render the static parts immediately, and each section
+  // will handle its own loading state below. This improves perceived performance.
 
   return (
     <>
@@ -91,7 +85,7 @@ export default function HomePage() {
       <div className="relative z-10 bg-transparent">
         <div className="py-16 space-y-20">
           
-          {/* Featured Products Section (Now with robust error handling) */}
+          {/* Featured Products Section (Handles its own loading state) */}
           <section className="container mx-auto px-4">
             <h2 className="text-center font-sans text-3xl font-bold text-text-main">
               Featured Products
@@ -99,20 +93,24 @@ export default function HomePage() {
             <p className="mt-2 text-center text-gray-600">
               Handpicked items for your spiritual practices.
             </p>
-            {featuredError ? (
+            {isFeaturedLoading ? (
+              <div className="flex justify-center py-8"><Spinner /></div>
+            ) : featuredError ? (
               <Alert type="error" message="Could not load featured products. Please try again later."/>
             ) : (
-              featuredData?.products && featuredData.products.length > 0 && (
+              featuredData?.products && featuredData.products.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {featuredData.products.map((item: ContentItem) => (
                     <Card key={item.id} item={item} />
                   ))}
                 </div>
+              ) : (
+                 <p className="text-center text-gray-500 mt-8">Our featured products will be shown here soon!</p>
               )
             )}
           </section>
 
-          {/* --- BEST SELLERS SECTION (CRASH FIXED) --- */}
+          {/* --- BEST SELLERS SECTION (Handles its own loading state) --- */}
           <section className="container mx-auto px-4">
             <div className="relative text-center">
               <h2 className="font-sans text-3xl font-bold text-text-main">Our Best Sellers</h2>
@@ -124,21 +122,22 @@ export default function HomePage() {
                   <Button asChild variant="outline"><Link to="/products">View All Products</Link></Button>
               </div>
             </div>
-            {bestsellersError ? <Alert type="error" message="Could not load best sellers." /> 
-             : (
-              // This is the key fix. We now safely check if `bestsellers` is a valid array.
+            {isBestsellersLoading ? (
+              <div className="flex justify-center py-8"><Spinner /></div>
+            ) : bestsellersError ? (
+              <Alert type="error" message="Could not load best sellers." /> 
+            ) : (
               Array.isArray(bestsellers) && bestsellers.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {bestsellers.slice(0, 4).map((item) => <Card key={item.id} item={item} />)}
                 </div>
               ) : (
-                // If the array is empty or invalid, we show this friendly message.
                 <p className="text-center text-gray-500 mt-8">Our best sellers will be featured here soon!</p>
               )
             )}
           </section>
           
-          {/* Our Services Section (Now with robust error handling) */}
+          {/* Our Services Section (Handles its own loading state) */}
           <section className="container mx-auto px-4">
             <h2 className="text-center font-sans text-3xl font-bold text-text-main">
               Our Services
@@ -146,14 +145,16 @@ export default function HomePage() {
             <p className="mt-2 text-center text-gray-600">
               Connect with ancient traditions through our expert services.
             </p>
-            {featuredError ? (
+            {isFeaturedLoading ? (
+               <div className="flex justify-center py-8"><Spinner /></div>
+            ) : featuredError ? (
                <Alert type="error" message="Could not load our services." />
             ) : (
-              featuredData?.services && featuredData.services.length > 0 && (
+              featuredData?.services && featuredData.services.length > 0 ? (
                 <div className="mt-8">
                   {featuredData.services.length === 1 ? (
                     <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg border">
-                      <div className="grid md:grid-cols-2 gap-8 items-center">
+                      <div className="grid md-grid-cols-2 gap-8 items-center">
                         <div>
                           <img 
                             src={JSON.parse(featuredData.services[0].images || '[]')[0]} 
@@ -189,21 +190,26 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
+              ) : (
+                 <p className="text-center text-gray-500 mt-8">Our expert services will be featured here soon!</p>
               )
             )}
           </section>
 
           <TestimonialCarousel />
 
-          {/* --- FAQS SECTION (Now with robust error handling) --- */}
+          {/* --- FAQS SECTION (Handles its own loading state) --- */}
           <section className="container mx-auto px-4">
              <div className="text-center">
                 <h2 className="font-sans text-3xl font-bold text-text-main">FAQs</h2>
                 <p className="mt-2 text-gray-600">Here to help you on your spiritual journey.</p>
              </div>
              <div className="mt-8 max-w-3xl mx-auto">
-                {faqsError ? <Alert type="error" message="Could not load FAQs." />
-                 : (
+                {isFaqsLoading ? (
+                  <div className="flex justify-center py-8"><Spinner /></div>
+                ) : faqsError ? (
+                  <Alert type="error" message="Could not load FAQs." />
+                ) : (
                     Array.isArray(faqs) && faqs.length > 0 ? <FaqAccordion faqs={faqs} /> : <p className="text-center text-gray-500">Frequently asked questions will be shown here soon.</p>
                  )}
              </div>
