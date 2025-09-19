@@ -141,43 +141,13 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
   
   return (
     <>
-      {/* Custom CSS for the animated underline effect */}
+      {/* --- NEW: CUSTOM CSS FOR TEXT GLOW EFFECT --- */}
       <style>{`
-        .animated-underline {
-          position: relative;
-          display: inline-block;
-          overflow: hidden;
-          padding-bottom: 4px;
+        .text-glow {
+          transition: text-shadow 0.3s ease-in-out;
         }
-        .animated-underline::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background-color: #F97316; /* Orange color */
-          transform: translateX(-101%);
-          transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .animated-underline:hover::after,
-        .animated-underline.active::after {
-          transform: translateX(0%);
-        }
-        .animated-underline::before {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background-color: #F97316; /* Orange color */
-          transform: translateX(0%);
-          transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-          z-index: -1;
-        }
-        .animated-underline:hover::before {
-          transform: translateX(101%);
+        .text-glow:hover {
+          text-shadow: 0 0 8px rgba(249, 115, 22, 0.7); /* Orange glow */
         }
       `}</style>
 
@@ -205,7 +175,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
             <span className="text-xl font-bold text-text-main font-sans">Siddhi Divine</span>
           </Link>
           
-          {/* --- NEW UNIFIED DESKTOP NAVIGATION --- */}
+          {/* --- UPDATED UNIFIED DESKTOP NAVIGATION --- */}
           <nav className="hidden lg:flex items-center gap-8" onMouseLeave={() => setActiveMenu(null)}>
             {navMenuItems.map((item) => (
               <div 
@@ -217,7 +187,8 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                   to={item.path}
                   end={item.path === '/'} 
                   className={({ isActive }) => 
-                    `animated-underline text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1 transition-colors ${isActive ? 'active text-orange-600' : ''}`
+                    // No underline class here, consistent font size and color on hover
+                    `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors ${isActive ? 'text-orange-600' : ''}`
                   }
                 >
                   {item.name}
@@ -231,7 +202,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                   )}
                 </NavLink>
 
-                {/* --- LEVEL 1 DROPDOWN (for Yantras, etc.) --- */}
+                {/* --- LEVEL 1 DROPDOWN --- */}
                 <AnimatePresence>
                   {activeMenu === item.name && item.subItems && (
                     <motion.div
@@ -242,16 +213,17 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                       className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border w-72 flex"
                       onMouseLeave={() => setActiveSubMenu(null)}
                     >
-                      <div className="flex-1">
+                      <div className="flex-1 py-1">
                         {item.subItems.map((subItem) => (
                           <Link
                             key={subItem.name}
                             to={subItem.path}
-                            className="animated-underline block px-4 py-3 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
+                            // Text glow class is applied here
+                            className="text-glow px-4 py-2 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
                             onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
                           >
                             {subItem.name}
-                            {subItem.subSubItems && <span>&rarr;</span>}
+                            {subItem.subSubItems && <span className="text-xs">&rarr;</span>}
                           </Link>
                         ))}
                       </div>
@@ -264,13 +236,14 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -10 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-72"
+                            className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-72 py-1"
                           >
                             {activeSubMenu.subSubItems?.map((subSubItem) => (
                               <Link
                                 key={subSubItem.name}
                                 to={subSubItem.path}
-                                className="animated-underline block px-4 py-3 text-gray-700 hover:text-orange-600"
+                                // Text glow class is also applied here
+                                className="text-glow block px-4 py-2 text-gray-700 hover:text-orange-600"
                               >
                                 {subSubItem.name}
                               </Link>
