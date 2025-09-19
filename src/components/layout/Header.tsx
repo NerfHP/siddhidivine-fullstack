@@ -33,7 +33,6 @@ interface SubItem {
   icon?: string;
   subSubItems?: SubSubItem[];
 }
-// MenuItem is updated so `subItems` is optional for links like "Home".
 interface MenuItem {
   name:string;
   path: string;
@@ -44,14 +43,13 @@ interface HeaderProps {
   onCartClick: () => void;
 }
 
-// --- Menu Data (Unchanged) ---
+// --- Menu Data (Unchanged from your version) ---
 const rudrakshaSubItems = Array.from({ length: 14 }, (_, i) => ({
   name: `${i + 1} Mukhi`,
   path: `/products/rudraksha/${i + 1}-mukhi-rudraksha`,
   icon: `/rudraksha/${i + 1}-mukhi.png`,
 }));
 
-// --- Menu Data (Now a single, unified structure) ---
 const navMenuItems: MenuItem[] = [
   { name: 'Home', path: '/' },
   { name: 'Yantras', path: '/products/yantras', subItems: [
@@ -69,21 +67,21 @@ const navMenuItems: MenuItem[] = [
           { name: 'Ketu Yantra', path: '/products/yantras/navgraha-yantra/ketu-yantra' },
         ] 
       },
-        { name: 'Shri Sarv Karya Siddhi Yantra', path: '/products/yantras/Shri-Sarv-Karya-Siddhi-yantra' },
-        { name: 'Shree Sampoorn kuber Laxhmi Yantra', path: '/products/yantras/Shree-Sampoorn-kuber-Laxhmi-yantra' },
-        { name: 'Shree Yantra', path: '/products/yantras/shree-yantra' },
-        { name: 'Maha Lakshmi Yantra', path: '/products/yantras/maha-lakshmi-yantra' },
-        { name: 'Kuber Yantra', path: '/products/yantras/kuber-yantra' },
-        { name: 'Siddh Saraswati Yantra', path: '/products/yantras/Siddh-Saraswati-yantra' },
-        { name: 'Shri Kanakdhara Yantra', path: '/products/yantras/Shri-Kanakdhara-yantra' },
-        { name: 'Ganesh Yantra', path: '/products/yantras/Ganesh-yantra' },
-        { name: 'Gayatri Yantra', path: '/products/yantras/Gayatri-yantra' },
-        { name: 'Maha Mrityunjaya Yantra', path: '/products/yantras/Maha-Mrityunjaya-yantra' },
-        { name: 'Vastu Yantra', path: '/products/yantras/Vastu-yantra' },
-        { name: 'Vyapar Yantra', path: '/products/yantras/Vyapar-yantra' },
+      { name: 'Shri Sarv Karya Siddhi Yantra', path: '/products/yantras/Shri-Sarv-Karya-Siddhi-yantra' },
+      { name: 'Shree Sampoorn kuber Laxhmi Yantra', path: '/products/yantras/Shree-Sampoorn-kuber-Laxhmi-yantra' },
+      { name: 'Shree Yantra', path: '/products/yantras/shree-yantra' },
+      { name: 'Maha Lakshmi Yantra', path: '/products/yantras/maha-lakshmi-yantra' },
+      { name: 'Kuber Yantra', path: '/products/yantras/kuber-yantra' },
+      { name: 'Siddh Saraswati Yantra', path: '/products/yantras/Siddh-Saraswati-yantra' },
+      { name: 'Shri Kanakdhara Yantra', path: '/products/yantras/Shri-Kanakdhara-yantra' },
+      { name: 'Ganesh Yantra', path: '/products/yantras/Ganesh-yantra' },
+      { name: 'Gayatri Yantra', path: '/products/yantras/Gayatri-yantra' },
+      { name: 'Maha Mrityunjaya Yantra', path: '/products/yantras/Maha-Mrityunjaya-yantra' },
+      { name: 'Vastu Yantra', path: '/products/yantras/Vastu-yantra' },
+      { name: 'Vyapar Yantra', path: '/products/yantras/Vyapar-yantra' },
     ]
   },
-  { name: 'Bracelets', path: '/products/bracelets', subItems: [
+{ name: 'Bracelets', path: '/products/bracelets', subItems: [
       { name: 'Rudraksha Bracelets', path: '/products/bracelets/rudraksha-bracelets' },
       { name: 'Crystal Bracelets', path: '/products/bracelets/crystal-bracelets' },
       { name: 'Karungali Bracelets', path: '/products/bracelets/karungali-bracelets' },
@@ -91,30 +89,30 @@ const navMenuItems: MenuItem[] = [
       { name: 'Gold Bracelets', path: '/products/bracelets/gold-bracelets' },
       { name: 'Copper Bracelets', path: '/products/bracelets/copper-bracelets' },
     ],
-  },
-  { name: 'Rudraksha', path: '/products/rudraksha', subItems:[
+},
+{ name: 'Rudraksha', path: '/products/rudraksha', subItems:[
       ...rudrakshaSubItems,
       { name: 'Gauri Shanker Rudraksha', path: '/products/gauri-shanker-rudraksha' },
       { name: 'Ganesh Rudraksha', path: '/products/ganesh-rudraksha' },
     ],
-  },
-  { name: 'Mala', path: '/products/mala', subItems: [
+},
+{ name: 'Mala', path: '/products/mala', subItems: [
       { name: 'Karungali Malai', path: '/products/mala/karungali-malai' },
       { name: 'Rudraksha Mala', path: '/products/mala/rudraksha-mala' },
       { name: 'Crystal Mala',path: '/products/mala/crystal-mala' },
       { name: 'Tulsi Mala',path: '/products/mala/tulsi-mala' },
     ],
-  },
-  { name: 'Aura Stones', path: '/products/aura-stones', subItems: [
+},
+{ name: 'Aura Stones', path: '/products/aura-stones', subItems: [
       { name: 'Healing Stones', path: '/products/aura-stones/healing-stones' },
       { name: 'Chakra Stones', path: '/products/aura-stones/chakra-stones' },
     ],
-  },
-  { name: 'Astro Stone', path: '/products/astro-stone', subItems: [
+},
+{ name: 'Astro Stone', path: '/products/astro-stone', subItems: [
       { name: 'Gemstones', path: '/products/astro-stone/gemstones' },
       { name: 'Birth Stones', path: '/products/astro-stone/birthstones' },
     ],
-  },
+},
 ];
 
 
@@ -219,21 +217,28 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                   to={item.path}
                   end={item.path === '/'} 
                   className={({ isActive }) => 
-                    // All links now have the same styling for consistent text size
-                    `animated-underline text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1 ${isActive ? 'active text-orange-600' : ''}`
+                    `animated-underline text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1 transition-colors ${isActive ? 'active text-orange-600' : ''}`
                   }
                 >
                   {item.name}
-                  {item.subItems && <ChevronDown size={16} />}
+                  {item.subItems && (
+                    <motion.div
+                      animate={{ rotate: activeMenu === item.name ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown size={16} />
+                    </motion.div>
+                  )}
                 </NavLink>
 
-                {/* --- LEVEL 1 DROPDOWN (for Yantras) --- */}
+                {/* --- LEVEL 1 DROPDOWN (for Yantras, etc.) --- */}
                 <AnimatePresence>
                   {activeMenu === item.name && item.subItems && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 10, pointerEvents: 'none' }}
+                      animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
+                      exit={{ opacity: 0, y: 10, pointerEvents: 'none' }}
+                      transition={{ duration: 0.2 }}
                       className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border w-72 flex"
                       onMouseLeave={() => setActiveSubMenu(null)}
                     >
@@ -242,7 +247,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                           <Link
                             key={subItem.name}
                             to={subItem.path}
-                            className="px-4 py-3 text-gray-700 hover:bg-orange-50 w-full text-left flex justify-between items-center"
+                            className="animated-underline px-4 py-3 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
                             onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
                           >
                             {subItem.name}
@@ -258,13 +263,14 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.2 }}
                             className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-72"
                           >
                             {activeSubMenu.subSubItems?.map((subSubItem) => (
                               <Link
                                 key={subSubItem.name}
                                 to={subSubItem.path}
-                                className="block px-4 py-3 text-gray-700 hover:bg-orange-50"
+                                className="animated-underline block px-4 py-3 text-gray-700 hover:text-orange-600"
                               >
                                 {subSubItem.name}
                               </Link>
@@ -299,7 +305,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
           </div>
         </div>
         
-        {/* Mobile Menu (Your code, unchanged) */}
+        {/* Mobile Menu (Your code, unchanged and will need updates for multi-level) */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div 
