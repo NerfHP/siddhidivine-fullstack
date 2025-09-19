@@ -247,7 +247,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                           <Link
                             key={subItem.name}
                             to={subItem.path}
-                            className="animated-underline px-4 py-3 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
+                            className="animated-underline block px-4 py-3 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
                             onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
                           >
                             {subItem.name}
@@ -305,7 +305,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
           </div>
         </div>
         
-        {/* Mobile Menu (Your code, unchanged and will need updates for multi-level) */}
+        {/* Mobile Menu (Your code, now updated for multi-level) */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div 
@@ -319,15 +319,43 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
-                className="absolute top-0 right-0 h-full w-4/5 max-w-sm bg-white"
+                className="absolute top-0 right-0 h-full w-4/5 max-w-sm bg-white overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
-                  <div className="flex items-center justify-between p-4 border-b">
+                  <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
                       <h2 className="font-bold text-lg">Menu</h2>
                       <button onClick={() => setIsMobileMenuOpen(false)} className="p-2"><X size={24}/></button>
                   </div>
                   <nav className="p-4">
-                      {/* Your mobile menu logic will need to be updated to handle the new data structure if you want multi-level there too */}
+                      <NavLink to="/" className={({isActive}) => `block py-2 px-3 rounded-md ${isActive ? 'bg-background font-bold' : ''}`}>Home</NavLink>
+                      {navMenuItems.slice(1).map(item => ( // Slice to exclude Home, which is already there
+                          <div key={item.name} className="border-b">
+                              <div
+                                  onClick={() => setOpenMobileSubMenu(openMobileSubMenu === item.name ? null : item.name)}
+                                  className="flex items-center justify-between py-2 px-3"
+                              >
+                                  <Link to={item.path} className="-ml-3 p-3 flex-grow">{item.name}</Link>
+                                  {item.subItems && item.subItems.length > 0 && <ChevronDown size={20} className={`transition-transform ${openMobileSubMenu === item.name ? 'rotate-180' : ''}`} />}
+                              </div>
+                              <AnimatePresence>
+                                {openMobileSubMenu === item.name && item.subItems && item.subItems.length > 0 && (
+                                    <motion.div 
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      className="pl-4 overflow-hidden"
+                                    >
+                                        {item.subItems.map(subItem => (
+                                          // Here you could add another level of dropdown for mobile if desired
+                                          <NavLink key={subItem.name} to={subItem.path} className={({isActive}) => `block py-2 px-3 rounded-md text-sm ${isActive ? 'bg-background font-bold' : ''}`}>
+                                              {subItem.name}
+                                          </NavLink>
+                                        ))}
+                                    </motion.div>
+                                )}
+                              </AnimatePresence>
+                          </div>
+                      ))}
                   </nav>
               </motion.div>
             </motion.div>
