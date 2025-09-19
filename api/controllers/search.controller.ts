@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/prisma.js';
 
-const prisma = new PrismaClient();
 
 export const searchContent = async (req: Request, res: Response) => {
   const query = req.query.q as string;

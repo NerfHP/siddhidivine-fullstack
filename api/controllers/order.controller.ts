@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 // 1. Import the new, single email function from the service you just created
 import { sendOrderEmails } from '../services/email.service.js';
+import { prisma } from '../config/prisma.js';
 
-const prisma = new PrismaClient();
 
 // A helper type to define what the cart items from the frontend will look like
 type CartItemPayload = {

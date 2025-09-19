@@ -1,9 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 // Make sure your seed-content.json is in the correct path
 import seedContent from './seed-content.json';
+import { prisma } from '../config/prisma.js';
 
-const prisma = new PrismaClient();
 
 // This defines the exact shape of your product data from the JSON file
 type SeedItem = {

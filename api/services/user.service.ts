@@ -1,11 +1,10 @@
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import httpStatus from 'http-status';
 import ApiError from '../utils/AppError.js';
 import { z } from 'zod';
 import { authValidation } from '../validation/index.js';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma.js';
 
 /**
  * Create a user

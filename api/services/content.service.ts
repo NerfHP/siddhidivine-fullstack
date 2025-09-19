@@ -1,8 +1,7 @@
-import { PrismaClient, Category, Prisma } from '@prisma/client';
+import { Category, Prisma } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../utils/AppError.js';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma.js';
 
 const categoryHierarchyInclude = {
   categories: {

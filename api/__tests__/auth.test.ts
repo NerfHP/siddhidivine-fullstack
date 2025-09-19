@@ -1,8 +1,6 @@
 import request from 'supertest';
 import app from '../app';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/prisma.js';
 
 describe('Auth Endpoints', () => {
   beforeAll(async () => {
