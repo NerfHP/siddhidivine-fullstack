@@ -1,22 +1,28 @@
-# Client-specific gitignore
-
-# dependencies
+#Dependencies
 /node_modules
+/.pnp
+.pnp.js
 
-# build
+#Build Outputs
 /dist
 /.vite
 
-# misc
-.DS_Store
-*.local
-.env.local
-.env.*.local
-
-# Log files
+#Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# vitest
+#Local Environment Variables
+#This is the most important line to keep your secrets out of GitHub!
+.env
+.env.local
+.env.*.local
+
+#IDE and OS files
+.DS_Store
+.idea
+.vscode/
+
+#Vitest
 /coverage
