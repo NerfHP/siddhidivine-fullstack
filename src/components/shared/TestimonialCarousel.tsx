@@ -6,7 +6,6 @@ import Spinner from './Spinner';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Alert from './Alert'; // Import the Alert component for error messages
 
 // --- TYPES ---
 interface HighlightedReview extends Review {
@@ -16,14 +15,13 @@ interface HighlightedReview extends Review {
   };
 }
 
-// --- API CALL (URL FIXED) ---
+// --- API CALL ---
 const fetchHighlightedReviews = async () => {
-  // This is the CRITICAL FIX. The URL now correctly points to your API endpoint.
   const { data } = await api.get('/content/reviews/highlighted');
   return data as HighlightedReview[];
 };
 
-// --- DETAILED SUB-COMPONENT (No changes needed here) ---
+// --- DETAILED SUB-COMPONENT ---
 const DetailedTestimonialCard = ({ review, isActive }: { review: HighlightedReview; isActive: boolean }) => {
   const productLink = `/product/${review.product?.slug}`;
   
@@ -39,6 +37,7 @@ const DetailedTestimonialCard = ({ review, isActive }: { review: HighlightedRevi
     return ['https://placehold.co/600x400/F7F7F7/CCC?text=Image', 'https://placehold.co/100x100/F7F7F7/CCC?text=P'];
   })();
   
+  // Use customer's image if available. If not, and the review is 5 stars, use the product image.
   const cardDisplayImage = review.imageUrl || (review.rating === 5 ? productMainImage : productMainImage);
 
   return (
@@ -64,10 +63,9 @@ const DetailedTestimonialCard = ({ review, isActive }: { review: HighlightedRevi
   );
 };
 
-// --- MAIN CAROUSEL COMPONENT (LOGIC FIXED) ---
+// --- MAIN CAROUSEL COMPONENT ---
 export default function TestimonialCarousel() {
-  // We now get the isError state from react-query
-  const { data: reviews, isLoading, isError } = useQuery({
+  const { data: reviews, isLoading } = useQuery({
     queryKey: ['highlightedReviews'],
     queryFn: fetchHighlightedReviews,
   });
@@ -75,44 +73,26 @@ export default function TestimonialCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const nextReview = () => {
-    // We now check if reviews is a valid array before using it
-    if (Array.isArray(reviews) && reviews.length > 0) {
+    if (reviews && reviews.length > 0) {
       setActiveIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
     }
   };
 
   const prevReview = () => {
-    if (Array.isArray(reviews) && reviews.length > 0) {
+    if (reviews && reviews.length > 0) {
       setActiveIndex((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
     }
   };
   
   useEffect(() => {
-    if (Array.isArray(reviews) && reviews.length > 1) {
+    if (reviews && reviews.length > 1) {
         const slideInterval = setInterval(nextReview, 5000);
         return () => clearInterval(slideInterval);
     }
   }, [activeIndex, reviews]);
 
-  // --- THE FINAL, ROBUST CHECKS ---
   if (isLoading) return <div className="flex justify-center py-8"><Spinner /></div>;
-
-  // This new check handles API failures gracefully.
-  if (isError) {
-    return (
-      <section className="bg-gray-50 py-20">
-        <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-gray-800">See what our customers said</h2>
-            <div className="mt-8">
-              <Alert type="error" message="Could not load reviews at this time." />
-            </div>
-        </div>
-      </section>
-    )
-  }
-
-  // Your existing check now safely handles the "no reviews yet" case.
-  if (!Array.isArray(reviews) || reviews.length === 0) {
+  if (!reviews || reviews.length === 0) {
     return (
       <section className="bg-gray-50 py-20">
           <div className="container mx-auto px-4 text-center">
@@ -158,7 +138,6 @@ export default function TestimonialCarousel() {
           <motion.div
             className="relative h-full w-full flex items-center justify-center"
           >
-            {/* It is now 100% safe to call .map() on reviews */}
             {reviews.map((review, index) => {
               const delta = index - activeIndex;
               const distance = (delta + reviews.length) % reviews.length;

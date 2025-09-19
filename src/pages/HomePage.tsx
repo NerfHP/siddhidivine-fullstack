@@ -26,12 +26,15 @@ interface FaqItem {
   answer: string;
 }
 
-// --- API CALLS (Using your existing, correct paths) ---
+// --- API CALLS (NOW CORRECTED) ---
+
+// This is your original, working function, now restored.
 const fetchFeaturedItems = async () => {
   const { data } = await api.get('/content/featured');
   return data as FeaturedData;
 };
 
+// These new functions now follow your correct API path structure.
 const fetchBestsellers = async () => {
   const { data } = await api.get('/content/bestsellers');
   return data as ContentItem[];
@@ -46,18 +49,19 @@ const fetchFaqs = async () => {
 export default function HomePage() {
   const { addToCart } = useCart();
   
-  // Your existing queries, now with error states for all.
-  const { data: featuredData, isLoading: isFeaturedLoading, isError: featuredError } = useQuery({
+  // Your existing, working query for featured items.
+  const { data: featuredData, isLoading: isFeaturedLoading, error: featuredError } = useQuery({
     queryKey: ['featuredItems'],
     queryFn: fetchFeaturedItems,
   });
 
-  const { data: bestsellers, isLoading: isBestsellersLoading, isError: bestsellersError } = useQuery({
+  // New, separate queries for the new sections.
+  const { data: bestsellers, isLoading: isBestsellersLoading } = useQuery({
     queryKey: ['bestsellersHome'],
     queryFn: fetchBestsellers,
   });
 
-  const { data: faqs, isLoading: isFaqsLoading, isError: faqsError } = useQuery({
+  const { data: faqs, isLoading: isFaqsLoading } = useQuery({
     queryKey: ['faqsHome'],
     queryFn: fetchFaqs,
   });
@@ -66,11 +70,6 @@ export default function HomePage() {
     addToCart(item);
     toast.success(`${item.name} added to cart!`);
   };
-
-  // --- PERFORMANCE FIX ---
-  // We REMOVED the top-level loading check that made the page slow.
-  // The page will now render the static parts immediately, and each section
-  // will handle its own loading state below. This feels much faster for the user.
 
   return (
     <>
@@ -84,7 +83,7 @@ export default function HomePage() {
       <div className="relative z-10 bg-transparent">
         <div className="py-16 space-y-20">
           
-          {/* Featured Products Section (Handles its own loading state) */}
+          {/* Featured Products Section (Your original, working code) */}
           <section className="container mx-auto px-4">
             <h2 className="text-center font-sans text-3xl font-bold text-text-main">
               Featured Products
@@ -97,48 +96,45 @@ export default function HomePage() {
             ) : featuredError ? (
               <Alert type="error" message="Could not load featured products. Please try again later."/>
             ) : (
-              featuredData?.products && featuredData.products.length > 0 ? (
+              // This safe check prevents crashes while data is loading
+              featuredData?.products && featuredData.products.length > 0 && (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {featuredData.products.map((item: ContentItem) => (
                     <Card key={item.id} item={item} />
                   ))}
                 </div>
-              ) : (
-                 <p className="text-center text-gray-500 mt-8">Our featured products will be shown here soon!</p>
               )
             )}
           </section>
 
-          {/* --- BEST SELLERS SECTION (CRASH FIXED) --- */}
+          {/* --- NEW BEST SELLERS SECTION --- */}
           <section className="container mx-auto px-4">
             <div className="relative text-center">
+              {/* This container ensures the text is always centered */}
               <h2 className="font-sans text-3xl font-bold text-text-main">Our Best Sellers</h2>
               <p className="mt-2 text-gray-600">Discover what our community loves the most.</p>
+
+              {/* This button is positioned to the right on larger screens */}
               <div className="absolute top-1/2 right-0 -translate-y-1/2 hidden sm:block">
-                  <Button asChild variant="outline"><Link to="/products">View All Products</Link></Button>
+                  <Button asChild variant="outline"><Link to="/bestsellers">View All Best Sellers</Link></Button>
               </div>
+              
+              {/* This button appears below the text on smaller screens */}
               <div className="mt-4 sm:hidden">
-                  <Button asChild variant="outline"><Link to="/products">View All Products</Link></Button>
+                  <Button asChild variant="outline"><Link to="/bestsellers">View All Best Sellers</Link></Button>
               </div>
             </div>
-            {isBestsellersLoading ? (
-              <div className="flex justify-center py-8"><Spinner /></div>
-            ) : bestsellersError ? (
-              <Alert type="error" message="Could not load best sellers." /> 
-            ) : (
-              // This is the key fix. We now safely check if `bestsellers` is a valid array.
-              Array.isArray(bestsellers) && bestsellers.length > 0 ? (
+            {isBestsellersLoading ? ( <div className="flex justify-center py-8"><Spinner /></div> )
+             : (
+              bestsellers && bestsellers.length > 0 && (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {bestsellers.slice(0, 4).map((item) => <Card key={item.id} item={item} />)}
                 </div>
-              ) : (
-                // If the array is empty or invalid, we show this friendly message.
-                <p className="text-center text-gray-500 mt-8">Our best sellers will be featured here soon!</p>
               )
             )}
           </section>
           
-          {/* Our Services Section (Handles its own loading state) */}
+          {/* Our Services Section (Your original, working code) */}
           <section className="container mx-auto px-4">
             <h2 className="text-center font-sans text-3xl font-bold text-text-main">
               Our Services
@@ -147,11 +143,10 @@ export default function HomePage() {
               Connect with ancient traditions through our expert services.
             </p>
             {isFeaturedLoading ? (
-               <div className="flex justify-center py-8"><Spinner /></div>
-            ) : featuredError ? (
-               <Alert type="error" message="Could not load our services." />
+              <div className="flex justify-center py-8"><Spinner /></div>
             ) : (
-              featuredData?.services && featuredData.services.length > 0 ? (
+              // This safe check prevents crashes
+              featuredData?.services && featuredData.services.length > 0 && (
                 <div className="mt-8">
                   {featuredData.services.length === 1 ? (
                     <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg border">
@@ -191,28 +186,23 @@ export default function HomePage() {
                     </div>
                   )}
                 </div>
-              ) : (
-                 <p className="text-center text-gray-500 mt-8">Our expert services will be featured here soon!</p>
               )
             )}
           </section>
 
           <TestimonialCarousel />
 
-          {/* --- FAQS SECTION (Handles its own loading state) --- */}
+          {/* --- NEW FAQS SECTION --- */}
           <section className="container mx-auto px-4">
              <div className="text-center">
                 <h2 className="font-sans text-3xl font-bold text-text-main">FAQs</h2>
                 <p className="mt-2 text-gray-600">Here to help you on your spiritual journey.</p>
              </div>
              <div className="mt-8 max-w-3xl mx-auto">
-                {isFaqsLoading ? (
-                  <div className="flex justify-center py-8"><Spinner /></div>
-                ) : faqsError ? (
-                  <Alert type="error" message="Could not load FAQs." />
-                ) : (
-                    Array.isArray(faqs) && faqs.length > 0 ? <FaqAccordion faqs={faqs} /> : <p className="text-center text-gray-500">Frequently asked questions will be shown here soon.</p>
-                 )}
+                {isFaqsLoading ? <div className="flex justify-center py-8"><Spinner /></div> 
+                : (
+                  faqs && faqs.length > 0 && <FaqAccordion faqs={faqs} />
+                )}
              </div>
           </section>
         </div>
@@ -221,4 +211,3 @@ export default function HomePage() {
     </>
   );
 }
-
