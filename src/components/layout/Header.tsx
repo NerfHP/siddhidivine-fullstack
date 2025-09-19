@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- Icon Imports ---
+// --- Icon Imports (from your file) ---
 import {
   ChevronDown,
   Search,
@@ -17,38 +17,33 @@ import {
   X,
 } from 'lucide-react';
 
-// --- Custom Hooks, Assets & NEW COMPONENT---
+// --- Custom Hooks & Assets (from your file) ---
 import logo from '@/assets/LOGO.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
-import { ShiftingNav } from '@/components/ShiftingNav'; // Adjust path if needed
 
-// --- TypeScript Interfaces for Menu Data ---
+// --- TypeScript Interfaces for Menu Data (from your file) ---
 interface SubSubItem {
   name: string;
   path: string;
 }
-
 interface SubItem {
   name: string;
   path: string;
   icon?: string;
   subSubItems?: SubSubItem[];
 }
-
 interface MenuItem {
   name:string;
   path: string;
   subItems: SubItem[];
 }
-
-// --- Prop Definition for this Component ---
 interface HeaderProps {
   onSearchClick: () => void;
   onCartClick: () => void;
 }
 
-// --- Menu Data (Unchanged) ---
+// --- Menu Data (from your file) ---
 const rudrakshaSubItems = Array.from({ length: 14 }, (_, i) => ({
   name: `${i + 1} Mukhi`,
   path: `/products/rudraksha/${i + 1}-mukhi-rudraksha`,
@@ -119,16 +114,16 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
-  // State for the MOBILE menu only
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [openMobileSubMenu, setOpenMobileSubMenu] = useState<string | null>(null);
-  
-  // Hooks
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const { cartCount } = useCart();
+  
+  // --- NEW STATE FOR DESKTOP MENU ---
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeSubMenu, setActiveSubMenu] = useState<SubItem | null>(null);
 
-  // Effects for closing mobile menu (Unchanged)
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsMobileMenuOpen(false);
@@ -142,105 +137,211 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
   }, [location.pathname]);
   
   return (
-    <header className="sticky top-0 z-50 bg-white/80 shadow-md backdrop-blur-md">
-      {/* Top Announcement Bar (Unchanged) */}
-      <div className="bg-primary text-white text-sm">
-        <div className="container mx-auto flex items-center justify-between py-1 px-6">
-          <p className="flex-grow text-center font-semibold">
-            Ganesh Chaturthi Sale: <b>21% OFF Sitewide</b> (Auto Applied)
-          </p>
-          <div className="hidden md:flex items-center gap-3">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={16} /></a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16} /></a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={16} /></a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={16} /></a>
-            <a href="mailto:support@example.com" aria-label="Email"><Mail size={16} /></a>
+    <>
+      {/* --- NEW: CUSTOM CSS FOR ANIMATED UNDERLINE --- */}
+      <style>{`
+        .animated-underline {
+          position: relative;
+          display: inline-block;
+          overflow: hidden;
+          padding-bottom: 4px;
+        }
+        .animated-underline::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background-color: #F97316; /* Orange color */
+          transform: translateX(-101%);
+          transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .animated-underline:hover::after,
+        .animated-underline.active::after {
+          transform: translateX(0%);
+        }
+        .animated-underline::before {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background-color: #F97316; /* Orange color */
+          transform: translateX(0%);
+          transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+          z-index: -1;
+        }
+        .animated-underline:hover::before {
+          transform: translateX(101%);
+        }
+      `}</style>
+
+      <header className="sticky top-0 z-50 bg-white/80 shadow-md backdrop-blur-md">
+        {/* Top Announcement Bar (Your code, unchanged) */}
+        <div className="bg-primary text-white text-sm">
+          <div className="container mx-auto flex items-center justify-between py-1 px-6">
+            <p className="flex-grow text-center font-semibold">
+              Ganesh Chaturthi Sale: <b>21% OFF Sitewide</b> (Auto Applied)
+            </p>
+            <div className="hidden md:flex items-center gap-3">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={16} /></a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16} /></a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={16} /></a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={16} /></a>
+              <a href="mailto:support@example.com" aria-label="Email"><Mail size={16} /></a>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Navigation */}
-      <div className="container mx-auto flex items-center justify-between py-3 px-6">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Siddhi Divine Logo" className="h-10 w-auto" />
-          <span className="text-xl font-bold text-text-main font-sans">Siddhi Divine</span>
-        </Link>
-        
-        {/* --- MODIFICATION START --- */}
-        {/* Replace the old desktop menu with our new component */}
-        
-        <ShiftingNav menuItems={menuItems} />
-        
-        {/* --- MODIFICATION END --- */}
-
-        {/* Utility Icons (Unchanged) */}
-        <div className="flex items-center gap-5 text-xl text-text-main">
-          <button onClick={onSearchClick} className="hover:text-primary transition-colors" aria-label="Search">
-            <Search size={22} />
-          </button>
-          <Link to={isAuthenticated ? '/account' : '/login'} className="hover:text-primary transition-colors" aria-label="Account">
-            <User size={22} />
+        {/* Main Navigation (Your code, with desktop nav updated) */}
+        <div className="container mx-auto flex items-center justify-between py-3 px-6">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logo} alt="Siddhi Divine Logo" className="h-10 w-auto" />
+            <span className="text-xl font-bold text-text-main font-sans">Siddhi Divine</span>
           </Link>
-          <button onClick={onCartClick} className="relative hover:text-primary transition-colors" aria-label="Shopping Cart">
-            <ShoppingCart size={22} />
-            {cartCount > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-dark text-xs text-text-light">{cartCount}</span>
-            )}
-          </button>
-          <button className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu">
-            <Menu size={24} />
-          </button>
+          
+          {/* --- NEW DESKTOP NAVIGATION LOGIC --- */}
+          <nav className="hidden lg:flex items-center gap-6" onMouseLeave={() => setActiveMenu(null)}>
+            {menuItems.map((item) => (
+              <div 
+                key={item.name} 
+                className="relative"
+                onMouseEnter={() => setActiveMenu(item.name)}
+              >
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) => 
+                    `animated-underline text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1 ${isActive ? 'active text-orange-600' : ''}`
+                  }
+                >
+                  {item.name}
+                  {item.subItems && item.subItems.length > 0 && <ChevronDown size={16} />}
+                </NavLink>
+
+                {/* --- LEVEL 1 DROPDOWN --- */}
+                <AnimatePresence>
+                  {activeMenu === item.name && item.subItems && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border w-64 flex"
+                      onMouseLeave={() => setActiveSubMenu(null)}
+                    >
+                      <div className="flex-1">
+                        {item.subItems.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.path}
+                            className="px-4 py-3 text-gray-700 hover:bg-orange-50 w-full text-left flex justify-between items-center"
+                            onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
+                          >
+                            {subItem.name}
+                            {subItem.subSubItems && subItem.subSubItems.length > 0 && <span>&rarr;</span>}
+                          </Link>
+                        ))}
+                      </div>
+                      
+                      {/* --- LEVEL 2 DROPDOWN (SUB-SUB-CATEGORIES) --- */}
+                      <AnimatePresence>
+                        {activeSubMenu && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-64"
+                          >
+                            {activeSubMenu.subSubItems?.map((subSubItem) => (
+                              <Link
+                                key={subSubItem.name}
+                                to={subSubItem.path}
+                                className="block px-4 py-3 text-gray-700 hover:bg-orange-50"
+                              >
+                                {subSubItem.name}
+                              </Link>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </nav>
+
+          {/* Utility Icons (Your code, unchanged) */}
+          <div className="flex items-center gap-5 text-xl text-text-main">
+            <button onClick={onSearchClick} className="hover:text-primary transition-colors" aria-label="Search">
+              <Search size={22} />
+            </button>
+            <Link to={isAuthenticated ? '/account' : '/login'} className="hover:text-primary transition-colors" aria-label="Account">
+              <User size={22} />
+            </Link>
+            <button onClick={onCartClick} className="relative hover:text-primary transition-colors" aria-label="Shopping Cart">
+              <ShoppingCart size={22} />
+              {cartCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-dark text-xs text-text-light">{cartCount}</span>
+              )}
+            </button>
+            <button className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu">
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
-      </div>
-      
-      {/* Mobile Menu (Unchanged) */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-[99] lg:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
+        
+        {/* Mobile Menu (Your code, unchanged) */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
             <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              className="absolute top-0 right-0 h-full w-4/5 max-w-sm bg-white"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-[99] lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-                <div className="flex items-center justify-between p-4 border-b">
-                    <h2 className="font-bold text-lg">Menu</h2>
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-2"><X size={24}/></button>
-                </div>
-                <nav className="p-4">
-                    <NavLink to="/" className={({isActive}) => `block py-2 px-3 rounded-md ${isActive ? 'bg-background font-bold' : ''}`}>Home</NavLink>
-                    {menuItems.map(item => (
-                        <div key={item.name} className="border-b">
-                            <div
-                                onClick={() => setOpenMobileSubMenu(openMobileSubMenu === item.name ? null : item.name)}
-                                className="flex items-center justify-between py-2 px-3"
-                            >
-                                <Link to={item.path} className="-ml-3 p-3 flex-grow">{item.name}</Link>
-                                {item.subItems.length > 0 && <ChevronDown size={20} className={`transition-transform ${openMobileSubMenu === item.name ? 'rotate-180' : ''}`} />}
-                            </div>
-                            {openMobileSubMenu === item.name && item.subItems.length > 0 && (
-                                <div className="pl-6 pb-2">
-                                    {item.subItems.map(subItem => (
-                                        <NavLink key={subItem.name} to={subItem.path} className={({isActive}) => `block py-2 px-3 rounded-md text-sm ${isActive ? 'bg-background font-bold' : ''}`}>
-                                            {subItem.name}
-                                        </NavLink>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </nav>
+              <motion.div 
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                className="absolute top-0 right-0 h-full w-4/5 max-w-sm bg-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                  <div className="flex items-center justify-between p-4 border-b">
+                      <h2 className="font-bold text-lg">Menu</h2>
+                      <button onClick={() => setIsMobileMenuOpen(false)} className="p-2"><X size={24}/></button>
+                  </div>
+                  <nav className="p-4">
+                      <NavLink to="/" className={({isActive}) => `block py-2 px-3 rounded-md ${isActive ? 'bg-background font-bold' : ''}`}>Home</NavLink>
+                      {menuItems.map(item => (
+                          <div key={item.name} className="border-b">
+                              <div
+                                  onClick={() => setOpenMobileSubMenu(openMobileSubMenu === item.name ? null : item.name)}
+                                  className="flex items-center justify-between py-2 px-3"
+                              >
+                                  <Link to={item.path} className="-ml-3 p-3 flex-grow">{item.name}</Link>
+                                  {item.subItems.length > 0 && <ChevronDown size={20} className={`transition-transform ${openMobileSubMenu === item.name ? 'rotate-180' : ''}`} />}
+                              </div>
+                              {openMobileSubMenu === item.name && item.subItems.length > 0 && (
+                                  <div className="pl-6 pb-2">
+                                      {item.subItems.map(subItem => (
+                                          <NavLink key={subItem.name} to={subItem.path} className={({isActive}) => `block py-2 px-3 rounded-md text-sm ${isActive ? 'bg-background font-bold' : ''}`}>
+                                              {subItem.name}
+                                          </NavLink>
+                                      ))}
+                                  </div>
+                              )}
+                          </div>
+                      ))}
+                  </nav>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
+          )}
+        </AnimatePresence>
+      </header>
+    </>
   );
 }
+
