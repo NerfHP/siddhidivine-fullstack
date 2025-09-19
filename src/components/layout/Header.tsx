@@ -115,6 +115,79 @@ const navMenuItems: MenuItem[] = [
 },
 ];
 
+// --- NEW SPECIALIZED DROPDOWN FOR RUDRAKSHA ---
+const RudrakshaDropdown = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  // This logic splits your items into two columns, just like your old code
+  const half = Math.ceil((rudrakshaSubItems.length + 2) / 2); // +2 for Gauri Shankar & Ganesh
+  const allRudrakshaItems = [
+      ...rudrakshaSubItems,
+      { name: 'Gauri Shanker Rudraksha', path: '/products/gauri-shanker-rudraksha', icon: '/rudraksha/gauri-shanker.png' },
+      { name: 'Ganesh Rudraksha', path: '/products/ganesh-rudraksha', icon: '/rudraksha/ganesh.png' },
+  ];
+  const firstColumn = allRudrakshaItems.slice(0, half);
+  const secondColumn = allRudrakshaItems.slice(half);
+
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <NavLink
+        to="/products/rudraksha"
+        className={({ isActive }) => 
+          `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors ${isActive ? 'text-orange-600' : ''}`
+        }
+      >
+        Rudraksha
+        <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={16} />
+        </motion.div>
+      </NavLink>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border p-4"
+            style={{ width: '32rem' }} // A wider dropdown for the two-column layout
+          >
+            <div className="grid grid-cols-2 gap-x-6">
+              {/* First Column */}
+              <div className="space-y-1">
+                {firstColumn.map((subItem) => (
+                  <Link
+                    key={subItem.name}
+                    to={subItem.path}
+                    className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                  >
+                    <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
+                    <span>{subItem.name}</span>
+                  </Link>
+                ))}
+              </div>
+              {/* Second Column */}
+              <div className="space-y-1">
+                {secondColumn.map((subItem) => (
+                  <Link
+                    key={subItem.name}
+                    to={subItem.path}
+                    className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                  >
+                    <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
+                    <span>{subItem.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -175,87 +248,92 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
             <span className="text-xl font-bold text-text-main font-sans">Siddhi Divine</span>
           </Link>
           
-          {/* --- UPDATED UNIFIED DESKTOP NAVIGATION --- */}
           <nav className="hidden lg:flex items-center gap-8" onMouseLeave={() => setActiveMenu(null)}>
-            {navMenuItems.map((item) => (
-              <div 
-                key={item.name} 
-                className="relative"
-                onMouseEnter={() => setActiveMenu(item.name)}
-              >
-                <NavLink
-                  to={item.path}
-                  end={item.path === '/'} 
-                  className={({ isActive }) => 
-                    // No underline class here, consistent font size and color on hover
-                    `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors ${isActive ? 'text-orange-600' : ''}`
-                  }
-                >
-                  {item.name}
-                  {item.subItems && (
-                    <motion.div
-                      animate={{ rotate: activeMenu === item.name ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown size={16} />
-                    </motion.div>
-                  )}
-                </NavLink>
+            {navMenuItems.map((item) => {
+              // THIS IS THE KEY LOGIC
+              // If the item is "Rudraksha", we render our special component.
+              if (item.name === 'Rudraksha') {
+                return <RudrakshaDropdown key={item.name} />;
+              }
 
-                {/* --- LEVEL 1 DROPDOWN --- */}
-                <AnimatePresence>
-                  {activeMenu === item.name && item.subItems && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, pointerEvents: 'none' }}
-                      animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
-                      exit={{ opacity: 0, y: 10, pointerEvents: 'none' }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border w-72 flex"
-                      onMouseLeave={() => setActiveSubMenu(null)}
-                    >
-                      <div className="flex-1 py-1">
-                        {item.subItems.map((subItem) => (
-                          <Link
-                            key={subItem.name}
-                            to={subItem.path}
-                            // Text glow class is applied here
-                            className="text-glow px-4 py-2 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
-                            onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
-                          >
-                            {subItem.name}
-                            {subItem.subSubItems && <span className="text-xs">&rarr;</span>}
-                          </Link>
-                        ))}
-                      </div>
-                      
-                      {/* --- LEVEL 2 DROPDOWN (for Navgraha Yantras) --- */}
-                      <AnimatePresence>
-                        {activeSubMenu && (
-                          <motion.div
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-72 py-1"
-                          >
-                            {activeSubMenu.subSubItems?.map((subSubItem) => (
-                              <Link
-                                key={subSubItem.name}
-                                to={subSubItem.path}
-                                // Text glow class is also applied here
-                                className="text-glow block px-4 py-2 text-gray-700 hover:text-orange-600"
-                              >
-                                {subSubItem.name}
-                              </Link>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+              // Otherwise, we render the normal navigation link and dropdown.
+              return (
+                <div 
+                  key={item.name} 
+                  className="relative"
+                  onMouseEnter={() => setActiveMenu(item.name)}
+                >
+                  <NavLink
+                    to={item.path}
+                    end={item.path === '/'} 
+                    className={({ isActive }) => 
+                      `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors ${isActive ? 'text-orange-600' : ''}`
+                    }
+                  >
+                    {item.name}
+                    {item.subItems && (
+                      <motion.div
+                        animate={{ rotate: activeMenu === item.name ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown size={16} />
+                      </motion.div>
+                    )}
+                  </NavLink>
+
+                  {/* --- LEVEL 1 DROPDOWN (for Yantras, etc.) --- */}
+                  <AnimatePresence>
+                    {activeMenu === item.name && item.subItems && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, pointerEvents: 'none' }}
+                        animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
+                        exit={{ opacity: 0, y: 10, pointerEvents: 'none' }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border w-72 flex"
+                        onMouseLeave={() => setActiveSubMenu(null)}
+                      >
+                        <div className="flex-1 py-1">
+                          {item.subItems.map((subItem) => (
+                            <Link
+                              key={subItem.name}
+                              to={subItem.path}
+                              className="text-glow px-4 py-2 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
+                              onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
+                            >
+                              {subItem.name}
+                              {subItem.subSubItems && <span className="text-xs">&rarr;</span>}
+                            </Link>
+                          ))}
+                        </div>
+                        
+                        {/* --- LEVEL 2 DROPDOWN (for Navgraha Yantras) --- */}
+                        <AnimatePresence>
+                          {activeSubMenu && (
+                            <motion.div
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -10 }}
+                              transition={{ duration: 0.2 }}
+                              className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-72 py-1"
+                            >
+                              {activeSubMenu.subSubItems?.map((subSubItem) => (
+                                <Link
+                                  key={subSubItem.name}
+                                  to={subSubItem.path}
+                                  className="text-glow block px-4 py-2 text-gray-700 hover:text-orange-600"
+                                >
+                                  {subSubItem.name}
+                                </Link>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </nav>
 
           {/* Utility Icons (Your code, unchanged) */}
