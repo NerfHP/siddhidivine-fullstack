@@ -26,20 +26,19 @@ interface FaqItem {
   answer: string;
 }
 
-// --- API CALLS (NOW CORRECTED FOR UNIFIED VERCEL SETUP) ---
-// In the new full-stack setup, all API calls must go to the /api path.
+// --- API CALLS (Using your existing, correct paths) ---
 const fetchFeaturedItems = async () => {
-  const { data } = await api.get('/api/content/featured');
+  const { data } = await api.get('/content/featured');
   return data as FeaturedData;
 };
 
 const fetchBestsellers = async () => {
-  const { data } = await api.get('/api/content/bestsellers');
+  const { data } = await api.get('/content/bestsellers');
   return data as ContentItem[];
 };
 
 const fetchFaqs = async () => {
-  const { data } = await api.get('/api/content/faqs');
+  const { data } = await api.get('/content/faqs');
   return data as FaqItem[];
 };
 
@@ -69,9 +68,9 @@ export default function HomePage() {
   };
 
   // --- PERFORMANCE FIX ---
-  // We have REMOVED the top-level loading check.
+  // We REMOVED the top-level loading check that made the page slow.
   // The page will now render the static parts immediately, and each section
-  // will handle its own loading state below. This improves perceived performance.
+  // will handle its own loading state below. This feels much faster for the user.
 
   return (
     <>
@@ -110,7 +109,7 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* --- BEST SELLERS SECTION (Handles its own loading state) --- */}
+          {/* --- BEST SELLERS SECTION (CRASH FIXED) --- */}
           <section className="container mx-auto px-4">
             <div className="relative text-center">
               <h2 className="font-sans text-3xl font-bold text-text-main">Our Best Sellers</h2>
@@ -127,11 +126,13 @@ export default function HomePage() {
             ) : bestsellersError ? (
               <Alert type="error" message="Could not load best sellers." /> 
             ) : (
+              // This is the key fix. We now safely check if `bestsellers` is a valid array.
               Array.isArray(bestsellers) && bestsellers.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {bestsellers.slice(0, 4).map((item) => <Card key={item.id} item={item} />)}
                 </div>
               ) : (
+                // If the array is empty or invalid, we show this friendly message.
                 <p className="text-center text-gray-500 mt-8">Our best sellers will be featured here soon!</p>
               )
             )}
@@ -154,7 +155,7 @@ export default function HomePage() {
                 <div className="mt-8">
                   {featuredData.services.length === 1 ? (
                     <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg border">
-                      <div className="grid md-grid-cols-2 gap-8 items-center">
+                      <div className="grid md:grid-cols-2 gap-8 items-center">
                         <div>
                           <img 
                             src={JSON.parse(featuredData.services[0].images || '[]')[0]} 
