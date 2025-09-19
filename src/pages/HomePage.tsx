@@ -29,17 +29,17 @@ interface FaqItem {
 // --- API CALLS (NOW CORRECTED FOR UNIFIED VERCEL SETUP) ---
 // In the new full-stack setup, all API calls must go to the /api path.
 const fetchFeaturedItems = async () => {
-  const { data } = await api.get('/api/content/featured');
+  const { data } = await api.get('/content/featured');
   return data as FeaturedData;
 };
 
 const fetchBestsellers = async () => {
-  const { data } = await api.get('/api/content/bestsellers');
+  const { data } = await api.get('/content/bestsellers');
   return data as ContentItem[];
 };
 
 const fetchFaqs = async () => {
-  const { data } = await api.get('/api/content/faqs');
+  const { data } = await api.get('/content/faqs');
   return data as FaqItem[];
 };
 
