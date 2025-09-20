@@ -1,64 +1,117 @@
 import React, { useRef, useEffect } from 'react';
 
 // --- List of the 24 Hindu Symbol PNGs ---
+// These paths assume your 'images' folder is in the 'public' directory of your project.
 const SYMBOL_IMAGE_URLS = [
-  '/images/symbols/om.png', '/images/symbols/shiv-shakti-star.png', 
-  '/images/symbols/asta-lakshmi-star.png', '/images/symbols/bindi.png',
-  '/images/symbols/swastika.png', '/images/symbols/trishula.png',
-  '/images/symbols/namaste.png', '/images/symbols/diya.png',
-  '/images/symbols/lotus.png', '/images/symbols/kalasha.png',
-  '/images/symbols/shanka.png', '/images/symbols/kundalini.png',
-  '/images/symbols/sri-yantra.png', '/images/symbols/nataraja.png',
-  '/images/symbols/kalpavrishka.png', '/images/symbols/tripundra.png',
-  '/images/symbols/mudras.png', '/images/symbols/chakras.png',
-  '/images/symbols/rudraksha.png', '/images/symbols/trishakti.png',
-  '/images/symbols/nandi.png', '/images/symbols/tulsi.png',
-  '/images/symbols/kalachakra.png', '/images/symbols/hansa.png',
+  'images/symbols/om.png', 'images/symbols/shiv-shakti-star.png', 
+  'images/symbols/asta-lakshmi-star.png', 'images/symbols/bindi.png',
+  'images/symbols/swastika.png', 'images/symbols/trishula.png',
+  'images/symbols/namaste.png', 'images/symbols/diya.png',
+  'images/symbols/lotus.png', 'images/symbols/kalasha.png',
+  'images/symbols/shanka.png', 'images/symbols/kundalini.png',
+  'images/symbols/sri-yantra.png', 'images/symbols/nataraja.png',
+  'images/symbols/kalpavrishka.png', 'images/symbols/tripundra.png',
+  'images/symbols/mudras.png', 'images/symbols/chakras.png',
+  'images/symbols/rudraksha.png', 'images/symbols/trishakti.png',
+  'images/symbols/nandi.png', 'images/symbols/tulsi.png',
+  'images/symbols/kalachakra.png', 'images/symbols/hansa.png',
 ];
 
-// --- Symbol Class ---
+// Number of symbols to have on screen at any given time
+const NUM_SYMBOLS = 8;
+
+/**
+ * Represents a single falling symbol particle in the animation.
+ * It manages its own position, speed, rotation, and appearance.
+ */
 class Symbol {
-  x: number; y: number; homeX: number; homeY: number; width: number; height: number;
-  image: HTMLImageElement; alpha: number; targetAlpha: number;
-  
-  constructor(image: HTMLImageElement, initialX: number, initialY: number, isInitiallyVisible: boolean) {
-    this.image = image; this.homeX = initialX; this.homeY = initialY; this.x = initialX; this.y = initialY;
-    this.alpha = isInitiallyVisible ? 1 : 0; this.targetAlpha = this.alpha;
-    const aspectRatio = image.width / image.height;
-    this.width = Math.random() * 50 + 80; // Random size
-    this.height = this.width / aspectRatio;
-  }
+  image: HTMLImageElement;
+  x: number = 0;
+  y: number = 0;
+  width: number = 0;
+  height: number = 0;
+  speed: number = 0;
+  rotation: number = 0;
+  rotationSpeed: number = 0;
+  alpha: number = 1;
+  canvasWidth: number;
+  canvasHeight: number;
 
-  fadeIn() { this.targetAlpha = 1; }
-  fadeOut() { this.targetAlpha = 0; }
-  
-  update(mouseX: number | null, mouseY: number | null) {
-    if (Math.abs(this.targetAlpha - this.alpha) > 0.01) { this.alpha += (this.targetAlpha - this.alpha) * 0.02; } 
-    else { this.alpha = this.targetAlpha; }
+  constructor(image: HTMLImageElement, canvasWidth: number, canvasHeight: number) {
+    this.image = image;
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
     
-    let targetX = this.homeX; let targetY = this.homeY;
-    const repelRadius = 200; const maxRepelDist = 40;
-
-    if (mouseX !== null && mouseY !== null) {
-      const dx = this.x + this.width / 2 - mouseX; const dy = this.y + this.height / 2 - mouseY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if(distance < repelRadius) {
-        const force = (repelRadius - distance) / repelRadius;
-        const angle = Math.atan2(dy, dx);
-        targetX += Math.cos(angle) * force * maxRepelDist;
-        targetY += Math.sin(angle) * force * maxRepelDist;
-      }
-    }
-    this.x += (targetX - this.x) * 0.05; this.y += (targetY - this.y) * 0.05;
+    // Set initial random properties. The 'true' flag spreads them across the screen on first load.
+    this.reset(true); 
   }
 
+  /**
+   * Resets the symbol to the top of the screen with new random properties.
+   * This is the core of the infinite loop effect.
+   * @param {boolean} isInitial - If true, randomize Y position across the screen. Otherwise, start just above the screen.
+   */
+  reset(isInitial = false) {
+    const aspectRatio = this.image.width / this.image.height;
+    this.width = Math.random() * 30 + 40; // Random size between 40px and 70px
+    this.height = this.width / aspectRatio;
+    
+    this.x = Math.random() * this.canvasWidth;
+    this.y = isInitial 
+      ? Math.random() * this.canvasHeight // Spread symbols vertically on first load
+      : -this.height; // Start just above the visible screen on subsequent loops
+      
+    this.speed = Math.random() * 1 + 0.5; // Random falling speed
+    this.rotation = Math.random() * Math.PI * 2; // Random initial angle
+    this.rotationSpeed = (Math.random() - 0.5) * 0.01; // Random rotation speed and direction
+    this.alpha = 1; // Reset to fully visible
+  }
+
+  /**
+   * Updates the symbol's state for the current animation frame.
+   * Moves it, rotates it, and handles fading.
+   */
+  update() {
+    this.y += this.speed;
+    this.rotation += this.rotationSpeed;
+
+    // --- Fading Logic ---
+    // Start fading out when the symbol is in the bottom 25% of the screen.
+    const fadeZoneStart = this.canvasHeight * 0.75;
+    if (this.y > fadeZoneStart) {
+      const distanceIntoZone = this.y - fadeZoneStart;
+      const fadeZoneHeight = this.canvasHeight - fadeZoneStart;
+      this.alpha = 1 - (distanceIntoZone / fadeZoneHeight);
+    } else {
+      this.alpha = 1;
+    }
+    
+    // If the symbol has moved completely off the bottom, reset it to the top.
+    if (this.y > this.canvasHeight + this.height) {
+      this.reset();
+    }
+  }
+
+  /**
+   * Draws the symbol onto the canvas context.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   draw(ctx: CanvasRenderingContext2D) {
-    if (this.alpha <= 0.01) return;
+    if (this.alpha <= 0.01) return; // Don't draw if it's practically invisible
+
     ctx.save();
+    // Translate the canvas origin to the center of the symbol for proper rotation
+    ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+    ctx.rotate(this.rotation);
+    
+    // Apply opacity and the glowing effect
     ctx.globalAlpha = this.alpha;
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = `rgba(220, 38, 38, ${0.7 * this.alpha})`;
-    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = `rgba(255, 223, 0, ${0.7 * this.alpha})`; // A warm, golden glow
+
+    // Draw the image centered on the new, rotated origin
+    ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+    
     ctx.restore();
   }
 }
@@ -66,120 +119,95 @@ class Symbol {
 // --- The React Component ---
 const SymbolBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Use a ref to store the symbols array to prevent re-creation on re-renders
+  const symbolsRef = useRef<Symbol[]>([]);
 
   useEffect(() => {
-    const canvas = canvasRef.current; if (!canvas) return;
-    const ctx = canvas.getContext('2d'); if (!ctx) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    let symbols: Symbol[] = [];
-    let animationFrameId: number; let swapInterval: number;
-    const mouse = { x: null as number | null, y: null as number | null };
+    let animationFrameId: number;
 
     // --- Image Preloading ---
     let loadedImages = 0;
     const images: HTMLImageElement[] = [];
     SYMBOL_IMAGE_URLS.forEach(src => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-            loadedImages++;
-            if (loadedImages === SYMBOL_IMAGE_URLS.length) {
-                init(); // Start animation only after all images are loaded
-            }
-        };
-        images.push(img);
+      const img = new Image();
+      // FIX: Use a root-relative path. This is the standard way to access files in the 'public' folder.
+      img.src = `/${src}`;
+      img.onload = () => {
+        loadedImages++;
+        if (loadedImages === SYMBOL_IMAGE_URLS.length) {
+          // Once all images are loaded, initialize the symbols and start the animation
+          init();
+          animate();
+        }
+      };
+       img.onerror = () => {
+        console.error(`Failed to load image: ${img.src}`);
+      };
+      images.push(img);
     });
 
+    /**
+     * Initializes or re-initializes the canvas and symbols. Called on load and on window resize.
+     */
     const init = () => {
-      const dpr = window.devicePixelRatio || 1; const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-      
-      const numToCreate = 16;
-      let availableImages = [...images].sort(() => 0.5 - Math.random());
-      symbols = [];
-      const placedPositions: { x: number; y: number; width: number; height: number }[] = [];
-
-      for (let i = 0; i < SYMBOL_IMAGE_URLS.length; i++) {
-        const isVisible = i < numToCreate;
-        const image = availableImages[i];
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
         
-        let x = 0, y = 0, width = 0, height = 0, overlaps = true, attempts = 0;
-        const tempSymbol = new Symbol(image, 0, 0, true);
-        width = tempSymbol.width;
-        height = tempSymbol.height;
-
-        if (isVisible) {
-            while (overlaps && attempts < 100) {
-              x = Math.random() * (window.innerWidth - width);
-              y = Math.random() * (window.innerHeight - height);
-              overlaps = placedPositions.some(p => x < p.x + p.width && x + width > p.x && y < p.y + p.height && y + height > p.y);
-              if (!overlaps) break;
-              attempts++;
-            }
-            placedPositions.push({ x, y, width, height });
-        } else {
-            x = -width * 2; y = -height * 2; // Start hidden ones off-screen
-        }
-        symbols.push(new Symbol(image, x, y, isVisible));
-      }
-    };
-
-    const replaceSymbol = () => {
-        const visible = symbols.filter(s => s.targetAlpha === 1);
-        const hidden = symbols.filter(s => s.targetAlpha === 0);
-        if (visible.length > 0 && hidden.length > 0) {
-            const toHide = visible[Math.floor(Math.random() * visible.length)];
-            const toShow = hidden[Math.floor(Math.random() * hidden.length)];
-
-            // Find a new non-overlapping position for the incoming symbol
-            const currentPositions = visible.filter(s => s !== toHide).map(s => ({ x: s.homeX, y: s.homeY, width: s.width, height: s.height }));
-            let x = 0, y = 0, width = toShow.width, height = toShow.height, overlaps = true, attempts = 0;
-            while (overlaps && attempts < 100) {
-              x = Math.random() * (window.innerWidth - width);
-              y = Math.random() * (window.innerHeight - height);
-              overlaps = currentPositions.some(p => x < p.x + p.width && x + width > p.x && y < p.y + p.height && y + height > p.y);
-              if (!overlaps) break;
-              attempts++;
-            }
-            toShow.homeX = x; toShow.homeY = y; toShow.x = x; toShow.y = y;
-            
-            toHide.fadeOut();
-            toShow.fadeIn();
+        symbolsRef.current = []; // Clear any existing symbols
+        for (let i = 0; i < NUM_SYMBOLS; i++) {
+            // Pick a random image for each of the 8 symbol instances
+            const randomImage = images[Math.floor(Math.random() * images.length)];
+            symbolsRef.current.push(new Symbol(randomImage, canvas.clientWidth, canvas.clientHeight));
         }
     };
 
+    /**
+     * The main animation loop.
+     */
     const animate = () => {
+      if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      symbols.forEach(s => { s.update(mouse.x, mouse.y); s.draw(ctx); });
+      symbolsRef.current.forEach(s => {
+        s.update();
+        s.draw(ctx);
+      });
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    const handleResize = () => { init(); };
-    const handleMouseMove = (event: MouseEvent) => { mouse.x = event.clientX; mouse.y = event.clientY; };
-    const handleMouseOut = () => { mouse.x = null; mouse.y = null; }
-
-    // Start animation only after images are loaded (handled by onload)
-    animate();
-    swapInterval = setInterval(replaceSymbol, 3000) as unknown as number;
+    const handleResize = () => {
+      init(); // Re-initialize the animation to fit the new screen size
+    };
 
     window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseout', handleMouseOut);
 
+    // --- Cleanup Function ---
+    // This runs when the component unmounts to prevent memory leaks
     return () => {
       cancelAnimationFrame(animationFrameId);
-      clearInterval(swapInterval);
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseout', handleMouseOut);
     };
-  }, []);
+  }, []); // Empty dependency array ensures this effect runs only once on mount
 
   return (
     <canvas 
-        ref={canvasRef} 
-        style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1, backgroundColor: '#FDFBF5' }} 
+      ref={canvasRef} 
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
+        height: '100%', 
+        zIndex: -1, 
+        backgroundColor: '#0F041A' // A dark background makes the glow effect more vibrant
+      }} 
     />
   );
 };

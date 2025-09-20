@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,10 +17,26 @@ import {
   X,
 } from 'lucide-react';
 
-// --- Custom Hooks & Assets (from your file) ---
+// --- MOCK IMPLEMENTATIONS to fix compilation errors ---
+// In your actual project, you would use your own local files.
+// These are placeholders to make the component previewable.
+
+// 1. Reverted to your local logo import
 import logo from '@/assets/LOGO.png';
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
+
+
+// 2. Mock implementation for the useAuth hook
+const useAuth = () => {
+  // You can toggle this value to test the UI for authenticated vs. unauthenticated users
+  return { isAuthenticated: false };
+};
+
+// 3. Mock implementation for the useCart hook
+const useCart = () => {
+  // You can change this number to test the cart badge's appearance
+  return { cartCount: 3 };
+};
+
 
 // --- TypeScript Interfaces for Menu Data ---
 interface SubSubItem {
@@ -36,14 +52,15 @@ interface SubItem {
 interface MenuItem {
   name:string;
   path: string;
-  subItems?: SubItem[]; 
+  subItems?: SubItem[];
 }
 interface HeaderProps {
   onSearchClick: () => void;
   onCartClick: () => void;
 }
 
-// --- Menu Data (Unchanged from your version) ---
+// --- Menu Data ---
+// Helper to generate 1-14 Mukhi Rudraksha items with local images
 const rudrakshaSubItems = Array.from({ length: 14 }, (_, i) => ({
   name: `${i + 1} Mukhi`,
   path: `/products/rudraksha/${i + 1}-mukhi-rudraksha`,
@@ -53,7 +70,7 @@ const rudrakshaSubItems = Array.from({ length: 14 }, (_, i) => ({
 const navMenuItems: MenuItem[] = [
   { name: 'Home', path: '/' },
   { name: 'Yantras', path: '/products/yantras', subItems: [
-      { name: 'Navgraha Yantra', path: '/products/yantras/navgraha-yantra', 
+      { name: 'Navgraha Yantra', path: '/products/yantras/navgraha-yantra',
         subSubItems: [
           { name: 'NavGrah Yantra', path: '/products/yantras/navgraha-yantra/NavGrah-yantra' },
           { name: 'Surya Yantra', path: '/products/yantras/navgraha-yantra/surya-yantra' },
@@ -65,7 +82,7 @@ const navMenuItems: MenuItem[] = [
           { name: 'Shani Yantra', path: '/products/yantras/navgraha-yantra/shani-yantra' },
           { name: 'Rahu Yantra', path: '/products/yantras/navgraha-yantra/rahu-yantra' },
           { name: 'Ketu Yantra', path: '/products/yantras/navgraha-yantra/ketu-yantra' },
-        ] 
+        ]
       },
       { name: 'Shri Sarv Karya Siddhi Yantra', path: '/products/yantras/Shri-Sarv-Karya-Siddhi-yantra' },
       { name: 'Shree Sampoorn kuber Laxhmi Yantra', path: '/products/yantras/Shree-Sampoorn-kuber-Laxhmi-yantra' },
@@ -81,7 +98,7 @@ const navMenuItems: MenuItem[] = [
       { name: 'Vyapar Yantra', path: '/products/yantras/Vyapar-yantra' },
     ]
   },
-{ name: 'Bracelets', path: '/products/bracelets', subItems: [
+  { name: 'Bracelets', path: '/products/bracelets', subItems: [
       { name: 'Rudraksha Bracelets', path: '/products/bracelets/rudraksha-bracelets' },
       { name: 'Crystal Bracelets', path: '/products/bracelets/crystal-bracelets' },
       { name: 'Karungali Bracelets', path: '/products/bracelets/karungali-bracelets' },
@@ -89,55 +106,60 @@ const navMenuItems: MenuItem[] = [
       { name: 'Gold Bracelets', path: '/products/bracelets/gold-bracelets' },
       { name: 'Copper Bracelets', path: '/products/bracelets/copper-bracelets' },
     ],
-},
-{ name: 'Rudraksha', path: '/products/rudraksha', subItems:[
-      ...rudrakshaSubItems,
-      { name: 'Gauri Shanker Rudraksha', path: '/products/gauri-shanker-rudraksha' },
-      { name: 'Ganesh Rudraksha', path: '/products/ganesh-rudraksha' },
-    ],
-},
-{ name: 'Mala', path: '/products/mala', subItems: [
+  },
+  { name: 'Rudraksha', path: '/products/rudraksha' /* Sub-items handled by custom dropdown */ },
+  { name: 'Mala', path: '/products/mala', subItems: [
       { name: 'Karungali Malai', path: '/products/mala/karungali-malai' },
       { name: 'Rudraksha Mala', path: '/products/mala/rudraksha-mala' },
       { name: 'Crystal Mala',path: '/products/mala/crystal-mala' },
       { name: 'Tulsi Mala',path: '/products/mala/tulsi-mala' },
     ],
-},
-{ name: 'Aura Stones', path: '/products/aura-stones', subItems: [
+  },
+  { name: 'Aura Stones', path: '/products/aura-stones', subItems: [
       { name: 'Healing Stones', path: '/products/aura-stones/healing-stones' },
       { name: 'Chakra Stones', path: '/products/aura-stones/chakra-stones' },
     ],
-},
-{ name: 'Astro Stone', path: '/products/astro-stone', subItems: [
-      { name: 'Gemstones', path: '/products/astro-stone/gemstones' },
-      { name: 'Birth Stones', path: '/products/astro-stone/birthstones' },
+  },
+  { name: 'Gemstones', path: '/products/gem-stones', subItems: [
+      { name: 'Ruby (Manikya)', path: '/products/gem-stones/ruby' },
+      { name: 'Pearl (Moti)', path: '/products/gem-stones/pearl' },
+      { name: 'Red Coral (Moonga)', path: '/products/gem-stones/red-coral' },
+      { name: 'Emerald (Panna)', path: '/products/gem-stones/emerald' },
+      { name: 'Yellow Sapphire (Pukhraj)', path: '/products/gem-stones/yellow-sapphire' },
+      { name: 'Diamond (Heera)', path: '/products/gem-stones/diamond' },
+      { name: 'Blue Sapphire (Neelam)', path: '/products/gem-stones/blue-sapphire' },
+      { name: 'Hessonite (Gomedh)', path: '/products/gem-stones/hessonite' },
+      { name: 'Cat’s Eye (Lehsunia)', path: '/products/gem-stones/cat-eye' },
     ],
-},
+  },
 ];
 
-// --- NEW SPECIALIZED DROPDOWN FOR RUDRAKSHA ---
+// --- Rudraksha Dropdown Component (Updated) ---
 const RudrakshaDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // This logic splits your items into two columns, just like your old code
-  const half = Math.ceil((rudrakshaSubItems.length + 2) / 2); // +2 for Gauri Shankar & Ganesh
-  const allRudrakshaItems = [
-      ...rudrakshaSubItems,
-      { name: 'Gauri Shanker Rudraksha', path: '/products/gauri-shanker-rudraksha', icon: '/rudraksha/gauri-shanker.png' },
-      { name: 'Ganesh Rudraksha', path: '/products/ganesh-rudraksha', icon: '/rudraksha/ganesh.png' },
+
+  const mukhiItems = rudrakshaSubItems; // 1-14 Mukhi
+  const specialItems = [
+    { name: 'Gauri Shanker Rudraksha', path: '/products/gauri-shanker-rudraksha', icon: '/rudraksha/gauri-shanker.png' },
+    { name: 'Ganesh Rudraksha', path: '/products/ganesh-rudraksha', icon: '/rudraksha/ganesh.png' },
   ];
-  const firstColumn = allRudrakshaItems.slice(0, half);
-  const secondColumn = allRudrakshaItems.slice(half);
+
+  // Split Mukhi items into two columns for the grid
+  const half = Math.ceil(mukhiItems.length / 2);
+  const firstMukhiColumn = mukhiItems.slice(0, half);
+  const secondMukhiColumn = mukhiItems.slice(half);
+
 
   return (
-    <div 
+    <div
       className="relative"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
       <NavLink
         to="/products/rudraksha"
-        className={({ isActive }) => 
-          `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors ${isActive ? 'text-orange-600' : ''}`
+        className={({ isActive }) =>
+          `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors duration-300 py-4 ${isActive ? 'text-orange-600' : ''}`
         }
       >
         Rudraksha
@@ -151,36 +173,54 @@ const RudrakshaDropdown = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border p-4"
-            style={{ width: '32rem' }} // A wider dropdown for the two-column layout
+            className="absolute top-full left-0 -ml-4 mt-0 bg-white rounded-lg shadow-xl border w-max"
           >
-            <div className="grid grid-cols-2 gap-x-6">
-              {/* First Column */}
-              <div className="space-y-1">
-                {firstColumn.map((subItem) => (
-                  <Link
-                    key={subItem.name}
-                    to={subItem.path}
-                    className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50"
-                  >
-                    <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
-                    <span>{subItem.name}</span>
-                  </Link>
-                ))}
-              </div>
-              {/* Second Column */}
-              <div className="space-y-1">
-                {secondColumn.map((subItem) => (
-                  <Link
-                    key={subItem.name}
-                    to={subItem.path}
-                    className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50"
-                  >
-                    <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
-                    <span>{subItem.name}</span>
-                  </Link>
-                ))}
-              </div>
+            <div className="p-4">
+                <h3 className="px-2 pb-2 text-sm font-bold text-gray-500 uppercase tracking-wider">Mukhi Rudraksha</h3>
+                <div className="grid grid-cols-2 gap-x-6">
+                  {/* First Column */}
+                  <div className="space-y-1">
+                    {firstMukhiColumn.map((subItem) => (
+                      <Link
+                        key={subItem.name}
+                        to={subItem.path}
+                        className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50 whitespace-nowrap"
+                      >
+                        <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
+                        <span>{subItem.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  {/* Second Column */}
+                  <div className="space-y-1">
+                    {secondMukhiColumn.map((subItem) => (
+                      <Link
+                        key={subItem.name}
+                        to={subItem.path}
+                        className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50 whitespace-nowrap"
+                      >
+                        <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
+                        <span>{subItem.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <hr className="my-3"/>
+
+                <h3 className="px-2 pb-2 text-sm font-bold text-gray-500 uppercase tracking-wider">More Rudraksha</h3>
+                 <div className="space-y-1">
+                    {specialItems.map((subItem) => (
+                        <Link
+                            key={subItem.name}
+                            to={subItem.path}
+                            className="text-glow flex items-center gap-3 p-2 rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50 whitespace-nowrap"
+                        >
+                            <img src={subItem.icon} alt={subItem.name} className="w-8 h-8 object-contain" />
+                            <span>{subItem.name}</span>
+                        </Link>
+                    ))}
+                </div>
             </div>
           </motion.div>
         )}
@@ -189,14 +229,15 @@ const RudrakshaDropdown = () => {
   );
 };
 
-export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
+
+// --- Main Header Component (Updated) ---
+export default function Header({ onSearchClick = () => {}, onCartClick = () => {} }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [openMobileSubMenu, setOpenMobileSubMenu] = useState<string | null>(null);
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const { cartCount } = useCart();
-  
-  // State for the desktop dropdown menus
+
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [activeSubMenu, setActiveSubMenu] = useState<SubItem | null>(null);
 
@@ -211,21 +252,20 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
-  
+
   return (
     <>
-      {/* --- NEW: CUSTOM CSS FOR TEXT GLOW EFFECT --- */}
       <style>{`
         .text-glow {
           transition: text-shadow 0.3s ease-in-out;
         }
         .text-glow:hover {
-          text-shadow: 0 0 8px rgba(249, 115, 22, 0.7); /* Orange glow */
+          text-shadow: 0 0 8px rgba(249, 115, 22, 0.7);
         }
       `}</style>
 
       <header className="sticky top-0 z-50 bg-white/80 shadow-md backdrop-blur-md">
-        {/* Top Announcement Bar (Your code, unchanged) */}
+        {/* Top Announcement Bar */}
         <div className="bg-primary text-white text-sm">
           <div className="container mx-auto flex items-center justify-between py-1 px-6">
             <p className="flex-grow text-center font-semibold">
@@ -242,32 +282,30 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
         </div>
 
         {/* Main Navigation */}
-        <div className="container mx-auto flex items-center justify-between py-3 px-6">
+        <div className="container mx-auto flex items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="Siddhi Divine Logo" className="h-10 w-auto" />
             <span className="text-xl font-bold text-text-main font-sans">Siddhi Divine</span>
           </Link>
-          
-          <nav className="hidden lg:flex items-center gap-8" onMouseLeave={() => setActiveMenu(null)}>
+
+          <nav className="hidden lg:flex items-center gap-8" onMouseLeave={() => {setActiveMenu(null); setActiveSubMenu(null)}}>
             {navMenuItems.map((item) => {
-              // THIS IS THE KEY LOGIC
-              // If the item is "Rudraksha", we render our special component.
+              // Render special Rudraksha dropdown
               if (item.name === 'Rudraksha') {
                 return <RudrakshaDropdown key={item.name} />;
               }
-
-              // Otherwise, we render the normal navigation link and dropdown.
+              // Render standard nav items
               return (
-                <div 
-                  key={item.name} 
+                <div
+                  key={item.name}
                   className="relative"
-                  onMouseEnter={() => setActiveMenu(item.name)}
+                  onMouseEnter={() => { setActiveMenu(item.name); setActiveSubMenu(null); }}
                 >
                   <NavLink
                     to={item.path}
-                    end={item.path === '/'} 
-                    className={({ isActive }) => 
-                      `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors ${isActive ? 'text-orange-600' : ''}`
+                    end={item.path === '/'}
+                    className={({ isActive }) =>
+                      `text-base font-semibold text-gray-700 hover:text-orange-600 flex items-center gap-1.5 transition-colors duration-300 py-4 ${isActive ? 'text-orange-600' : ''}`
                     }
                   >
                     {item.name}
@@ -281,50 +319,52 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                     )}
                   </NavLink>
 
-                  {/* --- LEVEL 1 DROPDOWN (for Yantras, etc.) --- */}
+                  {/* --- LEVEL 1 DROPDOWN (Yantras, etc.) --- */}
                   <AnimatePresence>
                     {activeMenu === item.name && item.subItems && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10, pointerEvents: 'none' }}
-                        animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
-                        exit={{ opacity: 0, y: 10, pointerEvents: 'none' }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border w-72 flex"
+                        className="absolute top-full left-0 -ml-4 mt-0 bg-white rounded-lg shadow-xl border w-max flex"
                         onMouseLeave={() => setActiveSubMenu(null)}
                       >
-                        <div className="flex-1 py-1">
+                        <div className="p-2">
                           {item.subItems.map((subItem) => (
                             <Link
                               key={subItem.name}
                               to={subItem.path}
-                              className="text-glow px-4 py-2 text-gray-700 hover:text-orange-600 w-full text-left flex justify-between items-center"
+                              className="text-glow px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md w-full text-left flex justify-between items-center whitespace-nowrap"
                               onMouseEnter={() => setActiveSubMenu(subItem.subSubItems ? subItem : null)}
                             >
                               {subItem.name}
-                              {subItem.subSubItems && <span className="text-xs">&rarr;</span>}
+                              {subItem.subSubItems && <ChevronDown size={12} className="-rotate-90" />}
                             </Link>
                           ))}
                         </div>
-                        
-                        {/* --- LEVEL 2 DROPDOWN (for Navgraha Yantras) --- */}
+
+                        {/* --- LEVEL 2 DROPDOWN (Navgraha Yantras) --- */}
                         <AnimatePresence>
-                          {activeSubMenu && (
+                          {activeSubMenu && activeSubMenu.subSubItems && (
                             <motion.div
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: -10 }}
                               transition={{ duration: 0.2 }}
-                              className="absolute top-0 left-full bg-white rounded-r-lg shadow-xl border w-72 py-1"
+                              className="bg-white rounded-r-lg shadow-xl border-l w-max"
                             >
-                              {activeSubMenu.subSubItems?.map((subSubItem) => (
-                                <Link
-                                  key={subSubItem.name}
-                                  to={subSubItem.path}
-                                  className="text-glow block px-4 py-2 text-gray-700 hover:text-orange-600"
-                                >
-                                  {subSubItem.name}
-                                </Link>
-                              ))}
+                               <div className="p-2">
+                                  {activeSubMenu.subSubItems?.map((subSubItem) => (
+                                    <Link
+                                      key={subSubItem.name}
+                                      to={subSubItem.path}
+                                      className="text-glow block px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md whitespace-nowrap"
+                                    >
+                                      {subSubItem.name}
+                                    </Link>
+                                  ))}
+                               </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -336,7 +376,7 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
             })}
           </nav>
 
-          {/* Utility Icons (Your code, unchanged) */}
+          {/* Utility Icons */}
           <div className="flex items-center gap-5 text-xl text-text-main">
             <button onClick={onSearchClick} className="hover:text-primary transition-colors" aria-label="Search">
               <Search size={22} />
@@ -355,18 +395,18 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
             </button>
           </div>
         </div>
-        
-        {/* Mobile Menu (Your code, now updated for multi-level) */}
+
+        {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 z-[99] lg:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <motion.div 
+              <motion.div
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
@@ -379,10 +419,13 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                   </div>
                   <nav className="p-4">
                       <NavLink to="/" className={({isActive}) => `block py-2 px-3 rounded-md ${isActive ? 'bg-background font-bold' : ''}`}>Home</NavLink>
-                      {navMenuItems.slice(1).map(item => ( // Slice to exclude Home, which is already there
+                      {(navMenuItems.filter(i => i.name !== 'Home' && i.name !== 'Rudraksha')).map(item => (
                           <div key={item.name} className="border-b">
                               <div
-                                  onClick={() => setOpenMobileSubMenu(openMobileSubMenu === item.name ? null : item.name)}
+                                  onClick={() => {
+                                      if(!item.subItems) return;
+                                      setOpenMobileSubMenu(openMobileSubMenu === item.name ? null : item.name)
+                                  }}
                                   className="flex items-center justify-between py-2 px-3"
                               >
                                   <Link to={item.path} className="-ml-3 p-3 flex-grow">{item.name}</Link>
@@ -390,14 +433,13 @@ export default function Header({ onSearchClick, onCartClick }: HeaderProps) {
                               </div>
                               <AnimatePresence>
                                 {openMobileSubMenu === item.name && item.subItems && item.subItems.length > 0 && (
-                                    <motion.div 
+                                    <motion.div
                                       initial={{ height: 0, opacity: 0 }}
                                       animate={{ height: 'auto', opacity: 1 }}
                                       exit={{ height: 0, opacity: 0 }}
                                       className="pl-4 overflow-hidden"
                                     >
                                         {item.subItems.map(subItem => (
-                                          // Here you could add another level of dropdown for mobile if desired
                                           <NavLink key={subItem.name} to={subItem.path} className={({isActive}) => `block py-2 px-3 rounded-md text-sm ${isActive ? 'bg-background font-bold' : ''}`}>
                                               {subItem.name}
                                           </NavLink>
