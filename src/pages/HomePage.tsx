@@ -14,6 +14,7 @@ import ShuffleHero from '@/components/ShuffleHero';
 import FaqAccordion from '@/components/shared/FaqAccordion';
 import TestimonialCarousel from '@/components/shared/TestimonialCarousel';
 import TrustBadgeScroller from '@/components/shared/TrustBadgeScroller';
+import ServicesSection from '@/components/shared/ServicesSection';
 
 // --- TYPE DEFINITIONS FOR OUR DATA ---
 interface FeaturedData {
@@ -134,61 +135,13 @@ export default function HomePage() {
             )}
           </section>
           
-          {/* Our Services Section (Your original, working code) */}
-          <section className="container mx-auto px-4">
-            <h2 className="text-center font-sans text-3xl font-bold text-text-main">
-              Our Services
-            </h2>
-            <p className="mt-2 text-center text-gray-600">
-              Connect with ancient traditions through our expert services.
-            </p>
-            {isFeaturedLoading ? (
-              <div className="flex justify-center py-8"><Spinner /></div>
-            ) : (
-              // This safe check prevents crashes
-              featuredData?.services && featuredData.services.length > 0 && (
-                <div className="mt-8">
-                  {featuredData.services.length === 1 ? (
-                    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg border">
-                      <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <div>
-                          <img 
-                            src={JSON.parse(featuredData.services[0].images || '[]')[0]} 
-                            alt={featuredData.services[0].name}
-                            className="w-full rounded-lg object-cover aspect-square"
-                          />
-                        </div>
-                        <div className="text-center md:text-left">
-                          <h3 className="font-sans text-2xl font-bold text-text-main">{featuredData.services[0].name}</h3>
-                          <p className="text-gray-600 text-sm mt-2">{featuredData.services[0].description}</p>
-                          <div className="flex items-center justify-center md:justify-start gap-2 mt-3">
-                            {featuredData.services[0].salePrice && (
-                              <p className="text-2xl font-bold text-primary-dark">{formatCurrency(featuredData.services[0].salePrice)}</p>
-                            )}
-                            <p className={`text-lg ${featuredData.services[0].salePrice ? 'text-gray-500 line-through' : 'font-bold text-primary-dark'}`}>
-                              {formatCurrency(featuredData.services[0].price || 0)}
-                            </p>
-                          </div>
-                          <div className="mt-4 flex flex-col gap-2">
-                            <Button size="md" onClick={() => handleAddToCart(featuredData.services[0])}>Add to Cart</Button>
-                            <Button asChild size="md" variant="outline">
-                              <Link to={`/services/${featuredData.services[0].slug}`}>View Details</Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
-                      {featuredData.services.map((item: ContentItem) => (
-                        <Card key={item.id} item={item} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-          </section>
+          {/* Replace your old service section with this */}
+          <ServicesSection
+            featuredData={featuredData}
+            isFeaturedLoading={isFeaturedLoading}
+            handleAddToCart={handleAddToCart}
+            formatCurrency={formatCurrency}
+          />
 
           <TestimonialCarousel />
 
