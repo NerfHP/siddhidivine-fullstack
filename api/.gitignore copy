@@ -1,0 +1,8 @@
+#Ignore Node.js dependencies folder
+/node_modules
+
+#Ignore environment variables file (contains database URL and other secrets)
+.env
+
+#Ignore the Firebase service account key for security
+serviceAccountKey.json
