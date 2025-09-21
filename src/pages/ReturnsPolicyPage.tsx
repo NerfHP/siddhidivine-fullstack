@@ -1,76 +1,202 @@
-import Breadcrumbs from '@/components/shared/Breadcrumbs';
-import SEO from '@/components/shared/SEO';
-import { Mail, Phone } from 'lucide-react';
+import { useEffect } from "react";
+import { Mail, Phone } from "lucide-react";
+import SEO from "@/components/shared/SEO";
 
-export default function ReturnsPolicyPage() {
+export default function RefundPolicyPage() {
+  useEffect(() => {
+    // Smooth scroll for TOC links
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const target = document.querySelector(
+          (link as HTMLAnchorElement).getAttribute("href") || ""
+        );
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    });
+  }, []);
+
   return (
     <>
-      <SEO 
-        title="Returns & Exchanges Policy"
-        description="Understand the returns and exchanges policy for Siddhi Divine. Our priority is your satisfaction with our spiritual products."
+      <SEO
+        title="Refund & Cancellation Policy"
+        description="Review Siddhi Divine’s refund, cancellation, and replacement policies. Customer satisfaction is our top priority."
       />
-      <div className="bg-transparent">
-        <div className="container mx-auto px-4 py-8">
-          <Breadcrumbs 
-            items={[
-              { label: 'Home', href: '/' }, 
-              { label: 'Returns & Exchanges Policy' }
-            ]} 
-          />
-          <div className="mt-4 text-center border-b pb-4">
-              <h1 className="font-sans text-4xl font-bold text-text-main">Returns & Exchanges Policy</h1>
-              <p className="mt-2 text-gray-600 max-w-2xl mx-auto">
-                At Siddhi Divine, your satisfaction is our highest priority. We stand behind the quality and spiritual integrity of our products.
-              </p>
-          </div>
 
-          <div className="mt-8 max-w-3xl mx-auto prose prose-lg prose-h2:font-sans prose-h2:font-bold prose-a:text-primary hover:prose-a:underline">
-            <h2>Our Promise</h2>
-            <p>
-              We're not relaxed until you are. If your divine positive energy is not right for you, we are here to help. This policy outlines the conditions under which you can return or exchange an item purchased from Siddhi Divine.
-            </p>
-            
-            <h2>Eligibility for Returns</h2>
-            <ul>
-              <li>Returns must be initiated within <strong>7 days</strong> of the delivery date.</li>
-              <li>The item must be in its original, unused condition, with all original packaging and certificates intact.</li>
-              <li>Customized or energized products (pujas performed on your behalf) are not eligible for return unless a defect is found.</li>
-              <li>Items damaged due to misuse or neglect are not eligible for return.</li>
-            </ul>
+      {/* Breadcrumb Bar */}
+      <div className="w-full bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-3 text-sm text-gray-600">
+          Home <span className="mx-2">›</span> Refund & Cancellation Policy
+        </div>
+      </div>
 
-            <h2>How to Initiate a Return</h2>
-            <ol>
-              <li>
-                <strong>Contact Us:</strong> Please email our support team at <a href="mailto:support@siddhidivine.com">support@siddhidivine.com</a> with your order number and a brief description of the issue. Including a photo is helpful for damaged items.
-              </li>
-              <li>
-                <strong>Receive Approval:</strong> Our team will review your request and, upon approval, will provide you with a Return Authorization (RA) number and shipping instructions.
-              </li>
-              <li>
-                <strong>Ship the Item:</strong> Securely package the item and ship it to the address provided. You are responsible for the return shipping costs.
-              </li>
-            </ol>
-            
-            <h2>Refunds & Exchanges</h2>
-            <p>
-              Once we receive and inspect your returned item, we will notify you via email. If your return is approved, a refund will be processed to your original method of payment within 5-7 business days. For exchanges, the new item will be shipped out after the original item has been received and inspected.
-            </p>
-
-            <h2>Contact Us</h2>
-            <p>
-              If you have any questions about our returns policy, please don't hesitate to reach out. We are here to ensure your journey with Siddhi Divine is a positive one.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-6 mt-4 not-prose">
-                <div className="flex items-center gap-3">
-                    <Mail className="text-primary"/>
-                    <a href="mailto:support@siddhidivine.com" className="font-medium">support@siddhidivine.com</a>
-                </div>
-                 <div className="flex items-center gap-3">
-                    <Phone className="text-primary"/>
-                    <a href="tel:+911234567890" className="font-medium">+91 123 456 7890</a>
-                </div>
+      {/* Page Layout */}
+      <div className="w-full bg-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 grid grid-cols-1 lg:grid-cols-4 gap-12">
+          {/* Sidebar TOC */}
+          <aside className="hidden lg:block lg:col-span-1 sticky top-24 self-start">
+            <div className="p-6 bg-gray-50 rounded-2xl shadow-sm">
+              <h3 className="font-semibold text-gray-900 mb-4">
+                Table of Contents
+              </h3>
+              <ul className="space-y-3 text-gray-700 text-sm">
+                <li>
+                  <a href="#cancellation" className="hover:text-primary">
+                    ❌ Cancellation Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="#refund" className="hover:text-primary">
+                    🔄 Refund & Replacement
+                  </a>
+                </li>
+                <li>
+                  <a href="#process" className="hover:text-primary">
+                    📦 Replacement Process
+                  </a>
+                </li>
+                <li>
+                  <a href="#contact" className="hover:text-primary">
+                    📞 Contact Us
+                  </a>
+                </li>
+              </ul>
             </div>
-          </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="lg:col-span-3 space-y-10">
+            {/* Page Title */}
+            <div className="border-b border-gray-200 pb-6">
+              <h1 className="text-3xl font-bold text-gray-900">
+                Refund & Cancellation Policy
+              </h1>
+              <p className="mt-3 text-gray-600 max-w-3xl">
+                At <span className="font-semibold">Siddhi Divine</span>, your
+                satisfaction is our highest priority. Please review our
+                cancellation, refund, and replacement policies carefully before
+                making a purchase.
+              </p>
+            </div>
+
+            {/* Sections */}
+            <section
+              id="cancellation"
+              className="bg-gray-50 rounded-2xl shadow-sm p-8"
+            >
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                ❌ Cancellation Policy
+              </h2>
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>
+                  Cancellations are accepted <b>within 30 minutes</b> of placing
+                  an order.
+                </li>
+                <li>
+                  Once an order is confirmed and processing has begun,
+                  cancellation requests cannot be guaranteed.
+                </li>
+                <li>
+                  <b>No cancellation fees</b> are charged within the 30-minute
+                  window.
+                </li>
+                <li>
+                  If Siddhi Divine cancels due to stock or logistics issues,
+                  customers receive a <b>full refund</b>.
+                </li>
+              </ul>
+            </section>
+
+            <section
+              id="refund"
+              className="bg-gray-50 rounded-2xl shadow-sm p-8"
+            >
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                🔄 Refund & Replacement Policy
+              </h2>
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>
+                  We follow a <b>1-day replacement policy</b> for damaged,
+                  defective, or incorrect items.
+                </li>
+                <li>
+                  Requests must be made within 1 day of delivery with proof
+                  (unboxing video & images mandatory).
+                </li>
+                <li>
+                  Returns for size preference, quality concerns, or personal
+                  choice are <b>not accepted</b>.
+                </li>
+                <li>
+                  Used, washed, or customer-damaged products, or items without
+                  original packaging, are not eligible.
+                </li>
+              </ul>
+            </section>
+
+            <section
+              id="process"
+              className="bg-gray-50 rounded-2xl shadow-sm p-8"
+            >
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                📦 Replacement Process
+              </h2>
+              <ol className="list-decimal pl-6 space-y-2 text-gray-700">
+                <li>
+                  <b>Initiate Request:</b> Contact us within 1 day via WhatsApp
+                  or email.
+                </li>
+                <li>
+                  <b>Return Product:</b> Send the unused item back in its
+                  original packaging.
+                </li>
+                <li>
+                  <b>Verification:</b> Our team will inspect the product.
+                </li>
+                <li>
+                  <b>Replacement Fee:</b> For size exchanges, a ₹200 fee applies
+                  (shipping & handling).
+                </li>
+                <li>
+                  <b>Dispatch:</b> Once approved, we ship the replacement and
+                  share tracking details.
+                </li>
+              </ol>
+            </section>
+
+            <section
+              id="contact"
+              className="bg-gray-50 rounded-2xl shadow-sm p-8"
+            >
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                📞 Contact Us
+              </h2>
+              <p className="text-gray-700 mb-4">
+                If you have any questions about our policy, don’t hesitate to
+                reach out.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 not-prose">
+                <div className="flex items-center gap-3">
+                  <Mail className="text-primary" />
+                  <a
+                    href="mailto:support@siddhidivine.com"
+                    className="font-medium"
+                  >
+                    support@siddhidivine.com
+                  </a>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="text-primary" />
+                  <a href="tel:+911234567890" className="font-medium">
+                    +91 123 456 7890
+                  </a>
+                </div>
+              </div>
+            </section>
+          </main>
         </div>
       </div>
     </>

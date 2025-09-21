@@ -21,8 +21,21 @@ const refreshTokens = z.object({
   }),
 });
 
+// --- ADD THIS NEW SCHEMA ---
+/**
+ * Validates that the incoming request to the /firebase-login endpoint
+ * contains a non-empty string for the firebaseToken.
+ */
+const firebaseLogin = z.object({
+  body: z.object({
+    firebaseToken: z.string().min(1, 'Firebase token is required'),
+  }),
+});
+
 export const authValidation = {
   register,
   login,
   refreshTokens,
+  firebaseLogin, // <-- Export the new schema
 };
+

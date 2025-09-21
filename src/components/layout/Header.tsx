@@ -1,42 +1,16 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// --- Icon Imports (from your file) ---
-import {
-  ChevronDown,
-  Search,
-  User,
-  ShoppingCart,
-  Menu,
-  Facebook,
-  Instagram,
-  Youtube,
-  Linkedin,
-  Mail,
-  X,
-} from 'lucide-react';
-
-// --- MOCK IMPLEMENTATIONS to fix compilation errors ---
-// In your actual project, you would use your own local files.
-// These are placeholders to make the component previewable.
-
-// 1. Reverted to your local logo import
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 import logo from '@/assets/LOGO.png';
 
 
-// 2. Mock implementation for the useAuth hook
-const useAuth = () => {
-  // You can toggle this value to test the UI for authenticated vs. unauthenticated users
-  return { isAuthenticated: false };
-};
-
-// 3. Mock implementation for the useCart hook
-const useCart = () => {
-  // You can change this number to test the cart badge's appearance
-  return { cartCount: 3 };
-};
-
+// --- Icon Imports (from your file) ---
+import {
+  ChevronDown, Search, User, ShoppingCart, Menu, Facebook,
+  Instagram, Youtube, Linkedin, Mail, X,
+} from 'lucide-react';
 
 // --- TypeScript Interfaces for Menu Data ---
 interface SubSubItem {
@@ -232,7 +206,8 @@ export default function Header({ onSearchClick = () => {}, onCartClick = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [openMobileSubMenu, setOpenMobileSubMenu] = useState<string | null>(null);
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+
+  const { isAuthenticated, openLoginPopup } = useAuth();
   const { cartCount } = useCart();
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -378,9 +353,19 @@ export default function Header({ onSearchClick = () => {}, onCartClick = () => {
             <button onClick={onSearchClick} className="hover:text-primary transition-colors" aria-label="Search">
               <Search size={22} />
             </button>
-            <Link to={isAuthenticated ? '/account' : '/login'} className="hover:text-primary transition-colors" aria-label="Account">
-              <User size={22} />
-            </Link>
+            {isAuthenticated ? (
+                <Link to="/account" className="hover:text-primary transition-colors" aria-label="Account">
+                    <User size={22} />
+                </Link>
+            ) : (
+                <button 
+                  onClick={openLoginPopup} 
+                  className="hover:text-primary transition-colors" 
+                  aria-label="Login"
+                >
+                  <User size={22} />
+                </button>
+            )}
             <button onClick={onCartClick} className="relative hover:text-primary transition-colors" aria-label="Shopping Cart">
               <ShoppingCart size={22} />
               {cartCount > 0 && (

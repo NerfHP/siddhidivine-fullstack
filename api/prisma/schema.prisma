@@ -17,6 +17,8 @@ model User {
   tokens    Token[]
   reviews   Review[]
   orders    Order[] // **THE FIX**: Added relation back to orders
+  role      String   @default("user")
+  phone     String?  @unique // <-- ADD THIS LINE
 }
 
 model Token {

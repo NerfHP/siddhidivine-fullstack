@@ -1,11 +1,27 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { AuthContextType, User, AuthTokens } from '@/types';
+import { User, AuthTokens } from '@/types'; // Your existing types
+
+// 1. UPDATE THE CONTEXT'S TYPE DEFINITION
+// We add the new state and functions that will control the login popup.
+export interface AuthContextType {
+  user: User | null;
+  tokens: AuthTokens | null;
+  login: (data: { user: User; tokens: AuthTokens }) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
+  isLoginPopupOpen: boolean;
+  openLoginPopup: () => void;
+  closeLoginPopup: () => void;
+}
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
+  
+  // 2. ADD STATE TO MANAGE THE POPUP'S VISIBILITY
+  const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -36,11 +52,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('authTokens');
   };
 
+  // 3. DEFINE THE FUNCTIONS THAT WILL CHANGE THE STATE
+  const openLoginPopup = () => setIsLoginPopupOpen(true);
+  const closeLoginPopup = () => setIsLoginPopupOpen(false);
+
   const isAuthenticated = !!tokens?.access?.token;
 
   return (
-    <AuthContext.Provider value={{ user, tokens, login, logout, isAuthenticated }}>
+    // 4. PROVIDE THE NEW VALUES TO ALL CHILDREN COMPONENTS
+    <AuthContext.Provider value={{ 
+        user, 
+        tokens, 
+        login, 
+        logout, 
+        isAuthenticated,
+        isLoginPopupOpen,
+        openLoginPopup,
+        closeLoginPopup
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
