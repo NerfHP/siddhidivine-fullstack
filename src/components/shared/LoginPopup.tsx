@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/shared/Button';
 import Input from '@/components/shared/Input';
-import { ShieldCheck, Gift, LockOpen, X } from 'lucide-react';
+import { ShieldCheck, Gift, Star, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -120,7 +120,7 @@ export default function LoginPopup() {
                 <h2 className="font-sans text-3xl font-bold">Login & Avail Best Offers!</h2>
                 <div className="mt-8 space-y-4">
                     <div className="flex items-center gap-4 bg-white/10 p-4 rounded-lg"><ShieldCheck size={32} className="text-yellow-400 shrink-0"/><div><h3 className="font-semibold">100% Authentic Products</h3><p className="text-sm text-white/80">All products are tested by Govt. certified labs.</p></div></div>
-                    <div className="flex items-center gap-4 bg-white/10 p-4 rounded-lg"><LockOpen size={32} className="text-yellow-400 shrink-0"/><div><h3 className="font-semibold">Unlock Your Harmony</h3><p className="text-sm text-white/80">Effortless access to personalized guidance.</p></div></div>
+                    <div className="flex items-center gap-4 bg-white/10 p-4 rounded-lg"><Star size={32} className="text-yellow-400 shrink-0"/><div><h3 className="font-semibold">Unlock Your Harmony</h3><p className="text-sm text-white/80">Effortless access to personalized guidance.</p></div></div>
                     <div className="flex items-center gap-4 bg-white/10 p-4 rounded-lg"><Gift size={32} className="text-yellow-400 shrink-0"/><div><h3 className="font-semibold">Exclusive Discounts</h3><p className="text-sm text-white/80">Registered users get exclusive discounts.</p></div></div>
                 </div>
             </div>
