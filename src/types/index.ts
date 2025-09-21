@@ -2,6 +2,13 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone: string; // Primary authentication field
+  alternativePhone?: string; // Optional alternative phone
+  address?: string; // User address
+  isProfileComplete: boolean; // To track if user completed registration
+  role: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthTokens {
@@ -21,6 +28,17 @@ export interface AuthContextType {
   login: (data: { user: User; tokens: AuthTokens }) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoginPopupOpen: boolean;
+  openLoginPopup: () => void;
+  closeLoginPopup: () => void;
+}
+
+// Registration form data for new users
+export interface UserRegistrationData {
+  name: string;
+  email: string;
+  address: string;
+  alternativePhone?: string;
 }
 
 export type ContentType = 'PRODUCT' | 'SERVICE' | 'ARTICLE';

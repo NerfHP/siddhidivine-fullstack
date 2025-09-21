@@ -3,22 +3,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Change this from "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tokens    Token[]
-  reviews   Review[]
-  orders    Order[] // **THE FIX**: Added relation back to orders
-  role      String   @default("user")
-  phone     String?  @unique // <-- ADD THIS LINE
+  id                 String   @id @default(cuid())
+  email              String?  @unique // Made optional since not required for auth
+  name               String?  // Made optional, filled during registration
+  password           String?  // Keep for backward compatibility but not used
+  phone              String   @unique // PRIMARY authentication field
+  alternativePhone   String?  // Optional alternative phone
+  address            String?  // User address
+  isProfileComplete  Boolean  @default(false) // Track registration completion
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  tokens             Token[]
+  reviews            Review[]
+  orders             Order[]
+  role               String   @default("user")
 }
 
 model Token {
@@ -70,7 +73,7 @@ model ContentItem {
   howToUse        String?
   packageContents String?
   reviews         Review[]
-  orderItems      OrderItem[] // **THE FIX**: Added relation back to order items
+  orderItems      OrderItem[]
   stock           Int      @default(0)
   isPublished     Boolean  @default(true)
 }
@@ -130,4 +133,3 @@ model OrderItem {
   productId String
   product   ContentItem @relation(fields: [productId], references: [id])
 }
-

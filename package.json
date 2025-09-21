@@ -10,7 +10,10 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "echo 'No client tests configured yet'",
-    "db:migrate": "npx dotenv -e .env.local -- npx prisma migrate dev --schema=./api/prisma/schema.prisma"
+    "db:migrate": "npx dotenv -e .env.local -- npx prisma migrate dev --schema=./api/prisma/schema.prisma",
+    "db:push": "npx dotenv -e .env.local -- npx prisma db push --schema=./api/prisma/schema.prisma",
+    "db:generate": "npx dotenv -e .env.local -- npx prisma generate --schema=./api/prisma/schema.prisma",
+    "db:seed": "npx dotenv -e .env.local -- npx ts-node --esm ./api/prisma/seed.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

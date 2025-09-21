@@ -6,6 +6,7 @@ import config from './config/index.js';
 import { errorConverter, errorHandler } from './middleware/error.middleware.js';
 import ApiError from './utils/AppError.js'; // Added .js for consistency
 import apiRoutes from './routes/index.js';
+import admin from 'firebase-admin';
 
 const app: Express = express();
 
@@ -23,6 +24,19 @@ app.use(express.urlencoded({ extended: true }));
 // Morgan for logging HTTP requests in dev environment
 if (config.env === 'development') {
   app.use(morgan('dev'));
+}
+
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+  try {
+    const serviceAccount = require('./config/ServiceAccountKey.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    console.log('Firebase Admin SDK initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Firebase Admin SDK:', error);
+  }
 }
 
 // --- Health Check & API Routes ---

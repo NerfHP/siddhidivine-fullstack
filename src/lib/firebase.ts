@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
-// Your web app's Firebase configuration from your Firebase project settings
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAKCZjMaWbwEHzfvlO_QPuqrQhJX8Sqiow",
   authDomain: "siddhi-divine.firebaseapp.com",
@@ -20,3 +20,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const analytics = getAnalytics(app);
 
+// Set language code for OTP messages (optional)
+auth.languageCode = 'en';
+
+export default app;
