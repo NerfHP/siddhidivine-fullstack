@@ -85,19 +85,36 @@ model FormSubmission {
   createdAt DateTime @default(now())
 }
 
+// Add this to your existing schema.prisma - only the Review model changes
+
 model Review {
-  id        String      @id @default(cuid())
-  rating    Int
-  comment   String?
-  imageUrl  String?
-  createdAt DateTime    @default(now())
-  productId String
-  product   ContentItem @relation(fields: [productId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String      @id @default(cuid())
+  rating     Int
+  comment    String?
+  imageUrl   String?
+  isApproved Boolean     @default(true)  // Auto-approve for registered users
+  createdAt  DateTime    @default(now())
+  
+  // Product relation (required)
+  productId  String
+  product    ContentItem @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // User relation (optional - for registered users)
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Guest user fields (for anonymous reviews)
+  guestName  String?
+  guestEmail String?
+  
+  // Admin approval tracking
+  approvedAt DateTime?
+  approvedBy String?  // Admin user ID who approved
 
   @@index([productId])
   @@index([userId])
+  @@index([isApproved])
+  @@index([guestEmail])
 }
 
 model Discount {

@@ -1,13 +1,22 @@
 import express from 'express';
 import { reviewController } from '../controllers/index.js';
 import { auth } from '../middleware/auth.middleware.js';
-// You would add your auth middleware here to protect the create route
-// import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
+// Public routes (no authentication required)
 router.get('/:productId', reviewController.getReviewsByProductId);
-// router.post('/', authMiddleware, reviewController.createReview);
-router.post('/', auth, reviewController.createReview); // Unprotected for now
+router.get('/testimonials/featured', reviewController.getTestimonialReviews);
+
+// Review creation - supports both authenticated and anonymous users
+// The controller will handle the logic for both cases
+router.post('/', reviewController.createReview);
+
+// Admin routes (authentication required)
+router.get('/admin/pending', auth, reviewController.getPendingReviews);
+router.get('/admin/stats', auth, reviewController.getReviewStats);
+router.get('/admin/guest/:email', auth, reviewController.getReviewsByGuestEmail);
+router.patch('/admin/approve/:reviewId', auth, reviewController.approveReview);
+router.delete('/admin/reject/:reviewId', auth, reviewController.rejectReview);
 
 export default router;
