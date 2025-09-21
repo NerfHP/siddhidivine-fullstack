@@ -107,30 +107,48 @@ export default function LoginPopup() {
   useEffect(() => {
     return () => {
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (error) {
+          console.error('Error clearing reCAPTCHA:', error);
+        }
         window.recaptchaVerifier = undefined;
       }
     };
   }, []);
 
-  // Setup reCAPTCHA verifier
+  // Setup reCAPTCHA verifier with better error handling
   const setupRecaptcha = () => {
     try {
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
-          'size': 'invisible',
-          'callback': () => {
-            console.log('reCAPTCHA solved');
-          },
-          'expired-callback': () => {
-            console.log('reCAPTCHA expired');
-            toast.error('Security verification expired. Please try again.');
-          }
-        });
+      // Clear any existing verifier first
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = undefined;
       }
+
+      console.log('Setting up reCAPTCHA...');
+      
+      window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          console.log('reCAPTCHA solved successfully:', response);
+        },
+        'expired-callback': () => {
+          console.log('reCAPTCHA expired');
+          toast.error('Security verification expired. Please try again.');
+        },
+        'error-callback': (error: any) => {
+          console.error('reCAPTCHA error:', error);
+          toast.error('Security verification failed. Please try again.');
+        }
+      });
+
+      console.log('reCAPTCHA setup completed');
+      
     } catch (error) {
       console.error('Error setting up reCAPTCHA:', error);
       toast.error('Security setup failed. Please refresh and try again.');
+      throw error;
     }
   };
 
@@ -138,18 +156,21 @@ export default function LoginPopup() {
   const onPhoneSubmit = async (data: PhoneFormData) => {
     setIsSendingOtp(true);
     try {
-      setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier;
+      console.log('Starting OTP process...');
       
-      if (!appVerifier) {
-        throw new Error('reCAPTCHA not initialized');
+      // Setup reCAPTCHA
+      setupRecaptcha();
+      
+      if (!window.recaptchaVerifier) {
+        throw new Error('reCAPTCHA verifier not initialized');
       }
 
       const fullPhoneNumber = `+91${data.phone}`;
       console.log('Sending OTP to:', fullPhoneNumber);
       
-      const result = await signInWithPhoneNumber(firebaseAuth, fullPhoneNumber, appVerifier);
+      const result = await signInWithPhoneNumber(firebaseAuth, fullPhoneNumber, window.recaptchaVerifier);
       
+      console.log('OTP sent successfully');
       setConfirmationResult(result);
       setPhoneNumber(data.phone);
       setStep('enterOtp');
@@ -158,20 +179,40 @@ export default function LoginPopup() {
     } catch (error: any) {
       console.error("Firebase OTP Error:", error);
       
-      // Handle specific Firebase errors
-      if (error.code === 'auth/too-many-requests') {
-        toast.error('Too many requests. Please try again later.');
-      } else if (error.code === 'auth/invalid-phone-number') {
-        toast.error('Invalid phone number format.');
-      } else if (error.code === 'auth/quota-exceeded') {
-        toast.error('SMS quota exceeded. Please try again later.');
-      } else {
-        toast.error('Failed to send OTP. Please try again.');
+      // Handle specific Firebase errors with better messaging
+      let errorMessage = 'Failed to send OTP. Please try again.';
+      
+      switch (error.code) {
+        case 'auth/billing-not-enabled':
+          errorMessage = 'Phone authentication is temporarily unavailable. Please contact support.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many requests. Please wait a few minutes and try again.';
+          break;
+        case 'auth/invalid-phone-number':
+          errorMessage = 'Invalid phone number format. Please check and try again.';
+          break;
+        case 'auth/quota-exceeded':
+          errorMessage = 'SMS quota exceeded. Please try again later.';
+          break;
+        case 'auth/captcha-check-failed':
+          errorMessage = 'Security verification failed. Please try again.';
+          break;
+        default:
+          if (error.message?.includes('billing')) {
+            errorMessage = 'Phone authentication requires account verification. Please contact support.';
+          }
       }
       
-      // Reset reCAPTCHA on error
+      toast.error(errorMessage);
+      
+      // Clean up reCAPTCHA on error
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (clearError) {
+          console.error('Error clearing reCAPTCHA:', clearError);
+        }
         window.recaptchaVerifier = undefined;
       }
     } finally {
@@ -187,7 +228,7 @@ export default function LoginPopup() {
     }
 
     try {
-      console.log('Verifying OTP:', data.otp);
+      console.log('Verifying OTP...');
       const result = await confirmationResult.confirm(data.otp);
       const user = result.user;
       const firebaseToken = await user.getIdToken();
@@ -199,14 +240,23 @@ export default function LoginPopup() {
     } catch (error: any) {
       console.error('OTP verification error:', error);
       
-      if (error.code === 'auth/invalid-verification-code') {
-        toast.error('Invalid OTP. Please check and try again.');
-      } else if (error.code === 'auth/code-expired') {
-        toast.error('OTP has expired. Please request a new one.');
-        setStep('enterPhone');
-      } else {
-        toast.error('OTP verification failed. Please try again.');
+      let errorMessage = 'OTP verification failed. Please try again.';
+      
+      switch (error.code) {
+        case 'auth/invalid-verification-code':
+          errorMessage = 'Invalid OTP. Please check and try again.';
+          break;
+        case 'auth/code-expired':
+          errorMessage = 'OTP has expired. Please request a new one.';
+          setStep('enterPhone');
+          break;
+        case 'auth/session-expired':
+          errorMessage = 'Session expired. Please start over.';
+          setStep('enterPhone');
+          break;
       }
+      
+      toast.error(errorMessage);
     }
   };
 
@@ -219,23 +269,35 @@ export default function LoginPopup() {
 
     setIsSendingOtp(true);
     try {
-      // Clear previous reCAPTCHA
+      console.log('Resending OTP...');
+      
+      // Clear previous reCAPTCHA and setup new one
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = undefined;
       }
 
       setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier;
-      const fullPhoneNumber = `+91${phoneNumber}`;
       
-      const result = await signInWithPhoneNumber(firebaseAuth, fullPhoneNumber, appVerifier!);
+      if (!window.recaptchaVerifier) {
+        throw new Error('Failed to initialize security verification');
+      }
+      
+      const fullPhoneNumber = `+91${phoneNumber}`;
+      const result = await signInWithPhoneNumber(firebaseAuth, fullPhoneNumber, window.recaptchaVerifier);
+      
       setConfirmationResult(result);
       toast.success('OTP resent successfully!');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Resend OTP error:', error);
-      toast.error('Failed to resend OTP. Please try again.');
+      
+      let errorMessage = 'Failed to resend OTP. Please try again.';
+      if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many requests. Please wait before trying again.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSendingOtp(false);
     }
@@ -259,7 +321,11 @@ export default function LoginPopup() {
     
     // Clean up reCAPTCHA
     if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
+      try {
+        window.recaptchaVerifier.clear();
+      } catch (error) {
+        console.error('Error clearing reCAPTCHA on close:', error);
+      }
       window.recaptchaVerifier = undefined;
     }
     
@@ -323,6 +389,9 @@ export default function LoginPopup() {
             {/* Right side - Forms */}
             <div className="bg-white p-8 md:rounded-l-xl">
               <div className="w-full max-w-sm mx-auto">
+                {/* reCAPTCHA container - CRITICAL: This was missing! */}
+                <div id="recaptcha-container" className="hidden"></div>
+                
                 <AnimatePresence mode="wait">
                   {step === 'enterPhone' && (
                     <motion.div 
