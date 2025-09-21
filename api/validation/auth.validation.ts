@@ -1,27 +1,18 @@
 import { z } from 'zod';
 
-const register = z.object({
-  body: z.object({
-    name: z.string().min(1),
-    email: z.string().email(),
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
-  }),
-});
+// The old email/password register schema is no longer needed for the main user flow.
+// It can be kept if you have a separate, manual way to create users (e.g., an admin panel).
+// For a pure OTP system, it's best to remove it to avoid confusion.
+// const register = z.object({ ... });
 
-const login = z.object({
-  body: z.object({
-    email: z.string().email(),
-    password: z.string().min(1),
-  }),
-});
-
+// This is still needed for your app's session management.
 const refreshTokens = z.object({
   body: z.object({
-    refreshToken: z.string(),
+    refreshToken: z.string().min(1, 'Refresh token is required'),
   }),
 });
 
-// --- ADD THIS NEW SCHEMA ---
+// --- THIS IS THE NEW, REQUIRED SCHEMA FOR THE LOGIN POPUP ---
 /**
  * Validates that the incoming request to the /firebase-login endpoint
  * contains a non-empty string for the firebaseToken.
@@ -33,9 +24,8 @@ const firebaseLogin = z.object({
 });
 
 export const authValidation = {
-  register,
-  login,
+  // register, // Removed to focus on OTP login
   refreshTokens,
-  firebaseLogin, // <-- Export the new schema
+  firebaseLogin, // The new primary login validation method
 };
 

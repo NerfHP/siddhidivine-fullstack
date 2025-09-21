@@ -5,20 +5,18 @@ import { authValidation } from '../validation/index.js';
 
 const router = express.Router();
 
-// Your existing email/password routes
-router.post(
-  '/register',
-  validate(authValidation.register),
-  authController.register,
-);
-router.post('/login', validate(authValidation.login), authController.login);
+// The old email/password register route is no longer needed for the main user flow.
+// It can be kept if you have a separate, manual way to create users (e.g., an admin panel).
+// router.post('/register', validate(authValidation.register), authController.register);
+
+// This route is still necessary for your app's session management.
 router.post(
   '/refresh-token',
   validate(authValidation.refreshTokens),
   authController.refreshTokens,
 );
 
-// --- ADD THIS NEW ROUTE FOR FIREBASE LOGIN ---
+// --- THIS IS THE NEW, PRIMARY LOGIN ROUTE ---
 /**
  * This endpoint receives a firebaseToken from the frontend after a successful OTP verification.
  * It uses the authController.firebaseLogin function to securely verify this token,
@@ -26,7 +24,7 @@ router.post(
  */
 router.post(
     '/firebase-login', 
-    validate(authValidation.firebaseLogin), // Note: You will need to create this validation schema next
+    validate(authValidation.firebaseLogin),
     authController.firebaseLogin
 );
 

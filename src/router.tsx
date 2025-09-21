@@ -16,7 +16,6 @@ const BlogPage = React.lazy(() => import('./pages/BlogPage'));
 const ArticleDetailPage = React.lazy(() => import('./pages/ArticleDetailPage'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
-const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const AccountPage = React.lazy(() => import('./pages/AccountPage'));
 const CartPage = React.lazy(() => import('./pages/CartPage'));
 const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
@@ -94,10 +93,6 @@ export const router = createBrowserRouter([
       {
         path: 'contact',
         element: <SuspenseWrapper><ContactPage /></SuspenseWrapper>,
-      },
-      {
-        path: 'register',
-        element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper>,
       },
       {
         path: 'account',
