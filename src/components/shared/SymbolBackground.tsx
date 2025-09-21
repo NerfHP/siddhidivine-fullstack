@@ -1,29 +1,35 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
-// --- List of the 24 Hindu Symbol PNGs ---
-// These paths assume your 'images' folder is in the 'public' directory of your project.
+// List of Hindu Symbol PNGs
 const SYMBOL_IMAGE_URLS = [
-  'images/symbols/om.png', 'images/symbols/shiv-shakti-star.png', 
-  'images/symbols/asta-lakshmi-star.png', 'images/symbols/bindi.png',
-  'images/symbols/swastika.png', 'images/symbols/trishula.png',
-  'images/symbols/namaste.png', 'images/symbols/diya.png',
-  'images/symbols/lotus.png', 'images/symbols/kalasha.png',
-  'images/symbols/shanka.png', 'images/symbols/kundalini.png',
-  'images/symbols/sri-yantra.png', 'images/symbols/nataraja.png',
-  'images/symbols/kalpavrishka.png', 'images/symbols/tripundra.png',
-  'images/symbols/mudras.png', 'images/symbols/chakras.png',
-  'images/symbols/rudraksha.png', 'images/symbols/trishakti.png',
-  'images/symbols/nandi.png', 'images/symbols/tulsi.png',
-  'images/symbols/kalachakra.png', 'images/symbols/hansa.png',
+  '/images/symbols/om.png',
+  '/images/symbols/shiv-shakti-star.png', 
+  '/images/symbols/asta-lakshmi-star.png',
+  '/images/symbols/bindi.png',
+  '/images/symbols/swastika.png',
+  '/images/symbols/trishula.png',
+  '/images/symbols/namaste.png',
+  '/images/symbols/diya.png',
+  '/images/symbols/lotus.png',
+  '/images/symbols/kalasha.png',
+  '/images/symbols/shanka.png',
+  '/images/symbols/kundalini.png',
+  '/images/symbols/sri-yantra.png',
+  '/images/symbols/nataraja.png',
+  '/images/symbols/kalpavrishka.png',
+  '/images/symbols/tripundra.png',
+  '/images/symbols/mudras.png',
+  '/images/symbols/chakras.png',
+  '/images/symbols/rudraksha.png',
+  '/images/symbols/trishakti.png',
+  '/images/symbols/nandi.png',
+  '/images/symbols/tulsi.png',
+  '/images/symbols/kalachakra.png',
+  '/images/symbols/hansa.png',
 ];
 
-// Number of symbols to have on screen at any given time
 const NUM_SYMBOLS = 8;
 
-/**
- * Represents a single falling symbol particle in the animation.
- * It manages its own position, speed, rotation, and appearance.
- */
 class Symbol {
   image: HTMLImageElement;
   x: number = 0;
@@ -41,176 +47,270 @@ class Symbol {
     this.image = image;
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
-    
-    // Set initial random properties. The 'true' flag spreads them across the screen on first load.
-    this.reset(true); 
+    this.reset(true);
   }
 
-  /**
-   * Resets the symbol to the top of the screen with new random properties.
-   * This is the core of the infinite loop effect.
-   * @param {boolean} isInitial - If true, randomize Y position across the screen. Otherwise, start just above the screen.
-   */
   reset(isInitial = false) {
-    const aspectRatio = this.image.width / this.image.height;
-    this.width = Math.random() * 30 + 40; // Random size between 40px and 70px
+    if (!this.image.complete || this.image.naturalWidth === 0) {
+      console.warn('Image not loaded properly:', this.image.src);
+      return;
+    }
+
+    const aspectRatio = this.image.naturalWidth / this.image.naturalHeight;
+    this.width = Math.random() * 30 + 40;
     this.height = this.width / aspectRatio;
     
-    this.x = Math.random() * this.canvasWidth;
+    this.x = Math.random() * (this.canvasWidth - this.width);
     this.y = isInitial 
-      ? Math.random() * this.canvasHeight // Spread symbols vertically on first load
-      : -this.height; // Start just above the visible screen on subsequent loops
+      ? Math.random() * this.canvasHeight
+      : -this.height;
       
-    this.speed = Math.random() * 1 + 0.5; // Random falling speed
-    this.rotation = Math.random() * Math.PI * 2; // Random initial angle
-    this.rotationSpeed = (Math.random() - 0.5) * 0.01; // Random rotation speed and direction
-    this.alpha = 1; // Reset to fully visible
+    this.speed = Math.random() * 1 + 0.5;
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotationSpeed = (Math.random() - 0.5) * 0.01;
+    this.alpha = 1;
   }
 
-  /**
-   * Updates the symbol's state for the current animation frame.
-   * Moves it, rotates it, and handles fading.
-   */
+  updateCanvasSize(width: number, height: number) {
+    this.canvasWidth = width;
+    this.canvasHeight = height;
+  }
+
   update() {
     this.y += this.speed;
     this.rotation += this.rotationSpeed;
 
-    // --- Fading Logic ---
-    // Start fading out when the symbol is in the bottom 25% of the screen.
     const fadeZoneStart = this.canvasHeight * 0.75;
     if (this.y > fadeZoneStart) {
       const distanceIntoZone = this.y - fadeZoneStart;
       const fadeZoneHeight = this.canvasHeight - fadeZoneStart;
-      this.alpha = 1 - (distanceIntoZone / fadeZoneHeight);
+      this.alpha = Math.max(0, 1 - (distanceIntoZone / fadeZoneHeight));
     } else {
       this.alpha = 1;
     }
     
-    // If the symbol has moved completely off the bottom, reset it to the top.
     if (this.y > this.canvasHeight + this.height) {
       this.reset();
     }
   }
 
-  /**
-   * Draws the symbol onto the canvas context.
-   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
-   */
   draw(ctx: CanvasRenderingContext2D) {
-    if (this.alpha <= 0.01) return; // Don't draw if it's practically invisible
+    if (this.alpha <= 0.01 || !this.image.complete) return;
 
     ctx.save();
-    // Translate the canvas origin to the center of the symbol for proper rotation
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
     ctx.rotate(this.rotation);
     
-    // Apply opacity and the glowing effect
     ctx.globalAlpha = this.alpha;
     ctx.shadowBlur = 15;
-    ctx.shadowColor = `rgba(255, 223, 0, ${0.7 * this.alpha})`; // A warm, golden glow
+    ctx.shadowColor = `rgba(255, 223, 0, ${0.7 * this.alpha})`;
 
-    // Draw the image centered on the new, rotated origin
-    ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+    try {
+      ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+    } catch (error) {
+      console.error('Error drawing image:', error, this.image.src);
+    }
     
     ctx.restore();
   }
 }
 
-// --- The React Component ---
-const SymbolBackground: React.FC = () => {
+interface SymbolBackgroundProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const SymbolBackground: React.FC<SymbolBackgroundProps> = ({ className, style }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Use a ref to store the symbols array to prevent re-creation on re-renders
   const symbolsRef = useRef<Symbol[]>([]);
+  const animationFrameRef = useRef<number>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadedCount, setLoadedCount] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      setError('Canvas element not found');
+      return;
+    }
+    
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      setError('Could not get canvas context');
+      return;
+    }
 
-    let animationFrameId: number;
-
-    // --- Image Preloading ---
+    // Image preloading with better error handling
     let loadedImages = 0;
+    let failedImages = 0;
     const images: HTMLImageElement[] = [];
-    SYMBOL_IMAGE_URLS.forEach(src => {
+    
+    const checkAllImagesLoaded = () => {
+      if (loadedImages + failedImages === SYMBOL_IMAGE_URLS.length) {
+        if (loadedImages === 0) {
+          setError('No images could be loaded. Please check your image paths.');
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log(`Loaded ${loadedImages}/${SYMBOL_IMAGE_URLS.length} images successfully`);
+        setIsLoading(false);
+        init();
+        animate();
+      }
+    };
+
+    // Load images
+    SYMBOL_IMAGE_URLS.forEach((src, index) => {
       const img = new Image();
-      // FIX: Use a root-relative path. This is the standard way to access files in the 'public' folder.
-      img.src = `/${src}`;
+      img.crossOrigin = 'anonymous'; // Handle CORS if needed
+      
       img.onload = () => {
         loadedImages++;
-        if (loadedImages === SYMBOL_IMAGE_URLS.length) {
-          // Once all images are loaded, initialize the symbols and start the animation
-          init();
-          animate();
-        }
+        setLoadedCount(loadedImages);
+        console.log(`Loaded image ${loadedImages}/${SYMBOL_IMAGE_URLS.length}: ${src}`);
+        checkAllImagesLoaded();
       };
-       img.onerror = () => {
-        console.error(`Failed to load image: ${img.src}`);
+      
+      img.onerror = (e) => {
+        failedImages++;
+        console.error(`Failed to load image: ${src}`, e);
+        checkAllImagesLoaded();
       };
+      
+      img.src = src;
       images.push(img);
     });
 
-    /**
-     * Initializes or re-initializes the canvas and symbols. Called on load and on window resize.
-     */
     const init = () => {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-        
-        symbolsRef.current = []; // Clear any existing symbols
-        for (let i = 0; i < NUM_SYMBOLS; i++) {
-            // Pick a random image for each of the 8 symbol instances
-            const randomImage = images[Math.floor(Math.random() * images.length)];
-            symbolsRef.current.push(new Symbol(randomImage, canvas.clientWidth, canvas.clientHeight));
-        }
+      if (!canvas || !ctx) return;
+      
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      
+      ctx.scale(dpr, dpr);
+      
+      // Filter out failed images
+      const validImages = images.filter(img => img.complete && img.naturalWidth > 0);
+      
+      if (validImages.length === 0) {
+        setError('No valid images available for animation');
+        return;
+      }
+
+      symbolsRef.current = [];
+      for (let i = 0; i < NUM_SYMBOLS; i++) {
+        const randomImage = validImages[Math.floor(Math.random() * validImages.length)];
+        const symbol = new Symbol(randomImage, rect.width, rect.height);
+        symbolsRef.current.push(symbol);
+      }
+      
+      console.log(`Initialized ${symbolsRef.current.length} symbols`);
     };
 
-    /**
-     * The main animation loop.
-     */
     const animate = () => {
-      if (!ctx) return;
+      if (!ctx || !canvas) return;
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      symbolsRef.current.forEach(s => {
-        s.update();
-        s.draw(ctx);
+      
+      symbolsRef.current.forEach(symbol => {
+        symbol.update();
+        symbol.draw(ctx);
       });
-      animationFrameId = requestAnimationFrame(animate);
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
 
     const handleResize = () => {
-      init(); // Re-initialize the animation to fit the new screen size
+      const rect = canvas?.getBoundingClientRect();
+      if (rect) {
+        symbolsRef.current.forEach(symbol => {
+          symbol.updateCanvasSize(rect.width, rect.height);
+        });
+        init();
+      }
     };
 
     window.addEventListener('resize', handleResize);
 
-    // --- Cleanup Function ---
-    // This runs when the component unmounts to prevent memory leaks
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       window.removeEventListener('resize', handleResize);
     };
-  }, []); // Empty dependency array ensures this effect runs only once on mount
+  }, []);
+
+  if (error) {
+    return (
+      <div 
+        className={className}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: -1,
+          backgroundColor: '#0F041A',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: '14px',
+          ...style
+        }}
+      >
+        <div>Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
-        height: '100%', 
-        zIndex: -1, 
-        backgroundColor: '#0F041A' // A dark background makes the glow effect more vibrant
-      }} 
-    />
+    <>
+      {isLoading && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: -1,
+            backgroundColor: '#0F041A',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '14px'
+          }}
+        >
+          Loading symbols... ({loadedCount}/{SYMBOL_IMAGE_URLS.length})
+        </div>
+      )}
+      <canvas 
+        ref={canvasRef}
+        className={className}
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100%', 
+          zIndex: -1, 
+          backgroundColor: '#FDFBF5',
+          display: isLoading ? 'none' : 'block',
+          ...style
+        }} 
+      />
+    </>
   );
 };
 
 export default SymbolBackground;
-

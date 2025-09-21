@@ -37,7 +37,6 @@ const DetailedTestimonialCard = ({ review, isActive }: { review: HighlightedRevi
     return ['https://placehold.co/600x400/F7F7F7/CCC?text=Image', 'https://placehold.co/100x100/F7F7F7/CCC?text=P'];
   })();
   
-  // Use customer's image if available. If not, and the review is 5 stars, use the product image.
   const cardDisplayImage = review.imageUrl || (review.rating === 5 ? productMainImage : productMainImage);
 
   return (
@@ -105,23 +104,22 @@ export default function TestimonialCarousel() {
   
   const getCardStyle = (displayIndex: number) => {
       const backgroundCardScale = 0.7;
-      const horizontalOffset = 60; // in percent
+      const horizontalOffset = 60;
 
-      if (displayIndex === 0) { // Active card
+      if (displayIndex === 0) {
         return {
             transform: 'translateX(0%) scale(1)',
             zIndex: 10,
         };
       }
 
-      if (Math.abs(displayIndex) <= 3) { // Visible background cards
+      if (Math.abs(displayIndex) <= 3) {
         return {
             transform: `translateX(${displayIndex * horizontalOffset}%) scale(${backgroundCardScale})`,
             zIndex: 10 - Math.abs(displayIndex),
         };
       }
       
-      // Off-screen cards
       return {
           transform: `translateX(${displayIndex < 0 ? '-240%' : '240%'}) scale(${backgroundCardScale})`,
           zIndex: 0,
