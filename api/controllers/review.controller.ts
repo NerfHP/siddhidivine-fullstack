@@ -6,7 +6,7 @@ import httpStatus from 'http-status';
 
 // Validation schemas
 const createReviewSchema = z.object({
-  productId: z.string().min(1, 'Product ID is required'),
+  productId: z.string().min(1, 'Product ID is required'), 
   rating: z.number().min(1).max(5),
   comment: z.string().optional(),
   imageUrl: z.string().url().optional(),
