@@ -4,19 +4,25 @@ import { auth } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// Public routes (no authentication required)
+// --- Public Routes ---
+
+// This is the endpoint for the testimonial carousel on the homepage.
+router.get('/top', reviewController.getTestimonialReviews);
+
+// Gets all reviews for a specific product page.
 router.get('/:productId', reviewController.getReviewsByProductId);
-router.get('/reviews/testimonials/featured', reviewController.getTestimonialReviews);
 
-// Review creation - supports both authenticated and anonymous users
-// The controller will handle the logic for both cases
-router.post('/', reviewController.createReview);
+// Creates a new review. The controller handles both guest and authenticated users.
+router.post('/', auth, reviewController.createReview);
 
-// Admin routes (authentication required)
+
+// --- Admin Routes ---
+
 router.get('/admin/pending', auth, reviewController.getPendingReviews);
-router.get('/admin/stats', auth, reviewController.getReviewStats);
-router.get('/admin/guest/:email', auth, reviewController.getReviewsByGuestEmail);
 router.patch('/admin/approve/:reviewId', auth, reviewController.approveReview);
 router.delete('/admin/reject/:reviewId', auth, reviewController.rejectReview);
+router.get('/admin/stats', auth, reviewController.getReviewStats);
+router.get('/admin/guest/:email', auth, reviewController.getReviewsByGuestEmail);
+
 
 export default router;

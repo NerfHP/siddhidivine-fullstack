@@ -35,8 +35,8 @@ export async function getCategoryAncestry(categoryId: string | null): Promise<Ca
 // --- MAIN SERVICE FUNCTIONS ---
 
 const getHighlightedReviews = async () => {
-  console.log("[Backend Service] Fetching highlighted reviews...");
-  const reviews = await prisma.review.findMany({ 
+  console.log('[Backend Service] Fetching highlighted reviews...');
+  const reviews = await prisma.review.findMany({
     where: { isApproved: true }, // Only approved reviews
     include: {
       user: { select: { name: true } },
@@ -53,12 +53,12 @@ const getHighlightedReviews = async () => {
 
 const getReviewsByProductId = async (productId: string) => {
   const reviews = await prisma.review.findMany({
-    where: { 
+    where: {
       productId,
-      isApproved: true // Only return approved reviews to public
+      isApproved: true, // Only return approved reviews to public
     },
-    include: { 
-      user: { select: { name: true } } 
+    include: {
+      user: { select: { name: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -67,8 +67,8 @@ const getReviewsByProductId = async (productId: string) => {
 
 // Updated to handle both authenticated and guest reviews
 const createReview = async (
-  productId: string, 
-  rating: number, 
+  productId: string,
+  rating: number,
   comment: string,
   options: {
     userId?: string;
@@ -113,8 +113,8 @@ const createReview = async (
     data: reviewData,
     include: {
       user: { select: { name: true } },
-      product: { select: { name: true } }
-    }
+      product: { select: { name: true } },
+    },
   });
 };
 
@@ -124,7 +124,7 @@ const getPendingReviews = async () => {
     where: { isApproved: false },
     include: {
       user: { select: { name: true } },
-      product: { select: { name: true, slug: true } }
+      product: { select: { name: true, slug: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -136,23 +136,23 @@ const approveReview = async (reviewId: string, approvedBy: string) => {
     data: {
       isApproved: true,
       approvedAt: new Date(),
-      approvedBy: approvedBy
+      approvedBy: approvedBy,
     },
     include: {
       user: { select: { name: true } },
-      product: { select: { name: true } }
-    }
+      product: { select: { name: true } },
+    },
   });
 };
 
 const rejectReview = async (reviewId: string) => {
   return prisma.review.delete({
-    where: { id: reviewId }
+    where: { id: reviewId },
   });
 };
 
 // Get approved reviews for testimonials (with additional filtering)
-const getTestimonialReviews = async (limit: number = 20) => {
+const getTestimonialReviews = async (limit: number = 10) => {
   return prisma.review.findMany({
     where: {
       isApproved: true,
@@ -161,13 +161,16 @@ const getTestimonialReviews = async (limit: number = 20) => {
     },
     include: {
       user: { select: { name: true } },
-      product: { select: { name: true } }
+      product: {
+        select: {
+          name: true,
+          slug: true, // Added for the product link
+          images: true, // Added for the product image fallback
+        },
+      },
     },
-    orderBy: [
-      { rating: 'desc' },
-      { createdAt: 'desc' }
-    ],
-    take: limit
+    orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }],
+    take: limit,
   });
 };
 
@@ -176,9 +179,9 @@ const getReviewsByGuestEmail = async (email: string) => {
   return prisma.review.findMany({
     where: { guestEmail: email },
     include: {
-      product: { select: { name: true, slug: true } }
+      product: { select: { name: true, slug: true } },
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
   });
 };
 
@@ -188,12 +191,12 @@ const getReviewStats = async () => {
     prisma.review.count(),
     prisma.review.count({ where: { isApproved: true } }),
     prisma.review.count({ where: { isApproved: false } }),
-    prisma.review.count({ where: { userId: null } })
+    prisma.review.count({ where: { userId: null } }),
   ]);
 
   const averageRating = await prisma.review.aggregate({
     where: { isApproved: true },
-    _avg: { rating: true }
+    _avg: { rating: true },
   });
 
   return {
@@ -201,7 +204,7 @@ const getReviewStats = async () => {
     approvedReviews,
     pendingReviews,
     guestReviews,
-    averageRating: averageRating._avg.rating || 0
+    averageRating: averageRating._avg.rating || 0,
   };
 };
 
@@ -209,16 +212,17 @@ export const reviewService = {
   getReviewsByProductId,
   createReview,
   getHighlightedReviews,
-  
+
   // Admin functions
   getPendingReviews,
   approveReview,
   rejectReview,
-  
+
   // Testimonial functions
   getTestimonialReviews,
   getReviewsByGuestEmail,
-  
+
   // Analytics
   getReviewStats,
 };
+
