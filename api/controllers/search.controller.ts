@@ -17,9 +17,9 @@ export const searchContent = async (req: Request, res: Response) => {
         AND: [
           {
             OR: [
-              { name: { contains: query } },
-              { description: { contains: query } },
-              { content: { contains: query } },
+              { name: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } },
+              { content: { contains: query, mode: 'insensitive' } },
             ],
           },
           { isPublished: true },
