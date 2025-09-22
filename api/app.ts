@@ -6,6 +6,7 @@ import config from './config/index.js';
 import { errorConverter, errorHandler } from './middleware/error.middleware.js';
 import ApiError from './utils/AppError.js'; // Added .js for consistency
 import apiRoutes from './routes/index.js';
+import reviewRoutes from './routes/review.routes.js'
 import admin from 'firebase-admin';
 
 const app: Express = express();
@@ -49,6 +50,9 @@ app.get('/', (_req: Request, res: Response) => {
     status: 'ok',
   });
 });
+
+// Mount review routes BEFORE the /api routes
+app.use('/api/reviews', reviewRoutes);
 
 // All your API routes are prefixed with '/api'
 app.use('/api', apiRoutes);

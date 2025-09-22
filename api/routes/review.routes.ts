@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Public routes (no authentication required)
 router.get('/:productId', reviewController.getReviewsByProductId);
-router.get('/testimonials/featured', reviewController.getTestimonialReviews);
+router.get('/reviews/testimonials/featured', reviewController.getTestimonialReviews);
 
 // Review creation - supports both authenticated and anonymous users
 // The controller will handle the logic for both cases
