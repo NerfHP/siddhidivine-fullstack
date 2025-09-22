@@ -18,7 +18,7 @@ interface TestimonialReview extends Review {
 // Fetch testimonial reviews from your existing API endpoint
 const fetchTestimonialReviews = async (): Promise<TestimonialReview[]> => {
   try {
-    const { data } = await api.get('/reviews/testimonials/featured?limit=50');
+    const { data } = await api.get('/api/reviews/testimonials/featured?limit=50');
     return data.filter((review: TestimonialReview) => 
       review.rating >= 4 && 
       review.comment && 
