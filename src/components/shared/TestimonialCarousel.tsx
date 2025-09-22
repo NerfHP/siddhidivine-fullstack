@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { Link } from 'react-router-dom';
 import api from '@/lib/api'; // Assuming you have a configured axios instance

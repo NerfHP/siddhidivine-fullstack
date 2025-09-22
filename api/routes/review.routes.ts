@@ -13,11 +13,13 @@ router.get('/top', reviewController.getTestimonialReviews);
 router.get('/:productId', reviewController.getReviewsByProductId);
 
 // Creates a new review. The controller handles both guest and authenticated users.
-router.post('/', auth, reviewController.createReview);
+// The 'auth' middleware is removed here to allow guests to post reviews.
+router.post('/', reviewController.createReview);
 
 
 // --- Admin Routes ---
 
+// The 'auth' middleware is correctly used here for admin-only routes.
 router.get('/admin/pending', auth, reviewController.getPendingReviews);
 router.patch('/admin/approve/:reviewId', auth, reviewController.approveReview);
 router.delete('/admin/reject/:reviewId', auth, reviewController.rejectReview);
@@ -26,3 +28,4 @@ router.get('/admin/guest/:email', auth, reviewController.getReviewsByGuestEmail)
 
 
 export default router;
+
