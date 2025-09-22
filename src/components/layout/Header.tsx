@@ -35,7 +35,7 @@ interface HeaderProps {
 
 // --- Menu Data ---
 // Helper to generate 1-14 Mukhi Rudraksha items with local images
-const rudrakshaSubItems = Array.from({ length: 14 }, (_, i) => ({
+const rudrakshaSubItems = Array.from({ length: 21 }, (_, i) => ({
   name: `${i + 1} Mukhi`,
   path: `/products/rudraksha/${i + 1}-mukhi-rudraksha`,
   icon: `/rudraksha/${i + 1}-mukhi.png`,
@@ -100,7 +100,7 @@ const navMenuItems: MenuItem[] = [
       { name: 'Diamond (Heera)', path: '/products/gemstones/diamond' },
       { name: 'Blue Sapphire (Neelam)', path: '/products/gemstones/blue-sapphire' },
       { name: 'Hessonite (Gomedh)', path: '/products/gemstones/hessonite' },
-      { name: 'Cat’s Eye (Lehsunia)', path: '/products/gemstones/cat-eye' },
+      { name: 'Cat,s Eye (Lehsunia)', path: '/products/gemstones/cat-eye' },
     ],
   },
 ];
@@ -111,7 +111,8 @@ const RudrakshaDropdown = () => {
 
   const mukhiItems = rudrakshaSubItems; // 1-14 Mukhi
   const specialItems = [
-    { name: 'Gauri Shanker Rudraksha', path: '/products/gauri-shanker-rudraksha', icon: '/rudraksha/gauri-shanker.png' },
+    { name: 'Gauri Shankar Rudraksha', path: '/products/gauri-shankar-rudraksha', icon: '/rudraksha/gauri-shankar.png' },
+    { name: 'Garbh Gauri Rudraksha', path: '/products/garbh-gauri-rudraksha', icon: '/rudraksha/ganesh-gauri.png' },
     { name: 'Ganesh Rudraksha', path: '/products/ganesh-rudraksha', icon: '/rudraksha/ganesh.png' },
   ];
 
