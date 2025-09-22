@@ -6,14 +6,10 @@ const router = express.Router();
 
 // --- Public Routes ---
 
-// This is the endpoint for the testimonial carousel on the homepage.
-router.get('/top', reviewController.getTestimonialReviews);
-
 // Gets all reviews for a specific product page.
 router.get('/:productId', reviewController.getReviewsByProductId);
 
 // Creates a new review. The controller handles both guest and authenticated users.
-// The 'auth' middleware is removed here to allow guests to post reviews.
 router.post('/', reviewController.createReview);
 
 

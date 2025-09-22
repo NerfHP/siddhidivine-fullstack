@@ -8,20 +8,20 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(cuid())
-  email              String?  @unique // Made optional since not required for auth
-  name               String?  // Made optional, filled during registration
-  password           String?  // Keep for backward compatibility but not used
-  phone              String   @unique // PRIMARY authentication field
-  alternativePhone   String?  // Optional alternative phone
-  address            String?  // User address
-  isProfileComplete  Boolean  @default(false) // Track registration completion
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  tokens             Token[]
-  reviews            Review[]
-  orders             Order[]
-  role               String   @default("user")
+  id                String    @id @default(cuid())
+  email             String?   @unique // Made optional since not required for auth
+  name              String? // Made optional, filled during registration
+  password          String? // Keep for backward compatibility but not used
+  phone             String    @unique // PRIMARY authentication field
+  alternativePhone  String? // Optional alternative phone
+  address           String? // User address
+  isProfileComplete Boolean   @default(false) // Track registration completion
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  tokens            Token[]
+  reviews           Review[]
+  orders            Order[]
+  role              String    @default("user")
 }
 
 model Token {
@@ -36,32 +36,32 @@ model Token {
 }
 
 model Category {
-  id          String      @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  slug        String      @unique
+  slug        String        @unique
   description String?
   type        String
   image       String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   parentId    String?
-  parent      Category?   @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Category[]  @relation("ParentChild")
+  parent      Category?     @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]    @relation("ParentChild")
   items       ContentItem[]
 }
 
 model ContentItem {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   name            String
-  slug            String   @unique
+  slug            String       @unique
   description     String
   content         String?
   price           Float?
   salePrice       Float?
   images          String
   type            String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   categories      Category[]
   vendor          String?
   sku             String?
@@ -74,8 +74,9 @@ model ContentItem {
   packageContents String?
   reviews         Review[]
   orderItems      OrderItem[]
-  stock           Int      @default(0)
-  isPublished     Boolean  @default(true)
+  stock           Int          @default(0)
+  isPublished     Boolean      @default(true)
+  faqs            ProductFaq[] // Add this line to create the relation
 }
 
 model FormSubmission {
@@ -92,24 +93,20 @@ model Review {
   rating     Int
   comment    String?
   imageUrl   String?
-  isApproved Boolean     @default(true)  // Auto-approve for registered users
+  isApproved Boolean     @default(true) // Auto-approve for registered users
   createdAt  DateTime    @default(now())
-  
   // Product relation (required)
   productId  String
   product    ContentItem @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
   // User relation (optional - for registered users)
   userId     String?
   user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   // Guest user fields (for anonymous reviews)
   guestName  String?
   guestEmail String?
-  
   // Admin approval tracking
   approvedAt DateTime?
-  approvedBy String?  // Admin user ID who approved
+  approvedBy String? // Admin user ID who approved
 
   @@index([productId])
   @@index([userId])
@@ -149,4 +146,17 @@ model OrderItem {
   order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
   product   ContentItem @relation(fields: [productId], references: [id])
+}
+
+// --- ADD THIS NEW MODEL ---
+model ProductFaq {
+  id          String      @id @default(cuid())
+  question    String
+  answer      String
+  productId   String
+  product     ContentItem @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([productId])
 }

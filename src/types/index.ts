@@ -98,6 +98,14 @@ export interface Review {
   product?: Partial<ContentItem>; // Product can be optional
 }
 
+export interface ProductFaq {
+  id: string;
+  question: string;
+  answer: string;
+  productId: string;
+}
+
+
 export interface CartItem extends ContentItem {
   quantity: number;
 }

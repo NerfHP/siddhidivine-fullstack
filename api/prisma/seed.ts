@@ -1,5 +1,7 @@
 import seedContent from './seed-content.json' with { type: 'json' };
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path'
 
 const prisma = new PrismaClient();
 
@@ -32,6 +34,17 @@ type SeedCategory = {
     type: string;
     image?: string;
     children?: SeedCategory[];
+}
+
+// FAQ types
+interface SeedFaq {
+  question: string;
+  answer: string;
+}
+
+interface SeedFaqEntry {
+  productSlug: string;
+  faqs: SeedFaq[];
 }
 
 async function createCategory(categoryData: SeedCategory, parentId: string | null = null) {
@@ -179,8 +192,40 @@ async function main() {
     }
   });
   console.log('Sample discount codes created.');
-  
-  console.log('Seeding finished successfully!');
+
+  // Seed Product FAQs
+  console.log('Seeding Product FAQs...');
+  const faqDataPath = path.resolve(process.cwd(), 'api', 'prisma', 'seed-faqs.json');
+
+  if (!fs.existsSync(faqDataPath)) {
+    console.warn('⚠️ No seed-faqs.json file found. Skipping FAQ seeding.');
+  } else {
+    const faqData: SeedFaqEntry[] = JSON.parse(fs.readFileSync(faqDataPath, 'utf-8'));
+
+    for (const faqEntry of faqData) {
+      const product = await prisma.contentItem.findUnique({
+        where: { slug: faqEntry.productSlug },
+      });
+
+      if (product) {
+        // Delete existing FAQs for this product to avoid duplicates
+        await prisma.productFaq.deleteMany({ where: { productId: product.id } });
+
+        // Create new FAQs
+        await prisma.productFaq.createMany({
+          data: faqEntry.faqs.map((faq) => ({
+            ...faq,
+            productId: product.id,
+          })),
+        });
+        console.log(`Seeded ${faqEntry.faqs.length} FAQs for ${product.name}.`);
+      } else {
+        console.warn(`⚠️ Warning: Product with slug "${faqEntry.productSlug}" not found. Skipping its FAQs.`);
+      }
+    }
+  }
+
+  console.log('Seeding process complete.');
 }
 
 main()

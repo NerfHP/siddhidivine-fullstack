@@ -17,6 +17,7 @@ import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shi
 import ProductInfoAccordion from '@/components/shared/ProductInfoAccordion';
 import ProductImageGallery from '@/components/shared/ProductImageGallery';
 import Reviews from '@/components/shared/Reviews';
+import ProductFaqSection from '../components/shared/ProductFaqSection';
 
 // This page expects a clear response with product data and its full breadcrumb trail.
 interface ProductResponse {
@@ -198,6 +199,10 @@ export default function ProductDetailPage() {
             <div className="mt-12 pt-8 border-t">
               <Reviews productId={product.id} />
             </div>
+
+            {/* --- ADD THE NEW FAQ SECTION HERE --- */}
+            <ProductFaqSection productId={product.id} />
+
           </div>
         </div>
       </div>
