@@ -1,431 +1,360 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
-import { ContentItem, Review } from '@/types';
-import Spinner from './Spinner';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Review, ContentItem } from '@/types';
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 
-// --- TYPES ---
-interface HighlightedReview extends Review {
+// Enhanced review interface matching your backend
+interface TestimonialReview extends Review {
   product?: ContentItem;
   user?: {
     name: string;
+    avatar?: string;
   };
+  guestName?: string;
 }
 
-// --- MOCK DATA FOR FALLBACK ---
-const mockReviews: HighlightedReview[] = [
-  {
-    id: '1',
-    rating: 5,
-    comment: 'Absolutely amazing product! The quality is outstanding and delivery was super fast. Highly recommend to everyone.',
-    imageUrl: null,
-    createdAt: new Date().toISOString(),
-    user: { name: 'Priya Sharma' },
-    product: {
-      id: '1',
-      name: 'Rudraksha Mala',
-      slug: 'rudraksha-mala',
-      description: 'Sacred Rudraksha Mala',
-      images: JSON.stringify(['https://placehold.co/400x300/8B4513/FFF?text=Rudraksha+Mala']),
-      type: 'PRODUCT' as const,
-      categories: [],
-      categoryId: '1'
-    }
-  },
-  {
-    id: '2',
-    rating: 4,
-    comment: 'Great service and authentic products. The spiritual energy is definitely felt. Thank you for this wonderful experience.',
-    imageUrl: null,
-    createdAt: new Date().toISOString(),
-    user: { name: 'Amit Kumar' },
-    product: {
-      id: '2',
-      name: 'Yantra Collection',
-      slug: 'yantra-collection',
-      description: 'Sacred Yantra Collection',
-      images: JSON.stringify(['https://placehold.co/400x300/FFD700/000?text=Sacred+Yantra']),
-      type: 'PRODUCT' as const,
-      categories: [],
-      categoryId: '2'
-    }
-  },
-  {
-    id: '3',
-    rating: 5,
-    comment: 'Incredible quality and fast shipping. The product exceeded my expectations. Will definitely order again!',
-    imageUrl: null,
-    createdAt: new Date().toISOString(),
-    user: { name: 'Sunita Devi' },
-    product: {
-      id: '3',
-      name: 'Crystal Set',
-      slug: 'crystal-set',
-      description: 'Healing Crystal Set',
-      images: JSON.stringify(['https://placehold.co/400x300/9932CC/FFF?text=Healing+Crystals']),
-      type: 'PRODUCT' as const,
-      categories: [],
-      categoryId: '3'
-    }
-  },
-  {
-    id: '4',
-    rating: 5,
-    comment: 'Perfect for meditation and daily prayers. The energy is pure and divine. Thank you for such an authentic product.',
-    imageUrl: null,
-    createdAt: new Date().toISOString(),
-    user: { name: 'Rajesh Gupta' },
-    product: {
-      id: '4',
-      name: 'Prayer Beads',
-      slug: 'prayer-beads',
-      description: 'Sacred Prayer Beads',
-      images: JSON.stringify(['https://placehold.co/400x300/CD853F/FFF?text=Prayer+Beads']),
-      type: 'PRODUCT' as const,
-      categories: [],
-      categoryId: '4'
-    }
-  }
-];
-
-// --- API CALL ---
-const fetchHighlightedReviews = async (): Promise<HighlightedReview[]> => {
+// Fetch testimonial reviews from your existing API endpoint
+const fetchTestimonialReviews = async (): Promise<TestimonialReview[]> => {
   try {
-    const { data } = await api.get('/content/reviews/highlighted');
-    
-    if (data && Array.isArray(data) && data.length > 0) {
-      return data as HighlightedReview[];
-    }
-    
-    // Return mock data if no real data
-    return mockReviews;
+    const { data } = await api.get('/reviews/testimonials/featured?limit=50');
+    return data.filter((review: TestimonialReview) => 
+      review.rating >= 4 && 
+      review.comment && 
+      review.comment.trim().length > 20
+    );
   } catch (error) {
-    console.error('Failed to fetch reviews, using mock data:', error);
-    return mockReviews;
+    console.warn('Failed to fetch testimonial reviews:', error);
+    return [];
   }
 };
 
-// --- STAR RATING COMPONENT ---
-const StarRating = ({ rating, size = 16, isActive = false }: { 
-  rating: number; 
-  size?: number; 
-  isActive?: boolean; 
-}) => {
-  return (
-    <div className="flex items-center gap-1">
-      {[...Array(5)].map((_, i) => (
-        <Star 
-          key={i} 
-          size={size} 
-          className={`transition-colors duration-200 ${
-            i < (rating || 0) 
-              ? "text-yellow-400 fill-current drop-shadow-sm" 
-              : (isActive ? "text-indigo-300" : "text-gray-300")
-          }`} 
-        />
-      ))}
-    </div>
-  );
-};
-
-// --- IMAGE HANDLERS ---
-const getReviewImage = (review: HighlightedReview): string => {
-  if (review.imageUrl && review.imageUrl !== 'placeholder') {
+// Get review image with smart fallbacks (review image -> product image -> avatar)
+const getReviewImage = (review: TestimonialReview): string => {
+  // Priority 1: Review image
+  if (review.imageUrl && review.imageUrl !== 'placeholder' && !review.imageUrl.includes('dicebear')) {
     return review.imageUrl;
   }
   
-  try {
-    if (review.product?.images) {
+  // Priority 2: Product image
+  if (review.product?.images) {
+    try {
       const images = JSON.parse(review.product.images);
-      if (Array.isArray(images) && images.length > 0) {
+      if (images.length > 0 && !images[0].includes('dicebear')) {
         return images[0];
       }
+    } catch (e) {
+      console.warn('Failed to parse product images');
     }
-  } catch (e) {
-    // Ignore parsing errors
   }
   
-  return 'https://placehold.co/600x400/F7F7F7/CCC?text=No+Image';
+  // Priority 3: Generated avatar based on user name
+  const userName = review.user?.name || review.guestName || review.id;
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&clothingGraphic=resist,skullOutline,skull`;
 };
 
-const getThumbnailImage = (review: HighlightedReview): string => {
+// Get product thumbnail
+const getProductThumbnail = (product?: ContentItem): string => {
+  if (!product) return '';
+  
   try {
-    if (review.product?.images) {
-      const images = JSON.parse(review.product.images);
-      if (Array.isArray(images)) {
-        return images[1] || images[0] || 'https://placehold.co/100x100/F7F7F7/CCC?text=P';
-      }
-    }
-  } catch (e) {
-    // Ignore parsing errors
+    const images = JSON.parse(product.images || '[]');
+    return images[0] || `https://api.dicebear.com/7.x/shapes/svg?seed=${product.id}&backgroundColor=f1f5f9`;
+  } catch {
+    return `https://api.dicebear.com/7.x/shapes/svg?seed=${product.id}&backgroundColor=f1f5f9`;
   }
-  return 'https://placehold.co/100x100/F7F7F7/CCC?text=P';
 };
 
-// --- TESTIMONIAL CARD ---
-const DetailedTestimonialCard = ({ review, isActive }: { 
-  review: HighlightedReview; 
-  isActive: boolean; 
+// Format time ago
+const formatTimeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
+};
+
+// Testimonial Card Component
+const TestimonialCard = ({ 
+  review, 
+  isVisible,
+  delay = 0 
+}: { 
+  review: TestimonialReview; 
+  isVisible: boolean;
+  delay?: number;
 }) => {
-  const productLink = `/product/${review.product?.slug || 'unknown'}`;
-  const cardDisplayImage = getReviewImage(review);
-  const productThumbImage = getThumbnailImage(review);
+  const navigate = useNavigate();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
+  const reviewImage = getReviewImage(review);
+  const productThumbnail = getProductThumbnail(review.product);
+  const customerName = review.user?.name || review.guestName || 'Verified Customer';
+
+  const handleProductClick = () => {
+    if (review.product?.slug) {
+      navigate(`/products/${review.product.slug}`);
+    }
+  };
 
   return (
-    <div className={`flex flex-col h-full rounded-2xl shadow-xl transition-all duration-500 ease-in-out transform ${
-      isActive 
-        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white scale-105' 
-        : 'bg-white text-gray-800 hover:shadow-2xl'
-    }`}>
-      {/* Image Section */}
-      <div className="relative overflow-hidden rounded-t-2xl">
-        <img 
-          src={cardDisplayImage} 
-          alt={review.product?.name || 'Review image'} 
-          className="w-full h-36 object-cover transition-transform duration-300 hover:scale-110" 
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = 'https://placehold.co/600x400/F7F7F7/CCC?text=No+Image';
-          }}
-        />
-        <div className="absolute top-3 right-3">
-          <div className={`px-2 py-1 rounded-full ${isActive ? 'bg-white/20' : 'bg-black/70'}`}>
-            <StarRating rating={review.rating} size={12} isActive={isActive} />
+    <div 
+      className={`group relative bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-700 transform hover:scale-[1.02] ${
+        isVisible 
+          ? 'opacity-100 translate-y-0 rotate-0' 
+          : 'opacity-0 translate-y-12 rotate-1'
+      }`}
+      style={{
+        transitionDelay: `${delay}ms`,
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+      }}
+    >
+      {/* Glow effect */}
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
+      
+      <div className="relative">
+        {/* Header with avatar and info */}
+        <div className="flex items-start gap-4 mb-4">
+          <div className="relative">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 p-0.5">
+              <img
+                src={reviewImage}
+                alt={customerName}
+                className={`w-full h-full rounded-full object-cover bg-white transition-opacity duration-300 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
+              />
+            </div>
+            {/* Online indicator */}
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-semibold text-gray-900 text-sm truncate">
+                {customerName}
+              </h4>
+              <div className="flex">
+                {Array.from({ length: review.rating }).map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span>{formatTimeAgo(review.createdAt)}</span>
+              <span>•</span>
+              <span className="text-green-600 font-medium">Verified Purchase</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Content Section */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-3">
-          <StarRating rating={review.rating} size={18} isActive={isActive} />
-          <p className={`text-xs font-medium ${isActive ? 'text-indigo-200' : 'text-gray-500'}`}>
-            {new Date(review.createdAt).toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              year: 'numeric' 
-            })}
-          </p>
-        </div>
-        
-        <div className="flex-grow">
-          <p className="font-sans text-sm leading-relaxed italic mb-4 line-clamp-4">
-            "{review.comment}"
-          </p>
-        </div>
-        
-        <div className="mt-auto">
-          <p className={`font-bold text-sm text-right ${isActive ? 'text-indigo-100' : 'text-gray-700'}`}>
-            — {review.user?.name || 'Anonymous'}
-          </p>
-        </div>
-      </div>
+        {/* Review text */}
+        <blockquote className="text-gray-700 text-sm leading-relaxed mb-4 font-medium">
+          "{(review.comment || '').length > 120 ? (review.comment || '').substring(0, 120) + '...' : (review.comment || 'Amazing product!')}"
+        </blockquote>
 
-      {/* Product Link Section */}
-      {review.product && (
-        <Link 
-          to={productLink} 
-          className={`mt-auto p-4 border-t transition-all duration-300 ease-in-out rounded-b-2xl flex items-center gap-3 hover:scale-105 ${
-            isActive 
-              ? 'border-indigo-500 hover:bg-indigo-800/50 backdrop-blur-sm' 
-              : 'border-gray-200 hover:bg-gray-50'
-          }`}
-        >
-          <img 
-            src={productThumbImage} 
-            alt={review.product.name} 
-            className="w-10 h-10 object-cover rounded-lg border-2 border-white shadow-md"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://placehold.co/100x100/F7F7F7/CCC?text=P';
-            }}
-          />
-          <div className="flex-grow">
-            <span className={`font-semibold text-sm block ${isActive ? 'text-white' : 'text-gray-800'}`}>
-              {review.product.name || 'Product'}
-            </span>
-            <span className={`text-xs ${isActive ? 'text-indigo-200' : 'text-gray-500'}`}>
-              View Product →
-            </span>
+        {/* Product link card */}
+        {review.product && (
+          <div 
+            onClick={handleProductClick}
+            className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-xl border border-gray-100 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all duration-300 group/product"
+          >
+            <div className="relative">
+              <img
+                src={productThumbnail}
+                alt={review.product.name}
+                className="w-10 h-10 rounded-lg object-cover border border-gray-200"
+              />
+              <div className="absolute inset-0 bg-blue-400/20 rounded-lg opacity-0 group-hover/product:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-gray-900 truncate group-hover/product:text-blue-600 transition-colors">
+                {review.product.name}
+              </p>
+              <p className="text-xs text-gray-500">View Product →</p>
+            </div>
           </div>
-        </Link>
-      )}
+        )}
+      </div>
     </div>
   );
 };
 
-// --- MAIN CAROUSEL COMPONENT ---
+// Main Testimonial Carousel Component
 export default function TestimonialCarousel() {
-  const { data: reviews, isLoading } = useQuery({
-    queryKey: ['highlightedReviews'],
-    queryFn: fetchHighlightedReviews,
-    retry: 1,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+  const { data: reviews = [], isLoading, error } = useQuery({
+    queryKey: ['testimonial-reviews'],
+    queryFn: fetchTestimonialReviews,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
+    retry: 2,
+    retryDelay: 1000,
   });
-  
-  const [activeIndex, setActiveIndex] = useState(0);
 
-  const nextReview = () => {
-    if (reviews && reviews.length > 0) {
-      setActiveIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
-    }
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const cardsPerPage = 6;
+  const totalPages = Math.ceil(reviews.length / cardsPerPage);
+  
+  const currentReviews = reviews.slice(
+    currentIndex * cardsPerPage,
+    (currentIndex + 1) * cardsPerPage
+  );
+
+  const nextPage = () => {
+    setVisibleCards(new Set());
+    setCurrentIndex((prev) => (prev + 1) % totalPages);
   };
 
-  const prevReview = () => {
-    if (reviews && reviews.length > 0) {
-      setActiveIndex((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
-    }
+  const prevPage = () => {
+    setVisibleCards(new Set());
+    setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
   };
-  
+
+  // Staggered animation
   useEffect(() => {
-    if (reviews && reviews.length > 1) {
-      const slideInterval = setInterval(nextReview, 6000);
-      return () => clearInterval(slideInterval);
-    }
-  }, [activeIndex, reviews]);
+    const timeouts: NodeJS.Timeout[] = [];
+    setVisibleCards(new Set());
+    
+    currentReviews.forEach((_, index) => {
+      const timeout = setTimeout(() => {
+        setVisibleCards(prev => new Set([...prev, index]));
+      }, index * 150);
+      timeouts.push(timeout);
+    });
 
-  // Loading state
+    return () => timeouts.forEach(clearTimeout);
+  }, [currentIndex, currentReviews.length]);
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (totalPages > 1 && reviews.length > 0) {
+      intervalRef.current = setInterval(nextPage, 8000);
+      return () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    }
+  }, [totalPages, reviews.length]);
+
   if (isLoading) {
     return (
-      <section className="bg-gray-50 py-20">
-        <div className="flex flex-col items-center justify-center py-8">
-          <Spinner />
-          <span className="text-gray-600 mt-4">Loading testimonials...</span>
-        </div>
-      </section>
-    );
-  }
-
-  // No reviews state
-  if (!reviews || reviews.length === 0) {
-    return (
-      <section className="bg-gray-50 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Customer Reviews</h2>
-          <p className="text-gray-500">No reviews available yet. Be the first to share your experience!</p>
-        </div>
-      </section>
-    );
-  }
-  
-  const getCardStyle = (displayIndex: number) => {
-    const backgroundCardScale = 0.75;
-    const horizontalOffset = 65;
-
-    if (displayIndex === 0) {
-      return {
-        transform: 'translateX(0%) scale(1)',
-        zIndex: 10,
-      };
-    }
-
-    if (Math.abs(displayIndex) <= 3) {
-      return {
-        transform: `translateX(${displayIndex * horizontalOffset}%) scale(${backgroundCardScale})`,
-        zIndex: 10 - Math.abs(displayIndex),
-      };
-    }
-    
-    return {
-      transform: `translateX(${displayIndex < 0 ? '-250%' : '250%'}) scale(${backgroundCardScale})`,
-      zIndex: 0,
-    };
-  };
-
-  return (
-    <section className="bg-gradient-to-b from-gray-50 to-white py-24 overflow-hidden">
-      <div className="w-full">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            What Our Customers Say
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto px-4">
-            Honest feedback from our valued customers who have experienced the quality 
-            and authenticity of our products firsthand.
-          </p>
-          <div className="text-sm text-gray-400 mt-2">
-            Showing {reviews.length} review{reviews.length !== 1 ? 's' : ''}
+      <section className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent mb-4">
+              Customer Love Stories
+            </h2>
+          </div>
+          <div className="flex justify-center">
+            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
           </div>
         </div>
-        
-        <div className="relative h-[420px] w-full">
-          <motion.div className="relative h-full w-full flex items-center justify-center">
-            {reviews.map((review, index) => {
-              const delta = index - activeIndex;
-              const distance = (delta + reviews.length) % reviews.length;
-              const displayIndex = distance > reviews.length / 2 ? distance - reviews.length : distance;
+      </section>
+    );
+  }
 
-              if (Math.abs(displayIndex) > 3) return null;
-
-              const style = getCardStyle(displayIndex);
-
-              return (
-                <motion.div
-                  key={review.id}
-                  className="absolute cursor-pointer"
-                  style={{
-                    width: 'clamp(200px, 20vw, 280px)',
-                    zIndex: style.zIndex,
-                  }}
-                  initial={false}
-                  animate={{
-                    transform: style.transform,
-                  }}
-                  transition={{ 
-                    type: 'spring', 
-                    stiffness: 180, 
-                    damping: 20,
-                    mass: 0.8
-                  }}
-                  onClick={() => displayIndex !== 0 && setActiveIndex(index)}
-                >
-                  <DetailedTestimonialCard 
-                    review={review} 
-                    isActive={displayIndex === 0} 
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
+  if (error || reviews.length === 0) {
+    return (
+      <section className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent mb-4">
+            Customer Love Stories
+          </h2>
+          <p className="text-gray-600 mb-8">We're gathering amazing customer experiences...</p>
+          <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
         </div>
-        
-        {/* Navigation Controls */}
-        <div className="flex justify-center mt-12 gap-6">
-          <button 
-            onClick={prevReview} 
-            className="bg-white rounded-full p-4 shadow-lg hover:bg-gray-100 hover:scale-110 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 focus:ring-offset-2" 
-            aria-label="Previous Review"
-          >
-            <ChevronLeft size={28} className="text-gray-700"/>
-          </button>
-          <button 
-            onClick={nextReview} 
-            className="bg-white rounded-full p-4 shadow-lg hover:bg-gray-100 hover:scale-110 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 focus:ring-offset-2" 
-            aria-label="Next Review"
-          >
-            <ChevronRight size={28} className="text-gray-700"/>
-          </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(236,72,153,0.1),transparent_50%)] pointer-events-none"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 relative">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full mb-6">
+            <span className="text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {reviews.length} Verified Reviews
+            </span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent mb-6">
+            Customer Love Stories
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Real experiences from customers who found their perfect spiritual products
+          </p>
         </div>
 
-        {/* Dots Indicator */}
-        <div className="flex justify-center mt-8 gap-2">
-          {reviews.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveIndex(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === activeIndex 
-                  ? 'bg-indigo-600 w-8' 
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to review ${index + 1}`}
-            />
+        {/* Masonry-style grid with stagger effect */}
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 mb-12">
+          {currentReviews.map((review, index) => (
+            <div
+              key={`${review.id}-${currentIndex}`}
+              className="break-inside-avoid"
+              style={{
+                transform: `translateY(${Math.sin(index * 0.5) * 8}px)`,
+              }}
+            >
+              <TestimonialCard
+                review={review}
+                isVisible={visibleCards.has(index)}
+                delay={index * 150}
+              />
+            </div>
           ))}
         </div>
+
+        {/* Navigation */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-6">
+            <button
+              onClick={prevPage}
+              className="group p-3 rounded-full bg-white/70 backdrop-blur-sm border border-gray-200/50 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
+              aria-label="Previous reviews"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+            </button>
+
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setVisibleCards(new Set());
+                    setCurrentIndex(i);
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i === currentIndex 
+                      ? 'w-8 bg-gradient-to-r from-blue-500 to-purple-500' 
+                      : 'w-2 bg-gray-300 hover:bg-gray-400'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={nextPage}
+              className="group p-3 rounded-full bg-white/70 backdrop-blur-sm border border-gray-200/50 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
+              aria-label="Next reviews"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
