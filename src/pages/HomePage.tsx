@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { useCart } from '@/hooks/useCart';
 import ShuffleHero from '@/components/ShuffleHero';
 import FaqAccordion from '@/components/shared/FaqAccordion';
-import TestimonialCarousel from '@/components/shared/TestimonialCarousel';
+import { TestimonialCarousel } from '@/components/shared/TestimonialCarousel';
 import TrustBadgeScroller from '@/components/shared/TrustBadgeScroller';
 
 // --- TYPE DEFINITIONS FOR OUR DATA ---
