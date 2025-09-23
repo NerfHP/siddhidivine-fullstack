@@ -1,93 +1,70 @@
-import {prisma} from '../config/prisma.js';
-import { User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import httpStatus from 'http-status';
+import ApiError from '../utils/AppError.js';
+import bcrypt from 'bcryptjs';
 
-/**
- * Create a user with phone number only (after OTP verification)
- * @param {object} userBody
- * @returns {Promise<User>}
- */
-const createUser = async (userBody: { phone: string }): Promise<User> => {
+const prisma = new PrismaClient();
+
+// This service now includes password hashing logic and updated checks.
+
+const getUserByPhone = async (phone: string) => {
+  return prisma.user.findUnique({ where: { phone } });
+};
+
+const getUserById = async (id: string) => {
+    return prisma.user.findUnique({ where: { id } });
+};
+
+// Updated to optionally exclude a user ID. This is important for allowing a user
+// to update their profile without the system flagging their own email as "taken".
+const isEmailTaken = async (email: string, excludeUserId?: string) => {
+    const whereClause: any = { email };
+    if (excludeUserId) {
+        whereClause.id = { not: excludeUserId };
+    }
+    const user = await prisma.user.findFirst({ where: whereClause });
+    return !!user;
+}
+
+const createUser = async (userData: { phone: string }) => {
+  // This function remains simple as it's for the initial OTP step.
   return prisma.user.create({
     data: {
-      phone: userBody.phone,
-      isProfileComplete: false, // User needs to complete registration
+      phone: userData.phone,
+      isProfileComplete: false, // The user must complete the registration form next.
     },
   });
 };
 
-/**
- * Complete user registration with additional details
- * @param {string} userId
- * @param {object} userData
- * @returns {Promise<User>}
- */
+// This is a critical update: This function now hashes the password.
 const completeUserRegistration = async (
-  userId: string, 
+  userId: string,
   userData: {
     name: string;
     email: string;
     address: string;
+    password: string; // The raw password from the form
     alternativePhone?: string;
   }
-): Promise<User> => {
+) => {
+  // Hash the password with bcrypt before saving it to the database for security.
+  const hashedPassword = await bcrypt.hash(userData.password, 8);
+  
   return prisma.user.update({
     where: { id: userId },
     data: {
-      name: userData.name,
-      email: userData.email,
-      address: userData.address,
-      alternativePhone: userData.alternativePhone,
-      isProfileComplete: true,
+      ...userData,
+      password: hashedPassword, // Store the secure, hashed password
+      isProfileComplete: true, // Mark the profile as complete
     },
   });
 };
 
-/**
- * Get user by their unique ID
- * @param {string} id
- * @returns {Promise<User | null>}
- */
-const getUserById = async (id: string): Promise<User | null> => {
-  return prisma.user.findUnique({ where: { id } });
-};
-
-/**
- * Get user by their phone number (primary lookup method)
- * @param {string} phone
- * @returns {Promise<User | null>}
- */
-const getUserByPhone = async (phone: string): Promise<User | null> => {
-  return prisma.user.findUnique({ where: { phone } });
-};
-
-/**
- * Check if email is already taken (for registration validation)
- * @param {string} email
- * @returns {Promise<boolean>}
- */
-const isEmailTaken = async (email: string): Promise<boolean> => {
-  const user = await prisma.user.findUnique({ where: { email } });
-  return !!user;
-};
-
-/**
- * Update user profile
- * @param {string} userId
- * @param {object} updateData
- * @returns {Promise<User>}
- */
-const updateUser = async (userId: string, updateData: Partial<User>): Promise<User> => {
-  return prisma.user.update({
-    where: { id: userId },
-    data: updateData,
-  });
-};
-
 export const userService = {
+  getUserByPhone,
+  getUserById,
+  isEmailTaken,
   createUser,
   completeUserRegistration,
-  getUserById,
-  getUserByPhone,
-  isEmailTaken,
-  updateUser,
 };
+

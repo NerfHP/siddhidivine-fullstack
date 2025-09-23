@@ -1,42 +1,47 @@
 import { z } from 'zod';
 
-// Refresh tokens validation
-const refreshTokens = z.object({
+// Validation schema for the new password-based login form.
+const login = z.object({
   body: z.object({
-    refreshToken: z.string().min(1, 'Refresh token is required'),
+    phone: z.string().length(10, "Phone number must be exactly 10 digits"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
   }),
 });
 
-// Firebase login validation
-const firebaseLogin = z.object({
-  body: z.object({
-    firebaseToken: z.string().min(1, 'Firebase token is required'),
-  }),
-});
-
-// Complete registration validation
+// Updated registration validation to include the new password fields.
 const completeRegistration = z.object({
   params: z.object({
-    userId: z.string().min(1, 'User ID is required'),
+    userId: z.string().cuid('Invalid user ID format'),
   }),
   body: z.object({
-    name: z.string()
-      .min(2, 'Name must be at least 2 characters')
-      .max(50, 'Name must not exceed 50 characters'),
-    email: z.string()
-      .email('Please enter a valid email address')
-      .max(100, 'Email must not exceed 100 characters'),
-    address: z.string()
-      .min(10, 'Address must be at least 10 characters')
-      .max(200, 'Address must not exceed 200 characters'),
-    alternativePhone: z.string()
-      .regex(/^[0-9]{10}$/, 'Alternative phone must be 10 digits')
-      .optional(),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    address: z.string().min(10, "Address must be at least 10 characters"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    alternativePhone: z.string().length(10, "Alternative phone must be 10 digits").optional().or(z.literal('')),
   }),
 });
 
+
+// Validation for the token refresh endpoint (unchanged).
+const refreshTokens = z.object({
+  body: z.object({
+    refreshToken: z.string(),
+  }),
+});
+
+// Validation for the Firebase OTP login step (unchanged).
+const firebaseLogin = z.object({
+  body: z.object({
+    firebaseToken: z.string(),
+  }),
+});
+
+
 export const authValidation = {
+  login,
   refreshTokens,
   firebaseLogin,
   completeRegistration,
 };
+
