@@ -3,86 +3,76 @@ import ApiError from '../utils/AppError.js';
 import { userService } from './user.service.js';
 import { tokenService } from './token.service.js';
 import admin from 'firebase-admin';
-import bcrypt from 'bcryptjs';
+import { User } from '@prisma/client';
 
 /**
- * Login a user with their phone number and password.
- * @param {string} phone - User's phone number.
- * @param {string} password - User's password.
+ * Verifies a Firebase ID token and finds the corresponding user in the database.
+ * This is used for logging in existing users.
+ * @param {string} firebaseToken - The ID token from the Firebase client.
  * @returns {Promise<User>}
  */
-const loginWithPhoneAndPassword = async (phone: string, password: string) => {
-  const user = await userService.getUserByPhone(phone);
-  // Ensure the user exists and has a password set.
-  if (!user || !user.password) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect phone or password');
-  }
-  // Compare the provided password with the hashed password in the database.
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
-  if (!isPasswordMatch) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect phone or password');
-  }
-  return user;
-};
-
-/**
- * Verifies Firebase ID token and handles user login/registration.
- * If the user exists, it returns their data.
- * If the user is new, it creates a temporary user record.
- */
-const loginOrRegisterWithFirebase = async (firebaseToken: string): Promise<{ user: any; isNewUser: boolean; }> => {
+const loginWithFirebase = async (firebaseToken: string): Promise<User> => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
-    const phone = decodedToken.phone_number;
+    const email = decodedToken.email;
 
-    if (!phone) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number not found in Firebase token.');
+    if (!email) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email not found in Firebase token.');
     }
 
-    let user = await userService.getUserByPhone(phone);
-    let isNewUser = false;
-
+    const user = await userService.getUserByEmail(email);
     if (!user) {
-      // Create a new user with only a phone number. The profile is incomplete.
-      user = await userService.createUser({ phone });
-      isNewUser = true;
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'User not found. Please sign up first.');
     }
 
-    return { user, isNewUser };
+    return user;
   } catch (error) {
-    console.error('Firebase token verification failed:', error);
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid Firebase token. Please login again.');
+    console.error('Firebase token verification failed during login:', error);
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid Firebase token or user does not exist.');
   }
 };
 
 /**
- * Complete user registration with additional details including a password.
+ * Registers a new user in your database after they have been created in Firebase.
+ * @param {string} firebaseToken - The ID token from the Firebase client after signup.
+ * @param {object} userData - Additional user data from the registration form.
+ * @returns {Promise<User>}
  */
-const completeUserRegistration = async (
-  userId: string,
+const registerWithFirebase = async (
+  firebaseToken: string,
   userData: {
     name: string;
     email: string;
+    phone: string;
     address: string;
-    password: string;
-    alternativePhone?: string;
   }
-): Promise<any> => {
+): Promise<User> => {
   try {
-    // Check if the email is already in use by another account, excluding the current user.
-    if (await userService.isEmailTaken(userData.email, userId)) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already registered');
+    const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
+
+    // Security check: Ensure the email in the token matches the form data.
+    if (decodedToken.email !== userData.email) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email mismatch. Registration failed.');
+    }
+    
+    // Check if email or phone is already taken in your database.
+    if (await userService.isEmailTaken(userData.email)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already registered.');
+    }
+    if (await userService.getUserByPhone(userData.phone)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number is already registered.');
     }
 
-    // The userService will handle hashing the password before saving.
-    const user = await userService.completeUserRegistration(userId, userData);
-    return user;
+    // Create the user in your database. The password is handled securely by Firebase.
+    const newUser = await userService.createUser(userData);
+
+    return newUser;
   } catch (error) {
     if (error instanceof ApiError) throw error;
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to complete registration');
+    console.error('Firebase registration failed:', error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to complete registration.');
   }
 };
-
 
 /**
  * Refresh auth tokens using a valid refresh token.
@@ -92,7 +82,7 @@ const refreshAuth = async (refreshToken: string) => {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, 'refresh');
     const user = await userService.getUserById(refreshTokenDoc.sub as string);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
     return tokenService.generateAuthTokens(user);
   } catch (error) {
@@ -101,9 +91,8 @@ const refreshAuth = async (refreshToken: string) => {
 };
 
 export const authService = {
-  loginWithPhoneAndPassword,
+  loginWithFirebase,
+  registerWithFirebase,
   refreshAuth,
-  loginOrRegisterWithFirebase,
-  completeUserRegistration,
 };
 

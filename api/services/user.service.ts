@@ -1,70 +1,77 @@
 import { PrismaClient } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../utils/AppError.js';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// This service now includes password hashing logic and updated checks.
+/**
+ * Get user by email.
+ * @param {string} email
+ * @returns {Promise<User | null>}
+ */
+const getUserByEmail = async (email: string) => {
+    return prisma.user.findUnique({ where: { email } });
+};
 
+/**
+ * Get user by phone number.
+ * @param {string} phone
+ * @returns {Promise<User | null>}
+ */
 const getUserByPhone = async (phone: string) => {
-  return prisma.user.findUnique({ where: { phone } });
+  return prisma.user.findUnique({ where: { phone } });
 };
 
+/**
+ * Get user by ID.
+ * @param {string} id
+ * @returns {Promise<User | null>}
+ */
 const getUserById = async (id: string) => {
-    return prisma.user.findUnique({ where: { id } });
+    return prisma.user.findUnique({ where: { id } });
 };
 
-// Updated to optionally exclude a user ID. This is important for allowing a user
-// to update their profile without the system flagging their own email as "taken".
+/**
+ * Check if an email is already taken by another user.
+ * @param {string} email
+ * @param {string} [excludeUserId] - Optional user ID to exclude from the check.
+ * @returns {Promise<boolean>}
+ */
 const isEmailTaken = async (email: string, excludeUserId?: string) => {
-    const whereClause: any = { email };
-    if (excludeUserId) {
-        whereClause.id = { not: excludeUserId };
-    }
-    const user = await prisma.user.findFirst({ where: whereClause });
-    return !!user;
+    const whereClause: any = { email };
+    if (excludeUserId) {
+        whereClause.id = { not: excludeUserId };
+    }
+    const user = await prisma.user.findFirst({ where: whereClause });
+    return !!user;
 }
 
-const createUser = async (userData: { phone: string }) => {
-  // This function remains simple as it's for the initial OTP step.
-  return prisma.user.create({
-    data: {
-      phone: userData.phone,
-      isProfileComplete: false, // The user must complete the registration form next.
-    },
-  });
-};
-
-// This is a critical update: This function now hashes the password.
-const completeUserRegistration = async (
-  userId: string,
-  userData: {
+/**
+ * Create a new user in the database.
+ * This is called after Firebase has successfully created the user.
+ * @param {object} userData - The user's details from the registration form.
+ * @returns {Promise<User>}
+ */
+const createUser = async (userData: {
     name: string;
     email: string;
+    phone: string;
     address: string;
-    password: string; // The raw password from the form
-    alternativePhone?: string;
-  }
-) => {
-  // Hash the password with bcrypt before saving it to the database for security.
-  const hashedPassword = await bcrypt.hash(userData.password, 8);
-  
-  return prisma.user.update({
-    where: { id: userId },
-    data: {
+}) => {
+  return prisma.user.create({
+    data: {
       ...userData,
-      password: hashedPassword, // Store the secure, hashed password
-      isProfileComplete: true, // Mark the profile as complete
-    },
-  });
+      isProfileComplete: true, // Profile is complete on creation now.
+      // Note: We do NOT store the password. Firebase handles authentication.
+    },
+  });
 };
 
 export const userService = {
-  getUserByPhone,
-  getUserById,
-  isEmailTaken,
-  createUser,
-  completeUserRegistration,
+  getUserByEmail,
+  getUserByPhone,
+  getUserById,
+  isEmailTaken,
+  createUser,
 };
 

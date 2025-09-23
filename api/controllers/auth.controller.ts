@@ -4,54 +4,33 @@ import { authService, tokenService } from '../services/index.js';
 import httpStatus from 'http-status';
 
 /**
- * Handles user login with phone and password.
- */
-const login = catchAsync(async (req: Request, res: Response) => {
-    const { phone, password } = req.body;
-    const user = await authService.loginWithPhoneAndPassword(phone, password);
-    const tokens = await tokenService.generateAuthTokens(user);
-    res.send({ user, tokens });
-});
-
-/**
- * Handles the initial Firebase OTP verification.
- * It will either return an existing user or a new, temporary user profile.
+ * Handles login for existing users via Firebase token verification.
+ * This is called after a user successfully signs in with email and password on the frontend.
  */
 const firebaseLogin = catchAsync(async (req: Request, res: Response) => {
   const { firebaseToken } = req.body;
-  const { user, isNewUser } = await authService.loginOrRegisterWithFirebase(firebaseToken);
-  
-  // Only generate final login tokens if the user's profile is already complete.
-  const tokens = user.isProfileComplete ? await tokenService.generateAuthTokens(user) : null;
-  
-  res.send({ 
-    user, 
-    tokens, 
-    isNewUser,
-  });
-});
-
-/**
- * Handles the final step of a new user's registration, including setting their password.
- */
-const completeRegistration = catchAsync(async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  
-  // The request body now includes the password.
-  const user = await authService.completeUserRegistration(userId, req.body);
-  
-  // After successful registration, generate their first set of login tokens.
+  // The service will verify the token and find the user in our database.
+  const user = await authService.loginWithFirebase(firebaseToken);
+  // If the user is found, generate our own session tokens.
   const tokens = await tokenService.generateAuthTokens(user);
-  
-  res.status(httpStatus.CREATED).send({ 
-    user, 
-    tokens,
-    message: 'Registration completed successfully' 
-  });
+  res.send({ user, tokens });
 });
 
 /**
- * Handles refreshing authentication tokens.
+ * Handles registration for new users.
+ * This is called after a new user is created in Firebase and they've submitted their details.
+ */
+const register = catchAsync(async (req: Request, res: Response) => {
+  const { firebaseToken, userData } = req.body;
+  // The service will create the user in our database.
+  const user = await authService.registerWithFirebase(firebaseToken, userData);
+  // Generate their first set of session tokens to log them in immediately.
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.status(httpStatus.CREATED).send({ user, tokens });
+});
+
+/**
+ * Handles refreshing authentication tokens (unchanged).
  */
 const refreshTokens = catchAsync(async (req: Request, res: Response) => {
   const tokens = await authService.refreshAuth(req.body.refreshToken);
@@ -60,9 +39,8 @@ const refreshTokens = catchAsync(async (req: Request, res: Response) => {
 
 
 export const authController = {
-  login,
-  refreshTokens,
   firebaseLogin,
-  completeRegistration,
+  register,
+  refreshTokens,
 };
 

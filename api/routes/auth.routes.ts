@@ -5,31 +5,24 @@ import { authValidation } from '../validation/index.js';
 
 const router = express.Router();
 
-// --- NEW: Standard Login Route for existing users ---
-// This endpoint is for the "Login" tab in your popup.
+// --- NEW: Route for registering a new user ---
+// This endpoint is for the "Sign Up" form.
 router.post(
-  '/login',
-  validate(authValidation.login),
-  authController.login
+  '/register',
+  validate(authValidation.register),
+  authController.register
 );
 
-// --- Firebase OTP Route for new users ---
-// This is the first step for the "Sign Up" tab.
+// --- NEW: Route for logging in an existing user ---
+// This is for the "Login" form and uses Firebase for verification.
 router.post(
   '/firebase-login', 
   validate(authValidation.firebaseLogin),
   authController.firebaseLogin
 );
 
-// --- Complete Registration Route ---
-// This is the second step for the "Sign Up" tab, where the user sets their password.
-router.post(
-  '/complete-registration/:userId',
-  validate(authValidation.completeRegistration),
-  authController.completeRegistration
-);
-
 // --- Token Refresh Route (Unchanged) ---
+// This remains for managing user sessions.
 router.post(
   '/refresh-token',
   validate(authValidation.refreshTokens),
