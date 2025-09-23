@@ -7,6 +7,7 @@ import { ReactLenis } from '@studio-freight/react-lenis';
 import ParticleBackground from '../shared/ParticleBackground';
 import SearchModal from '../shared/SearchModal'; // Using the correct import path for the new modal
 import LoginPopup from '@/components/shared/LoginPopup';
+import WhatsAppPopup from '@/components/shared/WhatsAppPopup';
 
 export default function RootLayout() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -29,6 +30,7 @@ export default function RootLayout() {
           </main>
           <Footer />
           <LoginPopup />
+          <WhatsAppPopup phoneNumber="918433180979" />
         </div>
 
         {/* The old search modal UI has been completely replaced with our new, powerful component */}
