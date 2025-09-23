@@ -5,7 +5,7 @@ import ApiError from '../utils/AppError.js';
 const prisma = new PrismaClient();
 
 /**
- * Get user by email.
+ * Get user by email. This will be the primary method for finding users.
  * @param {string} email
  * @returns {Promise<User | null>}
  */
@@ -14,7 +14,7 @@ const getUserByEmail = async (email: string) => {
 };
 
 /**
- * Get user by phone number.
+ * Get user by phone number. Still useful for checking for duplicates.
  * @param {string} phone
  * @returns {Promise<User | null>}
  */
@@ -32,17 +32,12 @@ const getUserById = async (id: string) => {
 };
 
 /**
- * Check if an email is already taken by another user.
+ * Check if an email is already taken.
  * @param {string} email
- * @param {string} [excludeUserId] - Optional user ID to exclude from the check.
  * @returns {Promise<boolean>}
  */
-const isEmailTaken = async (email: string, excludeUserId?: string) => {
-    const whereClause: any = { email };
-    if (excludeUserId) {
-        whereClause.id = { not: excludeUserId };
-    }
-    const user = await prisma.user.findFirst({ where: whereClause });
+const isEmailTaken = async (email: string) => {
+    const user = await prisma.user.findUnique({ where: { email } });
     return !!user;
 }
 
@@ -61,8 +56,8 @@ const createUser = async (userData: {
   return prisma.user.create({
     data: {
       ...userData,
-      isProfileComplete: true, // Profile is complete on creation now.
-      // Note: We do NOT store the password. Firebase handles authentication.
+      isProfileComplete: true, // The profile is complete on creation.
+      // NOTE: We do NOT store the password. It is managed securely by Firebase.
     },
   });
 };
