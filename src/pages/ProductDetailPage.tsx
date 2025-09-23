@@ -13,17 +13,18 @@ import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
 import toast from 'react-hot-toast';
 import SEO from '@/components/shared/SEO';
-import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shield } from 'lucide-react';
+import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shield, Zap } from 'lucide-react';
 import ProductInfoAccordion from '@/components/shared/ProductInfoAccordion';
 import ProductImageGallery from '@/components/shared/ProductImageGallery';
 import Reviews from '@/components/shared/Reviews';
-import ProductFaqSection from '../components/shared/ProductFaqSection';
+import ProductFaqSection from '@/components/shared/ProductFaqSection';
 
-// Define the structure of a single variant
+// --- CHANGE: Re-added optional salePrice to the variant interface for full functionality ---
 interface ProductVariant {
   id: string;
   origin: string;
   price: number;
+  salePrice?: number | null; // <-- Ensures variants can also have sales
   stock: number;
 }
 
@@ -45,9 +46,11 @@ export default function ProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
-  
-  // State to hold the selected variant
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+
+  // --- NEW: State for the "Energized" checkbox ---
+  const [isEnergized, setIsEnergized] = useState(false);
+  const ENERGIZING_COST = 101; // Define the cost as a constant
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['productDetail', productSlug],
@@ -55,25 +58,30 @@ export default function ProductDetailPage() {
     enabled: !!productSlug,
   });
 
-  // Parse variants and set a default when data loads
   const productVariants: ProductVariant[] = data?.product.variants ? JSON.parse(data.product.variants) : [];
 
   useEffect(() => {
     if (productVariants.length > 0 && !selectedVariant) {
-      // Set the first variant as the default selection
       setSelectedVariant(productVariants[0]);
     }
   }, [productVariants, selectedVariant]);
-
 
   if (isLoading) return <div className="flex h-96 items-center justify-center"><Spinner /></div>;
   if (isError || !data) return <div className="container mx-auto p-8"><Alert type="error" message="Product not found." /></div>;
 
   const { product, breadcrumbs } = data;
 
-  // Price logic now depends on the selected variant
-  const basePrice = product.salePrice || product.price || 0;
-  const finalPrice = selectedVariant ? selectedVariant.price : basePrice;
+  // --- CHANGE: Combined price logic for variants, sales, and energizing cost ---
+  let basePrice = product.salePrice ?? product.price ?? 0;
+  // --- FIX: Add fallback to null to prevent TypeScript error ---
+  let strikethroughPrice: number | null = product.salePrice ? (product.price ?? null) : null;
+
+  if (selectedVariant) {
+    basePrice = selectedVariant.salePrice ?? selectedVariant.price;
+    strikethroughPrice = selectedVariant.salePrice ? selectedVariant.price : null;
+  }
+  
+  const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);
 
   const imageArray: string[] = JSON.parse(product.images || '[]');
   const specifications = product.specifications ? JSON.parse(product.specifications as unknown as string) : null;
@@ -82,13 +90,17 @@ export default function ProductDetailPage() {
   const packageContents = product.packageContents ? JSON.parse(product.packageContents as unknown as string) : [];
 
   const handleAddToCart = () => {
-    // Pass the selected variant to the cart context
-    addToCart(product, selectedVariant, quantity);
-    toast.success(`${quantity} x ${product.name} ${selectedVariant ? `(${selectedVariant.origin})` : ''} added to cart!`);
-    // Reset quantity after adding to cart
-    setQuantity(1); 
-  };
+    // --- CHANGE: Pass the `isEnergized` state to the cart context ---
+    addToCart(product, selectedVariant, quantity, isEnergized);
+    
+    const energizedText = isEnergized ? ' (Energized)' : '';
+    const variantText = selectedVariant ? ` (${selectedVariant.origin})` : '';
+    toast.success(`${quantity} x ${product.name}${variantText}${energizedText} added to cart!`);
 
+    setQuantity(1); 
+    setIsEnergized(false); // Optionally reset the checkbox after adding to cart
+  };
+  
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Products', href: '/products' },
@@ -116,12 +128,12 @@ export default function ProductDetailPage() {
               <p className="text-lg text-gray-600 mt-2">{product.description}</p>
               
               <div className="flex items-baseline gap-3 my-4">
-                <p className="text-3xl font-bold text-primary">{formatCurrency(finalPrice)}</p>
-                {/* Only show strikethrough for non-variant products on sale */}
-                {!selectedVariant && product.salePrice && product.price && <p className="text-xl text-gray-400 line-through">{formatCurrency(product.price)}</p>}
+                <p className="text-3xl font-bold text-primary">{formatCurrency(displayPrice)}</p>
+                {strikethroughPrice && (
+                  <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice)}</p>
+                )}
               </div>
 
-              {/* Conditionally render the Variant Selector */}
               {productVariants.length > 0 && (
                 <div className="my-6">
                   <h3 className="text-sm font-medium text-gray-800 mb-2">Origin: <span className="font-bold">{selectedVariant?.origin}</span></h3>
@@ -142,6 +154,23 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
               )}
+              
+              {/* --- NEW: Energized Product Checkbox Section --- */}
+              <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <label htmlFor="energize-checkbox" className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    id="energize-checkbox"
+                    type="checkbox"
+                    checked={isEnergized}
+                    onChange={() => setIsEnergized(!isEnergized)}
+                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <Zap size={20} className="text-orange-500" />
+                  <span className="ml-3 text-sm font-medium text-gray-800">
+                    Get Siddh/Energized Product (Pran Pratishtha) + {formatCurrency(ENERGIZING_COST)}
+                  </span>
+                </label>
+              </div>
               
               <div className="flex items-center gap-4">
                 <p className="text-sm font-medium">Quantity:</p>
