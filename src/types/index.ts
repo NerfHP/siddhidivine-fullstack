@@ -84,6 +84,8 @@ export interface ContentItem {
   benefits?: { icon: string, text: string }[]; // A list of benefits
   howToUse?: { step: number, instruction: string }[];
   packageContents?: string[];
+  stock: number; // <-- ADDED: For product stock
+  isPublished: boolean; // <-- ADDED: For product visibility
 }
 
 export interface Review {

@@ -35,3 +35,14 @@ export const auth = async (req: Request, _res: Response, next: NextFunction) => 
     return next(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
   }
 };
+
+// --- NEWLY ADDED ---
+// This middleware runs *after* the `auth` middleware.
+// It checks if the authenticated user has one of the required roles.
+export const authorize = (requiredRoles: string[]) => (req: Request, _res: Response, next: NextFunction) => {
+    // We can safely assume req.user exists because the `auth` middleware runs first.
+    if (!req.user || !requiredRoles.includes((req.user as any).role)) {
+        return next(new ApiError(httpStatus.FORBIDDEN, 'Forbidden: You do not have the required permissions for this action.'));
+    }
+    next();
+};

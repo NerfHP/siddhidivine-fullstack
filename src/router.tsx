@@ -6,6 +6,11 @@ import Spinner from './components/shared/Spinner';
 import NotFoundPage from './pages/NotFoundPage';
 import ErrorPage from './pages/ErrorPage';
 
+// --- ADMIN IMPORTS ---
+import AdminRoute from '@/components/shared/AdminRoute';
+import AdminLayout from '@/components/layout/AdminLayout';
+import ProductsAdminPage from '@/pages/admin/ProductsAdminPage';
+
 // Lazy load pages for better performance
 const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const ProductsPage = React.lazy(() => import('./pages/ProductsPage'));
@@ -137,6 +142,21 @@ export const router = createBrowserRouter([
 
       // --- Catch-All 404 Route ---
       { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+  // --- ADMIN ROUTE SETUP ---
+  {
+    path: '/admin',
+    element: <AdminRoute />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <ProductsAdminPage /> },
+          { path: 'products', element: <ProductsAdminPage /> },
+        ],
+      },
     ],
   },
 ]);

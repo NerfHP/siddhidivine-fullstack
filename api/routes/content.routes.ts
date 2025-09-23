@@ -1,27 +1,49 @@
 import express from 'express';
 import { contentController } from '../controllers/index.js';
+import { auth, authorize } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// --- REVIEW ROUTES (ADD THESE) ---
-router.get('/reviews/highlighted', contentController.getHighlightedReviews);
-router.get('/reviews', contentController.getAllReviews);
-
-// --- YOUR EXISTING ROUTES ---
-router.get('/bestsellers', contentController.getBestsellers);
+// --- PUBLIC ROUTES ---
+// These are accessible to everyone.
+router.get('/categories', contentController.getCategories);
+router.get('/products', contentController.getAllProducts);
+router.get('/products/featured', contentController.getFeaturedItems);
+router.get('/products/bestsellers', contentController.getBestsellers);
+router.get('/services', contentController.getAllServices);
 router.get('/faqs', contentController.getFaqs);
 
-// This endpoint is for CATEGORY pages.
+// This route uses a wildcard to capture nested category paths.
 router.get('/category-data/*', contentController.getCategoryPageData);
-
-// This NEW endpoint is for PRODUCT pages.
+// This route is for a single product's detail page data.
 router.get('/product-data/:slug', contentController.getProductPageData);
+// This is a legacy/alternative route for getting an item by slug.
+router.get('/:slug', contentController.getItemBySlug);
 
-// --- Your other routes ---
-router.get('/featured', contentController.getFeaturedItems);
-router.get('/products', contentController.getAllProducts);
-router.get('/services', contentController.getAllServices);
-router.get('/product/:slug', contentController.getItemBySlug); 
-router.get('/categories', contentController.getCategories);
+
+// --- ADMIN ROUTES ---
+// These routes are protected and can only be accessed by logged-in admins.
+router.post(
+    '/products', 
+    auth, 
+    authorize(['admin']), 
+    contentController.createProduct
+);
+
+router.patch(
+    '/products/:productId', 
+    auth, 
+    authorize(['admin']), 
+    contentController.updateProduct
+);
+
+router.delete(
+    '/products/:productId', 
+    auth, 
+    authorize(['admin']), 
+    contentController.deleteProduct
+);
+
 
 export default router;
+
