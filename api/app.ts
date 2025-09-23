@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import httpStatus from 'http-status';
 import config from './config/index.js';
 import { errorConverter, errorHandler } from './middleware/error.middleware.js';
-import ApiError from './utils/AppError.js'; // Added .js for consistency
+import ApiError from './utils/AppError.js';
 import apiRoutes from './routes/index.js';
 import reviewRoutes from './routes/review.routes.js'
 import admin from 'firebase-admin';
@@ -12,64 +12,49 @@ import admin from 'firebase-admin';
 const app: Express = express();
 
 // --- Middleware Setup ---
-
-// Set security HTTP headers
 app.use(helmet());
-
-// Parse json request body
 app.use(express.json());
-
-// Parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
 
-// Morgan for logging HTTP requests in dev environment
 if (config.env === 'development') {
-  app.use(morgan('dev'));
+  app.use(morgan('dev'));
 }
 
-// Initialize Firebase Admin SDK
+// --- UPDATED: Initialize Firebase Admin SDK from Environment Variables ---
 if (!admin.apps.length) {
-  try {
-    const serviceAccount = require('./config/ServiceAccountKey.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-    console.log('Firebase Admin SDK initialized successfully');
-  } catch (error) {
-    console.error('Error initializing Firebase Admin SDK:', error);
-  }
+  try {
+    // Instead of reading a file, we now create the credential object
+    // directly from the config file, which reads from your Vercel environment variables.
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: config.firebase.projectId,
+        clientEmail: config.firebase.clientEmail,
+        privateKey: config.firebase.privateKey,
+      }),
+    });
+    console.log('Firebase Admin SDK initialized successfully from environment variables');
+  } catch (error) {
+    console.error('Error initializing Firebase Admin SDK:', error);
+  }
 }
 
 // --- Health Check & API Routes ---
-
-// Health check route for the base URL.
-// THIS MUST BE BEFORE THE '/api' routes and the 404 handler.
 app.get('/', (_req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Welcome to the Siddhidivine API!',
-    status: 'ok',
-  });
+  res.status(200).json({
+    message: 'Welcome to the Siddhidivine API!',
+    status: 'ok',
+  });
 });
 
-// Mount review routes BEFORE the /api routes
 app.use('/api/reviews', reviewRoutes);
-
-// All your API routes are prefixed with '/api'
 app.use('/api', apiRoutes);
 
 
 // --- Error Handling ---
-
-// Send back a 404 error for any unknown API request that isn't caught by a router
 app.use((_req: Request, _res: Response, next: NextFunction) => {
-  next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
+  next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
-
-// Convert errors to a consistent ApiError format
 app.use(errorConverter);
-
-// The final error handler that sends the response to the client
 app.use(errorHandler);
 
 export default app;
-
