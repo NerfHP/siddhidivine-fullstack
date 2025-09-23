@@ -1,6 +1,6 @@
 // In client/src/pages/ProductDetailPage.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
@@ -19,20 +19,24 @@ import ProductImageGallery from '@/components/shared/ProductImageGallery';
 import Reviews from '@/components/shared/Reviews';
 import ProductFaqSection from '../components/shared/ProductFaqSection';
 
-// This page expects a clear response with product data and its full breadcrumb trail.
+// Define the structure of a single variant
+interface ProductVariant {
+  id: string;
+  origin: string;
+  price: number;
+  stock: number;
+}
+
 interface ProductResponse {
   product: ContentItem;
   breadcrumbs: Category[];
 }
 
-// We use the dedicated API endpoint for fetching all product page data.
 const fetchProductData = async (slug: string) => {
-  // IMPORTANT: baseURL already includes /api, so we only call /content/...
   const { data } = await api.get(`/content/product-data/${slug}`);
   return data as ProductResponse;
 }
 
-// A map to render icons dynamically, just like in your version.
 const iconMap: { [key: string]: React.ElementType } = {
   CheckCircle, Package, Target, Sparkles, Shield, Heart
 };
@@ -41,39 +45,50 @@ export default function ProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  
+  // State to hold the selected variant
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
-  console.log(`ProductDetailPage is fetching data for slug:`, productSlug);
-
-  // This hook now fetches both the product and its breadcrumbs in one call.
   const { data, isLoading, isError } = useQuery({
     queryKey: ['productDetail', productSlug],
     queryFn: () => fetchProductData(productSlug!),
     enabled: !!productSlug,
   });
 
+  // Parse variants and set a default when data loads
+  const productVariants: ProductVariant[] = data?.product.variants ? JSON.parse(data.product.variants) : [];
+
+  useEffect(() => {
+    if (productVariants.length > 0 && !selectedVariant) {
+      // Set the first variant as the default selection
+      setSelectedVariant(productVariants[0]);
+    }
+  }, [productVariants, selectedVariant]);
+
+
   if (isLoading) return <div className="flex h-96 items-center justify-center"><Spinner /></div>;
   if (isError || !data) return <div className="container mx-auto p-8"><Alert type="error" message="Product not found." /></div>;
 
-  // Destructure the data from the API response
   const { product, breadcrumbs } = data;
 
-  // --- All of your detailed logic and state is preserved ---
+  // Price logic now depends on the selected variant
+  const basePrice = product.salePrice || product.price || 0;
+  const finalPrice = selectedVariant ? selectedVariant.price : basePrice;
+
   const imageArray: string[] = JSON.parse(product.images || '[]');
-  const finalPrice = product.salePrice || product.price || 0;
-  
   const specifications = product.specifications ? JSON.parse(product.specifications as unknown as string) : null;
   const benefits = product.benefits ? JSON.parse(product.benefits as unknown as string) : [];
   const howToUse = product.howToUse ? JSON.parse(product.howToUse as unknown as string) : [];
   const packageContents = product.packageContents ? JSON.parse(product.packageContents as unknown as string) : [];
 
   const handleAddToCart = () => {
-    const itemToAdd = { ...product, price: finalPrice };
-    for (let i = 0; i < quantity; i++) addToCart(itemToAdd);
-    toast.success(`${quantity} x ${product.name} added to cart!`);
+    // Pass the selected variant to the cart context
+    addToCart(product, selectedVariant, quantity);
+    toast.success(`${quantity} x ${product.name} ${selectedVariant ? `(${selectedVariant.origin})` : ''} added to cart!`);
+    // Reset quantity after adding to cart
+    setQuantity(1); 
   };
 
-  // --- BREADCRUMB LOGIC (IMPROVED) ---
-  // This builds the full, correct, nested breadcrumb trail.
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Products', href: '/products' },
@@ -89,33 +104,51 @@ export default function ProductDetailPage() {
       <SEO title={product.name} description={product.description} imageUrl={imageArray[0]} />
       <div className="bg-transparent">
         <div className="container mx-auto px-4 py-8">
-          {/* Your breadcrumbs will now be perfectly nested */}
           <Breadcrumbs items={breadcrumbItems} />
 
-          {/* --- ALL OF YOUR DETAILED JSX IS PRESERVED BELOW --- */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            {/* Left Column: Image */}
             <div>
               <ProductImageGallery images={imageArray} productName={product.name} />
             </div>
 
-            {/* Right Column: Details */}
             <div>
               <h1 className="font-sans text-4xl font-bold text-text-main">{product.name}</h1>
               <p className="text-lg text-gray-600 mt-2">{product.description}</p>
               
               <div className="flex items-baseline gap-3 my-4">
                 <p className="text-3xl font-bold text-primary">{formatCurrency(finalPrice)}</p>
-                {product.salePrice && product.price && <p className="text-xl text-gray-400 line-through">{formatCurrency(product.price)}</p>}
+                {/* Only show strikethrough for non-variant products on sale */}
+                {!selectedVariant && product.salePrice && product.price && <p className="text-xl text-gray-400 line-through">{formatCurrency(product.price)}</p>}
               </div>
+
+              {/* Conditionally render the Variant Selector */}
+              {productVariants.length > 0 && (
+                <div className="my-6">
+                  <h3 className="text-sm font-medium text-gray-800 mb-2">Origin: <span className="font-bold">{selectedVariant?.origin}</span></h3>
+                  <div className="flex gap-2">
+                    {productVariants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`px-4 py-2 border rounded-lg text-sm transition-all duration-200 ${
+                          selectedVariant?.id === variant.id
+                            ? 'bg-primary text-white border-primary ring-2 ring-offset-2 ring-primary'
+                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        {variant.origin}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="flex items-center gap-4">
                 <p className="text-sm font-medium">Quantity:</p>
                 <div className="flex items-center border rounded-md bg-white">
-                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-50"><Minus size={14} /></button>
-                    <span className="px-4 text-sm font-bold w-12 text-center">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus size={14} /></button>
+                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-50"><Minus size={14} /></button>
+                  <span className="px-4 text-sm font-bold w-12 text-center">{quantity}</span>
+                  <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus size={14} /></button>
                 </div>
               </div>
               <div className="mt-6 space-y-4">
@@ -135,7 +168,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
           
-          {/* Detailed Info Sections */}
           <div className="mt-16">
             {product.content && (
               <div className="prose max-w-none text-gray-700 mb-8">
@@ -196,13 +228,8 @@ export default function ProductDetailPage() {
                 </ul>
               </div>
             )}
-            <div className="mt-12 pt-8 border-t">
-              <Reviews productId={product.id} />
-            </div>
-
-            {/* --- ADD THE NEW FAQ SECTION HERE --- */}
+            <div className="mt-12 pt-8 border-t"><Reviews productId={product.id} /></div>
             <ProductFaqSection productId={product.id} />
-
           </div>
         </div>
       </div>

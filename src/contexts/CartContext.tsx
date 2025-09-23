@@ -1,15 +1,24 @@
 import { CartItem, ContentItem } from '@/types';
 import { createContext, ReactNode, useState, useEffect, useMemo } from 'react';
 
+// This interface should ideally be moved to your `src/types/index.ts` file
+// It's defined here for clarity based on the changes in ProductDetailPage.tsx
+interface ProductVariant {
+  id: string;
+  origin: string;
+  price: number;
+  stock: number;
+}
+
+// --- CHANGE: The signature for `addToCart` is updated to accept variants and quantity ---
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: ContentItem) => void;
+  addToCart: (item: ContentItem, variant?: ProductVariant | null, quantity?: number) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
-  // **UPGRADE**: Renamed cartTotal to subtotal for clarity
-  subtotal: number; 
+  subtotal: number;
 }
 
 export const CartContext = createContext<CartContextType | null>(null);
@@ -34,18 +43,42 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (item: ContentItem) => {
+  // --- CHANGE: The core logic of `addToCart` is updated for variants ---
+  const addToCart = (item: ContentItem, variant: ProductVariant | null = null, quantity: number = 1) => {
     setCartItems((prevItems) => {
       const currentItems = Array.isArray(prevItems) ? prevItems : [];
-      const existingItem = currentItems.find((cartItem) => cartItem.id === item.id);
+      
+      // Create a unique ID for the cart item. 
+      // If it has a variant, append the variant ID to make it unique.
+      // e.g., "product_abc-nepali" vs "product_abc-indonesian"
+      const cartItemId = variant ? `${item.id}-${variant.id}` : item.id;
+
+      const existingItem = currentItems.find((cartItem) => cartItem.id === cartItemId);
+      
       if (existingItem) {
+        // If this exact item (including its variant) is already in the cart, just increase its quantity.
         return currentItems.map((cartItem) =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+          cartItem.id === cartItemId
+            ? { ...cartItem, quantity: cartItem.quantity + quantity }
             : cartItem,
         );
+      } else {
+        // If it's a new item, create it with the correct details based on whether it has a variant.
+        const newItem: CartItem = {
+          ...item,
+          id: cartItemId, // Use our unique composite ID
+          // The price is the variant's price if it exists, otherwise it's the product's regular/sale price.
+          price: variant ? variant.price : (item.salePrice ?? item.price ?? 0),
+          // Add the variant origin to the name for better display in the cart.
+          name: variant ? `${item.name} (${variant.origin})` : item.name,
+          quantity: quantity,
+        };
+        // This is important: remove the salePrice from the new item because the definitive `price` is already set.
+        // This prevents confusion in the cart's subtotal calculation.
+        delete newItem.salePrice; 
+
+        return [...currentItems, newItem];
       }
-      return [...currentItems, { ...item, quantity: 1 }];
     });
   };
 
@@ -69,13 +102,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
   
-  // **UPGRADE**: useMemo efficiently recalculates values only when cartItems changes
   const { cartCount, subtotal } = useMemo(() => {
     const count = safeCartItems.reduce((acc, item) => acc + item.quantity, 0);
     
-    // **THE FIX**: This now correctly uses salePrice if it exists, otherwise it uses the regular price.
+    // The subtotal calculation is now simpler because we set the correct, definitive price
+    // on the cart item itself when it was added.
     const total = safeCartItems.reduce((acc, item) => {
-        const price = item.salePrice ?? item.price ?? 0;
+        const price = item.price ?? 0;
         return acc + (price * item.quantity);
     }, 0);
 
