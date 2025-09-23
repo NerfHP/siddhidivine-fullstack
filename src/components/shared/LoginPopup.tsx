@@ -14,37 +14,17 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { auth as firebaseAuth } from '../../lib/firebase';
-import { User } from '../../types'; // Import the main User type
+import { User } from '../../types';
 
-// --- Zod Validation Schemas ---
-const phoneSchema = z.object({
-  phone: z.string().length(10, 'Enter a valid 10-digit number').regex(/^[0-9]+$/, 'Invalid number'),
-});
-const otpSchema = z.object({
-  otp: z.string().length(6, 'OTP must be 6 digits').regex(/^[0-9]+$/, 'Invalid OTP'),
-});
-const loginSchema = z.object({
-  phone: z.string().length(10, 'Enter a valid 10-digit number').regex(/^[0-9]+$/, 'Invalid number'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
+// Schemas remain the same...
+const phoneSchema = z.object({ phone: z.string().length(10, 'Enter a valid 10-digit number').regex(/^[0-9]+$/, 'Invalid number'), });
+const otpSchema = z.object({ otp: z.string().length(6, 'OTP must be 6 digits').regex(/^[0-9]+$/, 'Invalid OTP'), });
+const loginSchema = z.object({ phone: z.string().length(10, 'Enter a valid 10-digit number').regex(/^[0-9]+$/, 'Invalid number'), password: z.string().min(6, 'Password must be at least 6 characters'), });
 type PhoneFormData = z.infer<typeof phoneSchema>;
 type OtpFormData = z.infer<typeof otpSchema>;
 type LoginFormData = z.infer<typeof loginSchema>;
-
-// --- API Function Types ---
-interface LoginResponse {
-  user: User; // Expect a full User object to match the login function's requirements
-  tokens: any;
-  isNewUser?: boolean;
-}
-
-// Global declaration for reCAPTCHA
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-  }
-}
+interface LoginResponse { user: User; tokens: any; isNewUser?: boolean; }
+declare global { interface Window { recaptchaVerifier?: RecaptchaVerifier; } }
 
 export default function LoginPopup() {
   const { isLoginPopupOpen, closeLoginPopup, login } = useAuth();
@@ -53,70 +33,55 @@ export default function LoginPopup() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [newUserId, setNewUserId] = useState<string | null>(null);
-  const [isSendingOtp, setIsSendingOtp] = useState(false); // State to manage OTP sending loader
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  // --- React Hook Form instances ---
   const { register: phoneRegister, handleSubmit: handlePhoneSubmit, formState: { errors: phoneErrors }, reset: resetPhoneForm } = useForm<PhoneFormData>({ resolver: zodResolver(phoneSchema) });
   const { register: otpRegister, handleSubmit: handleOtpSubmit, formState: { errors: otpErrors }, reset: resetOtpForm } = useForm<OtpFormData>({ resolver: zodResolver(otpSchema) });
   const { register: loginRegister, handleSubmit: handleLoginSubmit, formState: { errors: loginErrors }, reset: resetLoginForm } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
-  // --- API MUTATIONS ---
-  const loginMutation = useMutation({
-    mutationFn: (data: LoginFormData) => api.post('/auth/login', data),
-    onSuccess: (response) => {
-      login(response.data);
-      toast.success('Welcome back!');
-      handleClose();
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Invalid credentials. Please try again.');
-    },
-  });
+  const loginMutation = useMutation({ mutationFn: (data: LoginFormData) => api.post('/auth/login', data), onSuccess: (response) => { login(response.data); toast.success('Welcome back!'); handleClose(); }, onError: (error: any) => { toast.error(error.response?.data?.message || 'Invalid credentials. Please try again.'); }, });
+  const firebaseVerifyMutation = useMutation({ mutationFn: (token: string) => api.post('/auth/firebase-login', { firebaseToken: token }), onSuccess: (response) => { const data = response.data as LoginResponse; if (data.isNewUser) { setNewUserId(data.user.id); setPhoneNumber(data.user.phone); setSignupStep('register'); } else { login(data); toast.success('Welcome back!'); handleClose(); } }, onError: (error: any) => { toast.error(error.response?.data?.message || 'Verification failed.'); }, });
 
-  const firebaseVerifyMutation = useMutation({
-    mutationFn: (token: string) => api.post('/auth/firebase-login', { firebaseToken: token }),
-    onSuccess: (response) => {
-      const data = response.data as LoginResponse;
-      if (data.isNewUser) {
-        setNewUserId(data.user.id);
-        setPhoneNumber(data.user.phone);
-        setSignupStep('register');
-      } else {
-        login(data);
-        toast.success('Welcome back!');
-        handleClose();
-      }
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Verification failed.');
-    },
-  });
-
-  // --- Firebase Logic ---
-  useEffect(() => {
-    return () => {
-      window.recaptchaVerifier?.clear();
-    };
-  }, []);
+  useEffect(() => { return () => { window.recaptchaVerifier?.clear(); }; }, []);
 
   const setupRecaptcha = () => {
-    if (window.recaptchaVerifier) window.recaptchaVerifier.clear();
+    console.log("Attempting to set up reCAPTCHA...");
+    if (window.recaptchaVerifier) {
+      console.log("Clearing existing reCAPTCHA verifier.");
+      window.recaptchaVerifier.clear();
+    }
     try {
-      window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
+      // REFINED: Check if the container exists before initializing
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (!recaptchaContainer) {
+          console.error("reCAPTCHA container not found in the DOM.");
+          toast.error("Security component failed to load. Please refresh.");
+          return false;
+      }
+
+      window.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, recaptchaContainer, {
         'size': 'invisible', 'expired-callback': () => toast.error('Security check expired. Please try again.'),
       });
+      console.log("reCAPTCHA verifier created successfully.");
+      return true;
     } catch (error) {
-        console.error("reCAPTCHA setup error", error);
+        console.error("reCAPTCHA setup error:", error);
         toast.error("Could not start security check. Please refresh the page.")
+        return false;
     }
   };
 
   const onPhoneSubmit = async (data: PhoneFormData) => {
-    setIsSendingOtp(true); // Start loading
+    setIsSendingOtp(true);
+    if (!setupRecaptcha()) {
+        setIsSendingOtp(false);
+        return;
+    }
+
     try {
-      setupRecaptcha();
       const fullPhoneNumber = `+91${data.phone}`;
       const appVerifier = window.recaptchaVerifier!;
+      console.log("Rendering reCAPTCHA and sending OTP...");
       const result = await signInWithPhoneNumber(firebaseAuth, fullPhoneNumber, appVerifier);
       setConfirmationResult(result);
       setPhoneNumber(data.phone);
@@ -126,38 +91,14 @@ export default function LoginPopup() {
       console.error("Firebase OTP Error:", error);
       toast.error('Failed to send OTP. Please check the number and try again.');
     } finally {
-        setIsSendingOtp(false); // Stop loading
+        setIsSendingOtp(false);
     }
   };
 
-  const onOtpSubmit = async (data: OtpFormData) => {
-    if (!confirmationResult) return toast.error('Please request an OTP first.');
-    try {
-      const result = await confirmationResult.confirm(data.otp);
-      const token = await result.user.getIdToken();
-      firebaseVerifyMutation.mutate(token);
-    } catch (error) {
-      toast.error('Invalid OTP. Please try again.');
-    }
-  };
-
-  const onPasswordLogin = (data: LoginFormData) => {
-    loginMutation.mutate(data);
-  };
-
-  const handleRegistrationSuccess = (data: { user: any; tokens: any }) => {
-    login(data);
-    toast.success('Registration successful! Welcome.');
-    handleClose();
-  };
-
-  // --- UI Handlers ---
-  const handleClose = () => {
-    resetPhoneForm(); resetOtpForm(); resetLoginForm();
-    setActiveTab('signup'); setSignupStep('enterPhone');
-    window.recaptchaVerifier?.clear();
-    closeLoginPopup();
-  };
+  const onOtpSubmit = async (data: OtpFormData) => { if (!confirmationResult) return toast.error('Please request an OTP first.'); try { const result = await confirmationResult.confirm(data.otp); const token = await result.user.getIdToken(); firebaseVerifyMutation.mutate(token); } catch (error) { toast.error('Invalid OTP. Please try again.'); } };
+  const onPasswordLogin = (data: LoginFormData) => { loginMutation.mutate(data); };
+  const handleRegistrationSuccess = (data: { user: any; tokens: any }) => { login(data); toast.success('Registration successful! Welcome.'); handleClose(); };
+  const handleClose = () => { resetPhoneForm(); resetOtpForm(); resetLoginForm(); setActiveTab('signup'); setSignupStep('enterPhone'); window.recaptchaVerifier?.clear(); closeLoginPopup(); };
 
   return (
     <AnimatePresence>
@@ -165,7 +106,7 @@ export default function LoginPopup() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={handleClose}>
           <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="relative w-full max-w-4xl bg-[#4A2425] rounded-xl shadow-2xl overflow-hidden grid md:grid-cols-2" onClick={(e) => e.stopPropagation()}>
             <button onClick={handleClose} className="absolute top-2 right-2 text-white/50 hover:text-white z-20"><X size={24} /></button>
-            <div id="recaptcha-container" className="hidden"></div>
+            <div id="recaptcha-container"></div> {/* The container now has no 'hidden' class to ensure it's always available */}
             <div className="hidden md:flex flex-col justify-center p-8 text-white">
               <h2 className="font-sans text-3xl font-bold">Unlock Your Harmony</h2>
               <div className="mt-8 space-y-4">
