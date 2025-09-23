@@ -73,20 +73,67 @@ export default function LoginPopup() {
   });
 
   // --- Firebase Logic ---
+  // Replace the onSignup function in your LoginPopup.tsx
+
   const onSignup = async (data: SignupFormData) => {
     const { confirmPassword, ...userData } = data;
+    let firebaseUser: any = null;
+    
     try {
-        const userCredential = await createUserWithEmailAndPassword(firebaseAuth, userData.email, userData.password);
-        const firebaseUser = userCredential.user;
-        await sendEmailVerification(firebaseUser);
-        const firebaseToken = await firebaseUser.getIdToken();
-        backendRegisterMutation.mutate({ firebaseToken, userData });
+      // Step 1: Create user in Firebase
+      console.log('Creating Firebase user...');
+      const userCredential = await createUserWithEmailAndPassword(
+        firebaseAuth, 
+        userData.email, 
+        userData.password
+      );
+      firebaseUser = userCredential.user;
+      console.log('Firebase user created:', firebaseUser.uid);
+
+      // Step 2: Send email verification
+      await sendEmailVerification(firebaseUser);
+      console.log('Verification email sent');
+
+      // Step 3: Get Firebase token
+      const firebaseToken = await firebaseUser.getIdToken();
+      console.log('Firebase token obtained');
+
+      // Step 4: Register user in your backend (Supabase)
+      console.log('Registering user in backend...');
+      await backendRegisterMutation.mutateAsync({ firebaseToken, userData });
+      
+      // If we reach here, everything succeeded
+      console.log('Registration completed successfully');
+      
     } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-            toast.error('This email is already registered. Please login instead.');
-        } else {
-            toast.error('Could not create account. Please try again.');
+      console.error('Signup error:', error);
+      
+      // Handle different types of errors
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('This email is already registered. Please login instead.');
+      } else if (error.code === 'auth/weak-password') {
+        toast.error('Password is too weak. Please choose a stronger password.');
+      } else if (error.code === 'auth/invalid-email') {
+        toast.error('Please enter a valid email address.');
+      } else if (error.response?.data?.message) {
+        // Backend error (Supabase creation failed)
+        toast.error(error.response.data.message);
+        
+        // If backend fails but Firebase user was created, 
+        // the backend should handle cleanup, but we can also try here
+        if (firebaseUser) {
+          try {
+            console.log('Attempting to delete Firebase user due to backend failure');
+            await firebaseUser.delete();
+            console.log('Firebase user deleted successfully');
+          } catch (deleteError) {
+            console.error('Failed to delete Firebase user:', deleteError);
+          }
         }
+      } else {
+        // Generic error
+        toast.error('Could not create account. Please try again.');
+      }
     }
   };
   
