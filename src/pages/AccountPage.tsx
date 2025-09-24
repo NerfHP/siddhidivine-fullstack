@@ -1,37 +1,44 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import SEO from "@/components/shared/SEO";
 import Button from "@/components/shared/Button";
 import toast from "react-hot-toast";
-import { User, Package, BookUser, ShieldCheck, LogOut } from "lucide-react";
+import { User as UserIcon, Package, BookUser, ShieldCheck, LogOut } from "lucide-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
+import Spinner from "@/components/shared/Spinner";
 
 // Define the type for the active view
 type AccountView = 'profile' | 'orders' | 'addresses' | 'security';
 
 export default function AccountPage() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   
-  // State to manage which section of the account is being viewed
   const [activeView, setActiveView] = useState<AccountView>('orders');
 
-  if (!isAuthenticated) {
-    // Redirect to login if the user is not authenticated
-    return <Navigate to="/login" replace />;
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  const handleLogout = () => {
-    logout();
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleLogout = async () => {
+    await signOut();
     toast.success("Logged out successfully.");
     navigate("/");
   };
   
-  // Helper function to render the correct view based on state
   const renderActiveView = () => {
     switch (activeView) {
       case 'profile':
-        return <ProfileDetailsView />;
+        return <ProfileDetailsView user={user} />;
       case 'orders':
         return <OrderHistoryView />;
       case 'addresses':
@@ -53,17 +60,19 @@ export default function AccountPage() {
           <aside className="md:w-1/4">
             <div className="p-4 bg-white rounded-lg shadow-md">
               <div className="flex items-center gap-3 mb-4 border-b pb-4">
-                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                   {user?.name?.charAt(0).toUpperCase()}
-                 </div>
-                 <div>
-                    <h2 className="font-bold text-text-main">{user?.name}</h2>
-                    <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-                 </div>
+                   <img 
+                    src={user.imageUrl} 
+                    alt={user.fullName || 'User avatar'} 
+                    className="w-12 h-12 rounded-full"
+                   />
+                   <div>
+                     <h2 className="font-bold text-text-main">{user.fullName}</h2>
+                     <p className="text-sm text-gray-500 truncate">{user.primaryEmailAddress?.emailAddress}</p>
+                   </div>
               </div>
               <nav className="flex flex-col space-y-2">
+                <NavItem icon={UserIcon} label="Profile Details" view="profile" activeView={activeView} setActiveView={setActiveView} />
                 <NavItem icon={Package} label="My Orders" view="orders" activeView={activeView} setActiveView={setActiveView} />
-                <NavItem icon={User} label="Profile Details" view="profile" activeView={activeView} setActiveView={setActiveView} />
                 <NavItem icon={BookUser} label="Manage Addresses" view="addresses" activeView={activeView} setActiveView={setActiveView} />
                 <NavItem icon={ShieldCheck} label="Account Security" view="security" activeView={activeView} setActiveView={setActiveView} />
                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-100 hover:text-primary transition-colors">
@@ -117,9 +126,7 @@ const OrderHistoryView = () => (
 );
 
 // --- Component for Profile Details View ---
-const ProfileDetailsView = () => {
-    const { user } = useAuth();
-    // In a real app, you'd use state for these fields
+const ProfileDetailsView = ({ user }: { user: any }) => {
     return (
         <div>
             <h1 className="font-sans text-3xl font-bold text-secondary mb-6">Profile Details</h1>
@@ -127,15 +134,15 @@ const ProfileDetailsView = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
-                        <input type="text" id="fullName" defaultValue={user?.name || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                        <input type="text" id="fullName" defaultValue={user?.fullName || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                     </div>
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
-                        <input type="email" id="email" value={user?.email || ''} readOnly className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm" />
+                        <input type="email" id="email" value={user?.primaryEmailAddress?.emailAddress || ''} readOnly className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm" />
                     </div>
                      <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input type="tel" id="phone" defaultValue={user?.phone || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
+                        <input type="tel" id="phone" defaultValue={user?.primaryPhoneNumber?.phoneNumber || ''} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                     </div>
                 </div>
                 <div className="pt-4">
@@ -164,8 +171,11 @@ const AccountSecurityView = () => (
     <div>
         <h1 className="font-sans text-3xl font-bold text-secondary mb-6">Account Security</h1>
         <div className="space-y-4">
-            <p className="text-gray-600">For your security, we recommend changing your password periodically. A password reset link will be sent to your registered email address.</p>
-            <Button variant="secondary">Change Password</Button>
+            <p className="text-gray-600">You can manage your password, multi-factor authentication, and connected accounts through your Clerk user profile.</p>
+            <Button asChild variant="secondary">
+                <a href="/user" target="_blank" rel="noopener noreferrer">Manage Account</a>
+            </Button>
         </div>
     </div>
 );
+
