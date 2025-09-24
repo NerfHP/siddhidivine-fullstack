@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { cn, formatCurrency } from '../../lib/utils';
-import { ContentItem, Category } from '../../types';
+import { cn, formatCurrency } from '@/lib/utils';
+import { ContentItem, Category } from '@/types';
 import Button from './Button';
-import { useCart } from '../../hooks/useCart';
+import { useCart } from '@/hooks/useCart';
 import toast from 'react-hot-toast';
 
 interface CardProps {
