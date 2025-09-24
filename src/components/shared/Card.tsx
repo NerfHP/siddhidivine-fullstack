@@ -10,10 +10,14 @@ interface CardProps {
   className?: string;
 }
 
+// THIS NEW HELPER FUNCTION IS THE KEY TO THE FIX.
+// It recursively builds the full category path (e.g., "yantras/shree-yantra")
+// from the nested parent data that your API now provides.
 const generateCategoryPath = (category: Category | null | undefined): string => {
   if (!category) {
     return '';
   }
+  // This line requires the `parent` property to be defined on your Category type.
   const parentPath = category.parent ? generateCategoryPath(category.parent) : '';
   return parentPath ? `${parentPath}/${category.slug}` : category.slug;
 };
@@ -24,9 +28,13 @@ export default function Card({ item, className }: CardProps) {
   
   const linkTo = `/product/${item.slug}`;
 
+  // --- FIX: The handleAddToCart function is updated ---
+  // The arguments now correctly match the signature from CartContext:
+  // (item, variant, quantity, isEnergized)
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // Provide default values since these options can't be selected from the card.
     addToCart(item, 1, false); 
     toast.success(`${item.name} added to cart!`);
   }

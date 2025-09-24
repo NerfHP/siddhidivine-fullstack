@@ -121,7 +121,13 @@ const getFeaturedItems = async () => {
     include: categoryHierarchyInclude,
     orderBy: { createdAt: 'desc' }
   });
-  return { products};
+  const services = await prisma.contentItem.findMany({
+    where: { type: 'SERVICE' },
+    take: 2,
+    include: categoryHierarchyInclude,
+    orderBy: { createdAt: 'desc' }
+  });
+  return { products, services };
 };
 
 const getBestsellers = async () => {
