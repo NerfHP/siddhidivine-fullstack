@@ -7,9 +7,6 @@ import Alert from '@/components/shared/Alert';
 import Button from '@/components/shared/Button';
 import { Link } from 'react-router-dom';
 import SEO from '@/components/shared/SEO';
-import { formatCurrency } from '@/lib/utils';
-import toast from 'react-hot-toast';
-import { useCart } from '@/hooks/useCart';
 import ShuffleHero from '@/components/ShuffleHero';
 import FaqAccordion from '@/components/shared/FaqAccordion';
 import { TestimonialCarousel } from '@/components/shared/TestimonialCarousel';
@@ -18,7 +15,7 @@ import TrustBadgeScroller from '@/components/shared/TrustBadgeScroller';
 // --- TYPE DEFINITIONS FOR OUR DATA ---
 interface FeaturedData {
   products: ContentItem[];
-  services: ContentItem[];
+  services?: ContentItem[];
 }
 interface FaqItem {
   id: string;
@@ -26,15 +23,12 @@ interface FaqItem {
   answer: string;
 }
 
-// --- API CALLS (NOW CORRECTED) ---
-
-// This is your original, working function, now restored.
+// --- API CALLS ---
 const fetchFeaturedItems = async () => {
   const { data } = await api.get('/content/featured');
   return data as FeaturedData;
 };
 
-// These new functions now follow your correct API path structure.
 const fetchBestsellers = async () => {
   const { data } = await api.get('/content/bestsellers');
   return data as ContentItem[];
@@ -47,29 +41,20 @@ const fetchFaqs = async () => {
 
 
 export default function HomePage() {
-  const { addToCart } = useCart();
-  
-  // Your existing, working query for featured items.
-  const { data: featuredData, isLoading: isFeaturedLoading, error: featuredError } = useQuery({
+  const { data: featuredData, isLoading: isFeaturedLoading, isError: isFeaturedError } = useQuery({
     queryKey: ['featuredItems'],
     queryFn: fetchFeaturedItems,
   });
 
-  // New, separate queries for the new sections.
-  const { data: bestsellers, isLoading: isBestsellersLoading } = useQuery({
+  const { data: bestsellers, isLoading: isBestsellersLoading, isError: isBestsellersError } = useQuery({
     queryKey: ['bestsellersHome'],
     queryFn: fetchBestsellers,
   });
 
-  const { data: faqs, isLoading: isFaqsLoading } = useQuery({
+  const { data: faqs, isLoading: isFaqsLoading, isError: isFaqsError } = useQuery({
     queryKey: ['faqsHome'],
     queryFn: fetchFaqs,
   });
-
-  const handleAddToCart = (item: ContentItem) => {
-    addToCart(item, 1, false);
-    toast.success(`${item.name} added to cart!`);
-  };
 
   return (
     <>
@@ -78,22 +63,21 @@ export default function HomePage() {
         description="Discover authentic spiritual products, book puja services, and find guidance with our expert astrology consultations. Your path to peace and well-being starts here."
       />
       
-      {/* --- Style for the animated button --- */}
       <style>
         {`
-          @keyframes pulse-glow {
+          @keyframes heartbeat-glow {
             0%, 100% {
               transform: scale(1);
-              box-shadow: 0 0 0.75rem rgba(249, 115, 22, 0.4);
+              box-shadow: 0 0 1rem rgba(249, 115, 22, 0.5);
             }
             50% {
-              transform: scale(1.05);
-              box-shadow: 0 0 1.5rem rgba(249, 115, 22, 0.7);
+              transform: scale(1.07);
+              box-shadow: 0 0 2.5rem rgba(249, 115, 22, 0.8);
             }
           }
 
-          .animate-pulse-glow {
-            animation: pulse-glow 2.5s infinite ease-in-out;
+          .animate-heartbeat-glow {
+            animation: heartbeat-glow 2s infinite ease-in-out;
           }
         `}
       </style>
@@ -103,7 +87,7 @@ export default function HomePage() {
       <div className="relative z-10 bg-transparent">
         <div className="py-16 space-y-20">
           
-          {/* Featured Products Section (Your original, working code) */}
+          {/* Featured Products Section */}
           <section className="container mx-auto px-4">
             <h2 className="text-center font-sans text-3xl font-bold text-text-main">
               Featured Products
@@ -113,108 +97,69 @@ export default function HomePage() {
             </p>
             {isFeaturedLoading ? (
               <div className="flex justify-center py-8"><Spinner /></div>
-            ) : featuredError ? (
+            ) : isFeaturedError ? (
               <Alert type="error" message="Could not load featured products. Please try again later."/>
             ) : (
-              // This safe check prevents crashes while data is loading
-              featuredData?.products && featuredData.products.length > 0 && (
+              featuredData?.products && featuredData.products.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {featuredData.products.map((item: ContentItem) => (
+                    // --- FIX: The onAddToCart prop is no longer needed ---
                     <Card key={item.id} item={item} />
                   ))}
                 </div>
-              )
+              ) : <p className="text-center text-gray-500 mt-8">No featured products at the moment.</p>
             )}
           </section>
 
-          {/* --- NEW BEST SELLERS SECTION --- */}
+          {/* Best Sellers Section */}
           <section className="container mx-auto px-4">
             <div className="relative text-center">
-              {/* This container ensures the text is always centered */}
               <h2 className="font-sans text-3xl font-bold text-text-main">Our Best Sellers</h2>
               <p className="mt-2 text-gray-600">Discover what our community loves the most.</p>
-
-              {/* This button is positioned to the right on larger screens */}
               <div className="absolute top-1/2 right-0 -translate-y-1/2 hidden sm:block">
-                  <Button asChild variant="outline"><Link to="/bestsellers">View All Best Sellers</Link></Button>
+                  <Button asChild variant="outline"><Link to="/bestsellers">View All</Link></Button>
               </div>
-              
-              {/* This button appears below the text on smaller screens */}
               <div className="mt-4 sm:hidden">
-                  <Button asChild variant="outline"><Link to="/bestsellers">View All Best Sellers</Link></Button>
+                  <Button asChild variant="outline"><Link to="/bestsellers">View All</Link></Button>
               </div>
             </div>
             {isBestsellersLoading ? ( <div className="flex justify-center py-8"><Spinner /></div> )
+             : isBestsellersError ? <Alert type="error" message="Could not load bestsellers."/>
              : (
-              bestsellers && bestsellers.length > 0 && (
+              bestsellers && bestsellers.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {/* --- FIX: The onAddToCart prop is no longer needed --- */}
                   {bestsellers.slice(0, 4).map((item) => <Card key={item.id} item={item} />)}
                 </div>
-              )
+              ) : <p className="text-center text-gray-500 mt-8">No bestsellers to show right now.</p>
             )}
           </section>
           
-          {/* Our Services Section (Your original, working code) */}
+          {/* Our Services Section */}
           <section className="container mx-auto px-4">
-            <h2 className="text-center font-sans text-3xl font-bold text-text-main">
-              Our Services
-            </h2>
-            <p className="mt-2 text-center text-gray-600">
-              Connect with ancient traditions through our expert services.
-            </p>
-            {isFeaturedLoading ? (
-              <div className="flex justify-center py-8"><Spinner /></div>
-            ) : (
-              // This safe check prevents crashes
-              featuredData?.services && featuredData.services.length > 0 && (
+            <div 
+              className="relative overflow-hidden rounded-2xl bg-slate-900 p-8 sm:p-12 text-center text-white shadow-2xl"
+              style={{backgroundImage: `url('https://www.toptal.com/designers/subtlepatterns/uploads/double-bubble-outline.png')`}}
+            >
+              <div className="relative z-10">
+                <h2 className="font-sans text-4xl font-bold">
+                  Guidance for Your Spiritual Path
+                </h2>
+                <p className="mt-4 mx-auto max-w-2xl text-lg text-slate-300">
+                  Whether you seek clarity through a personalized Kundali report or wish to perform powerful Puja services, our experts are here to connect you with ancient traditions and unlock your harmony.
+                </p>
                 <div className="mt-8">
-                  {featuredData.services.length === 1 ? (
-                    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg border">
-                      <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <div>
-                          <img 
-                            src={JSON.parse(featuredData.services[0].images || '[]')[0]} 
-                            alt={featuredData.services[0].name}
-                            className="w-full rounded-lg object-cover aspect-square"
-                          />
-                        </div>
-                        <div className="text-center md:text-left">
-                          <h3 className="font-sans text-2xl font-bold text-text-main">{featuredData.services[0].name}</h3>
-                          <p className="text-gray-600 text-sm mt-2">{featuredData.services[0].description}</p>
-                          <div className="flex items-center justify-center md:justify-start gap-2 mt-3">
-                            {featuredData.services[0].salePrice && (
-                              <p className="text-2xl font-bold text-primary-dark">{formatCurrency(featuredData.services[0].salePrice)}</p>
-                            )}
-                            <p className={`text-lg ${featuredData.services[0].salePrice ? 'text-gray-500 line-through' : 'font-bold text-primary-dark'}`}>
-                              {formatCurrency(featuredData.services[0].price || 0)}
-                            </p>
-                          </div>
-                          <div className="mt-4 flex flex-col gap-2">
-                            <Button asChild size="md" className="animate-pulse-glow">
-                              <Link to="/services">Book Now</Link>
-                            </Button>
-                            <Button asChild size="md" variant="outline">
-                              <Link to={`/services/${featuredData.services[0].slug}`}>View Details</Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
-                      {featuredData.services.map((item: ContentItem) => (
-                        <Card key={item.id} item={item} />
-                      ))}
-                    </div>
-                  )}
+                  <Button asChild size="lg" className="animate-heartbeat-glow">
+                    <Link to="/services">Book Now!</Link>
+                  </Button>
                 </div>
-              )
-            )}
+              </div>
+            </div>
           </section>
 
           <TestimonialCarousel />
 
-          {/* --- NEW FAQS SECTION --- */}
+          {/* FAQs Section */}
           <section className="container mx-auto px-4">
              <div className="text-center">
                 <h2 className="font-sans text-3xl font-bold text-text-main">FAQs</h2>
@@ -222,8 +167,9 @@ export default function HomePage() {
              </div>
              <div className="mt-8 max-w-3xl mx-auto">
                 {isFaqsLoading ? <div className="flex justify-center py-8"><Spinner /></div> 
+                : isFaqsError ? <Alert type="error" message="Could not load FAQs." />
                 : (
-                  faqs && faqs.length > 0 && <FaqAccordion faqs={faqs} />
+                  faqs && faqs.length > 0 ? <FaqAccordion faqs={faqs} /> : null
                 )}
              </div>
           </section>
@@ -233,5 +179,4 @@ export default function HomePage() {
     </>
   );
 }
-
 
