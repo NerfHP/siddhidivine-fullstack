@@ -5,7 +5,7 @@ import path from 'path'
 
 const prisma = new PrismaClient();
 
-// --- CHANGE: Defined a specific type for variants for better type safety ---
+// --- TYPE DEFINITIONS (UNCHANGED) ---
 type SeedVariant = {
   id: string;
   origin: string;
@@ -14,7 +14,6 @@ type SeedVariant = {
   stock: number;
 }
 
-// This defines the exact shape of your product data from the JSON file
 type SeedItem = {
     name: string;
     slug: string;
@@ -31,7 +30,7 @@ type SeedItem = {
     attributes?: string;
     specifications?: Record<string, string>;
     benefits?: any[];
-    variants?: SeedVariant[]; // --- CHANGE: Use the specific SeedVariant type ---
+    variants?: SeedVariant[];
     howToUse?: any[];
     packageContents?: string[];
 };
@@ -45,7 +44,6 @@ type SeedCategory = {
     children?: SeedCategory[];
 }
 
-// FAQ types
 interface SeedFaq {
   question: string;
   answer: string;
@@ -78,29 +76,40 @@ async function createCategory(categoryData: SeedCategory, parentId: string | nul
 async function main() {
   console.log('Start seeding ...');
   
-  // Clear all data in the correct order (be careful with user data)
-  await prisma.productFaq.deleteMany();
+  // --- THE DEFINITIVE FIX: Deleting tables sequentially without a transaction ---
+  // This is a more robust method to avoid the "prepared statement" error on some systems.
+  console.log('Clearing existing data...');
   await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
+  await prisma.productFaq.deleteMany();
   await prisma.review.deleteMany();
-  await prisma.contentItem.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.discount.deleteMany();
+  await prisma.order.deleteMany();
+  // We must delete items that have relations to ContentItem and User first.
   
-  // Only delete users if you're sure you want to clear all user data
-  // This will also cascade delete tokens
-  await prisma.user.deleteMany();
+  // Now we can delete the ContentItems themselves
+  await prisma.contentItem.deleteMany();
 
-  // Create a test user with phone number (for testing purposes)
+  // Now we can delete Categories
+  await prisma.category.deleteMany();
+  
+  // Now we can delete Users (which will cascade to Tokens)
+  await prisma.user.deleteMany();
+  
+  // Finally, delete independent tables
+  await prisma.discount.deleteMany();
+  await prisma.formSubmission.deleteMany(); // Added for completeness
+  console.log('Data cleared.');
+  
+  
+  // --- THE REST OF THE SCRIPT REMAINS THE SAME ---
   console.log('Creating test user...');
   await prisma.user.create({ 
     data: { 
-      phone: '9999999999', // Test phone number
+      phone: '9999999999',
       name: 'Test User',
       email: 'testuser@example.com',
       address: 'Test Address, Test City',
       isProfileComplete: true,
-      role: 'admin' // Make test user an admin
+      role: 'admin'
     } 
   });
 
@@ -121,24 +130,18 @@ async function main() {
       if (category) {
         console.log(`Creating item "${item.name}" with type: "${item.type}"`);
         
-        // --- NEW FEATURE: LOGIC TO DETERMINE THE BASE PRICE ---
-        let basePrice = item.price; // Default to the price in JSON
+        let basePrice = item.price;
         let salePrice = item.salePrice;
 
-        // If the product has variants, find the lowest price to display on product cards.
         if (item.variants && item.variants.length > 0) {
-            // Find the lowest price (considering both salePrice and regular price)
             const lowestVariantPrice = item.variants.reduce((minPrice, variant) => {
                 const currentPrice = variant.salePrice ?? variant.price;
                 return currentPrice < minPrice ? currentPrice : minPrice;
             }, Infinity);
 
-            // Set the product's main price to the lowest variant price.
             basePrice = lowestVariantPrice;
-            // When variants exist, the main salePrice on the item itself should be null.
             salePrice = null; 
         }
-        // --- END OF NEW FEATURE ---
 
         await prisma.contentItem.create({
           data: {
@@ -147,8 +150,8 @@ async function main() {
             description: item.description,
             type: item.type,
             content: item.content,
-            price: basePrice, // Use the dynamically determined base price
-            salePrice: salePrice, // Use the determined sale price
+            price: basePrice,
+            salePrice: salePrice,
             vendor: item.vendor,
             sku: item.sku,
             availability: item.availability,
@@ -156,14 +159,14 @@ async function main() {
             images: JSON.stringify(item.images || []),
             specifications: JSON.stringify(item.specifications || null),
             benefits: JSON.stringify(item.benefits || null),
-            variants: JSON.stringify(item.variants || null), // Still store the full variants object
+            variants: JSON.stringify(item.variants || null),
             howToUse: JSON.stringify(item.howToUse || null),
             packageContents: JSON.stringify(item.packageContents || null),
             categories: {
               connect: [{ id: category.id }],
             },
-            stock: 100, // Set default stock
-            isPublished: true, // Make all items visible
+            stock: 100,
+            isPublished: true,
           },
         });
         createdCount++;
@@ -192,14 +195,12 @@ async function main() {
     });
   }
 
-  // Create sample discount codes (Your existing logic is preserved)
   console.log('Creating sample discount codes...');
   await prisma.discount.create({ data: { code: 'WELCOME10', discountType: 'PERCENTAGE', value: 10, isActive: true } });
   await prisma.discount.create({ data: { code: 'DIWALI500', discountType: 'FIXED_AMOUNT', value: 500, isActive: true } });
   await prisma.discount.create({ data: { code: 'FIRSTTIME', discountType: 'PERCENTAGE', value: 15, isActive: true } });
   console.log('Sample discount codes created.');
 
-  // Seed Product FAQs (Your existing logic is preserved)
   console.log('Seeding Product FAQs...');
   const faqDataPath = path.resolve(process.cwd(), 'api', 'prisma', 'seed-faqs.json');
 

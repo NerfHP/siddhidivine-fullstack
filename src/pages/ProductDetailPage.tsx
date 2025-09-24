@@ -41,6 +41,21 @@ const iconMap: { [key: string]: React.ElementType } = {
   CheckCircle, Package, Target, Sparkles, Shield, Heart
 };
 
+// --- NEW: A helper function to safely render content ---
+// This prevents the "render object" error by ensuring we always return a string.
+const renderSafely = (content: any): string => {
+  if (typeof content === 'object' && content !== null) {
+    // If it's an object, check if it has a 'text' or 'instruction' property to display
+    if (content.text) return String(content.text);
+    if (content.instruction) return String(content.instruction);
+    // Otherwise, stringify the whole object to help with debugging the data source
+    return JSON.stringify(content);
+  }
+  // If it's already a string, number, etc., just convert it to a string.
+  return String(content);
+}
+
+
 export default function ProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addToCart } = useCart();
@@ -55,22 +70,20 @@ export default function ProductDetailPage() {
     enabled: !!productSlug,
   });
 
-  // --- THE FIX: The loading and error states are handled FIRST ---
   if (isLoading) return <div className="flex h-96 items-center justify-center"><Spinner /></div>;
   if (isError || !data) return <div className="container mx-auto p-8"><Alert type="error" message="An error occurred while fetching the product. Please try again." /></div>;
 
-  // --- All data parsing is moved AFTER the loading/error checks ---
-  // This guarantees that 'data' and 'data.product' exist before we try to use them.
   const { product, breadcrumbs } = data;
   const productVariants: ProductVariant[] = JSON.parse(product.variants || '[]');
   const imageArray: string[] = JSON.parse(product.images || '[]');
   
-  // This useEffect now safely runs only after the product data is confirmed to be available.
   useEffect(() => {
     if (productVariants.length > 0 && !selectedVariant) {
       setSelectedVariant(productVariants[0]);
+    } else if (productVariants.length === 0) {
+      setSelectedVariant(null);
     }
-  }, [product.id, productVariants, selectedVariant]); // Added product.id to re-trigger on navigation
+  }, [product.id, productVariants, selectedVariant]);
 
   let basePrice = product.salePrice || product.price || 0;
   let strikethroughPrice: number | null = product.salePrice ? (product.price ?? null) : null;
@@ -89,11 +102,9 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addToCart(product, selectedVariant, quantity, isEnergized);
-    
     const energizedText = isEnergized ? ' (Energized)' : '';
     const variantText = selectedVariant ? ` (${selectedVariant.origin})` : '';
     toast.success(`${quantity} x ${product.name}${variantText}${energizedText} added to cart!`);
-
     setQuantity(1); 
     setIsEnergized(false);
   };
@@ -114,59 +125,29 @@ export default function ProductDetailPage() {
       <div className="bg-transparent">
         <div className="container mx-auto px-4 py-8">
             <Breadcrumbs items={breadcrumbItems} />
-
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div>
-                    <ProductImageGallery images={imageArray} productName={product.name} />
-                </div>
-
+                <div><ProductImageGallery images={imageArray} productName={product.name} /></div>
                 <div>
                     <h1 className="font-sans text-4xl font-bold text-text-main">{product.name}</h1>
                     <p className="text-lg text-gray-600 mt-2">{product.description}</p>
-                    
                     <div className="flex items-baseline gap-3 my-4">
                         <p className="text-3xl font-bold text-primary">{formatCurrency(displayPrice)}</p>
-                        {strikethroughPrice && (
-                            <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice + (isEnergized ? ENERGIZING_COST : 0))}</p>
-                        )}
+                        {strikethroughPrice && (<p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice + (isEnergized ? ENERGIZING_COST : 0))}</p>)}
                     </div>
-
                     {productVariants.length > 0 && (
                         <div className="my-6">
                             <h3 className="text-sm font-medium text-gray-800 mb-2">Origin: <span className="font-bold">{selectedVariant?.origin}</span></h3>
                             <div className="flex gap-2">
-                                {productVariants.map((variant) => (
-                                    <button
-                                        key={variant.id}
-                                        onClick={() => setSelectedVariant(variant)}
-                                        className={`px-4 py-2 border rounded-lg text-sm transition-all duration-200 ${
-                                            selectedVariant?.id === variant.id
-                                            ? 'bg-primary text-white border-primary ring-2 ring-offset-2 ring-primary'
-                                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-500'
-                                        }`}
-                                    >
-                                        {variant.origin}
-                                    </button>
-                                ))}
+                                {productVariants.map((variant) => (<button key={variant.id} onClick={() => setSelectedVariant(variant)} className={`px-4 py-2 border rounded-lg text-sm transition-all duration-200 ${selectedVariant?.id === variant.id ? 'bg-primary text-white border-primary ring-2 ring-offset-2 ring-primary' : 'bg-white text-gray-800 border-gray-300 hover:border-gray-500'}`}>{variant.origin}</button>))}
                             </div>
                         </div>
                     )}
-                    
                     <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                         <label htmlFor="energize-checkbox" className="flex items-center cursor-pointer">
-                            <input
-                                id="energize-checkbox"
-                                type="checkbox"
-                                checked={isEnergized}
-                                onChange={() => setIsEnergized(!isEnergized)}
-                                className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-                            />
-                            <span className="ml-3 text-sm font-medium text-gray-800">
-                                🎁 Get Siddh/Energized Product (Pran Pratishtha) + {formatCurrency(ENERGIZING_COST)}
-                            </span>
+                            <input id="energize-checkbox" type="checkbox" checked={isEnergized} onChange={() => setIsEnergized(!isEnergized)} className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary" />
+                            <span className="ml-3 text-sm font-medium text-gray-800">🎁 Get Siddh/Energized Product (Pran Pratishtha) + {formatCurrency(ENERGIZING_COST)}</span>
                         </label>
                     </div>
-                    
                     <div className="flex items-center gap-4">
                         <p className="text-sm font-medium">Quantity:</p>
                         <div className="flex items-center border rounded-md bg-white">
@@ -186,31 +167,18 @@ export default function ProductDetailPage() {
                             <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Share2 size={16}/> Share</button>
                         </div>
                     </div>
-                    <div className="mt-8 pt-6 border-t">
-                        <ProductInfoAccordion />
-                    </div>
+                    <div className="mt-8 pt-6 border-t"><ProductInfoAccordion /></div>
                 </div>
             </div>
             
             <div className="mt-16">
-                {product.content && (
-                    <div className="prose max-w-none text-gray-700 mb-8">
-                        <p>{product.content}</p>
-                    </div>
-                )}
+                {product.content && (<div className="prose max-w-none text-gray-700 mb-8"><p>{product.content}</p></div>)}
                 
                 {specifications && (
                     <div className="mt-8">
                         <h3 className="font-sans text-xl font-bold mb-4">Specifications</h3>
                         <div className="border-t">
-                            {Object.entries(specifications).map(([key, value]) => (
-                                <div key={key} className="flex justify-between py-3 border-b text-sm">
-                                    <dt className="text-gray-600">{key}</dt>
-                                    <dd className="font-medium text-text-main">
-                                        {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}
-                                    </dd>
-                                </div>
-                            ))}
+                            {Object.entries(specifications).map(([key, value]) => (<div key={key} className="flex justify-between py-3 border-b text-sm"><dt className="text-gray-600">{key}</dt><dd className="font-medium text-text-main">{renderSafely(value)}</dd></div>))}
                         </div>
                     </div>
                 )}
@@ -219,14 +187,9 @@ export default function ProductDetailPage() {
                     <div className="mt-8">
                         <h3 className="font-sans text-xl font-bold mb-4">Key Benefits</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {benefits.map((benefit: {icon: string, text: string}, index: number) => {
-                                const Icon = iconMap[benefit.icon] || CheckCircle;
-                                return (
-                                    <div key={benefit.text || index} className="flex items-center gap-3">
-                                        <Icon className="w-6 h-6 text-primary flex-shrink-0" />
-                                        <span className="text-gray-700">{benefit.text}</span>
-                                    </div>
-                                )
+                            {benefits.map((benefit: any, index: number) => {
+                                const Icon = (benefit && iconMap[benefit.icon]) || CheckCircle;
+                                return (<div key={index} className="flex items-center gap-3"><Icon className="w-6 h-6 text-primary flex-shrink-0" /><span className="text-gray-700">{renderSafely(benefit)}</span></div>)
                             })}
                         </div>
                     </div>
@@ -236,12 +199,7 @@ export default function ProductDetailPage() {
                     <div className="mt-8">
                         <h3 className="font-sans text-xl font-bold mb-4">How to Use</h3>
                         <div className="space-y-4">
-                            {howToUse.map((step: {step: number, instruction: string}) => (
-                                <div key={step.step} className="flex items-start gap-4">
-                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary/10 text-primary font-bold rounded-full">{step.step}</div>
-                                    <p className="text-gray-700 pt-1">{step.instruction}</p>
-                                </div>
-                            ))}
+                            {howToUse.map((step: any, index: number) => (<div key={index} className="flex items-start gap-4"><div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary/10 text-primary font-bold rounded-full">{step.step || index + 1}</div><p className="text-gray-700 pt-1">{renderSafely(step)}</p></div>))}
                         </div>
                     </div>
                 )}
@@ -250,7 +208,7 @@ export default function ProductDetailPage() {
                     <div className="mt-8">
                         <h3 className="font-sans text-xl font-bold mb-4">What's in the Box</h3>
                         <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                            {packageContents.map((content: string) => <li key={content}>{content}</li>)}
+                            {packageContents.map((content: any, index: number) => <li key={index}>{renderSafely(content)}</li>)}
                         </ul>
                     </div>
                 )}
@@ -262,3 +220,4 @@ export default function ProductDetailPage() {
     </>
   );
 }
+
