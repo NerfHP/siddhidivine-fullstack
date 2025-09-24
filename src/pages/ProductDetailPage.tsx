@@ -70,13 +70,14 @@ export default function ProductDetailPage() {
   const productVariants: ProductVariant[] = JSON.parse(product.variants || '[]');
   const imageArray: string[] = JSON.parse(product.images || '[]');
   
+  // Fixed useEffect - removed selectedVariant from dependencies to prevent infinite loop
   useEffect(() => {
     if (productVariants.length > 0 && !selectedVariant) {
       setSelectedVariant(productVariants[0]);
-    } else if (productVariants.length === 0) {
+    } else if (productVariants.length === 0 && selectedVariant !== null) {
       setSelectedVariant(null);
     }
-  }, [product.id, productVariants, selectedVariant]);
+  }, [product.id, productVariants]); // Only depend on product.id and productVariants
 
   let basePrice = product.salePrice || product.price || 0;
   let strikethroughPrice: number | null = product.salePrice ? (product.price ?? null) : null;
@@ -92,7 +93,6 @@ export default function ProductDetailPage() {
   const benefits = product.benefits && typeof product.benefits === 'string' ? JSON.parse(product.benefits) : (product.benefits || []);
   const howToUse = product.howToUse && typeof product.howToUse === 'string' ? JSON.parse(product.howToUse) : (product.howToUse || []);
   const packageContents = product.packageContents && typeof product.packageContents === 'string' ? JSON.parse(product.packageContents) : (product.packageContents || []);
-
 
   const handleAddToCart = () => {
     addToCart(product, selectedVariant, quantity, isEnergized);
@@ -214,4 +214,3 @@ export default function ProductDetailPage() {
     </>
   );
 }
-
