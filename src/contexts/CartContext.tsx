@@ -1,7 +1,7 @@
 import { CartItem, ContentItem } from '@/types';
 import { createContext, ReactNode, useState, useEffect, useMemo } from 'react';
 
-// --- NEW: Define the structure of a variant here or in your types file ---
+// --- NEW: Define the structure of a variant, consistent with the product page ---
 interface ProductVariant {
   id: string;
   origin: string;
@@ -10,7 +10,7 @@ interface ProductVariant {
   stock: number;
 }
 
-// --- CHANGE: The signature for `addToCart` is updated to accept all new options ---
+// --- UPDATED: The signature for `addToCart` now accepts all possible options ---
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: ContentItem, variant: ProductVariant | null, quantity: number, isEnergized: boolean) => void;
@@ -38,28 +38,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // --- CHANGE: The core logic of `addToCart` now handles all combinations ---
+  // --- UPDATED: The core logic of `addToCart` handles all combinations ---
   const addToCart = (item: ContentItem, variant: ProductVariant | null, quantity: number, isEnergized: boolean) => {
     const ENERGIZING_COST = 151;
 
     // Create a unique ID for the cart item based on all its options.
-    // e.g., "product_abc-nepali-energized" is treated as a completely unique item.
+    // This ensures every unique combination is treated as a separate item.
+    // e.g., "product_abc-nepali-energized"
     const cartItemId = `${item.id}${variant ? `-${variant.id}` : ''}${isEnergized ? '-energized' : ''}`;
 
     setCartItems((prevItems) => {
-      const currentItems = Array.isArray(prevItems) ? prevItems : [];
-      const existingItem = currentItems.find((cartItem) => cartItem.id === cartItemId);
-      
+      const existingItem = prevItems.find((cartItem) => cartItem.id === cartItemId);
+
       if (existingItem) {
-        // If this exact item exists, just increase its quantity.
-        return currentItems.map((cartItem) =>
+        // If this exact item already exists, just increase its quantity.
+        return prevItems.map((cartItem) =>
           cartItem.id === cartItemId
             ? { ...cartItem, quantity: cartItem.quantity + quantity }
             : cartItem
         );
       } else {
-        // If it's a new item, construct it with all the correct details.
-        let basePrice = variant ? (variant.salePrice ?? variant.price) : (item.salePrice ?? item.price ?? 0);
+        // If it's a new item, construct it with the correct name and price.
+        let finalPrice = variant?.salePrice ?? variant?.price ?? item.salePrice ?? item.price ?? 0;
         let finalName = item.name;
 
         if (variant) {
@@ -68,31 +68,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
         if (isEnergized) {
           finalName += ' (Energized)';
-          basePrice += ENERGIZING_COST;
+          finalPrice += ENERGIZING_COST;
         }
 
         const newItemToAdd: CartItem = {
           ...item,
           id: cartItemId,
           name: finalName,
-          price: basePrice,
-          salePrice: null, // The final price is now calculated, so we nullify the original salePrice.
+          price: finalPrice,
+          salePrice: null, // The final price is already calculated, so we nullify the original salePrice.
           quantity: quantity,
         };
-        return [...currentItems, newItemToAdd];
+        
+        return [...prevItems, newItemToAdd];
       }
     });
   };
 
   const removeFromCart = (cartItemId: string) => {
-    setCartItems((prevItems) => 
-        (Array.isArray(prevItems) ? prevItems : []).filter((item) => item.id !== cartItemId)
-    );
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== cartItemId));
   };
 
   const updateQuantity = (cartItemId: string, quantity: number) => {
     setCartItems((prevItems) =>
-      (Array.isArray(prevItems) ? prevItems : [])
+      prevItems
         .map((item) => (item.id === cartItemId ? { ...item, quantity: Math.max(0, quantity) } : item))
         .filter((item) => item.quantity > 0)
     );
@@ -106,6 +105,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
     const count = safeCartItems.reduce((acc, item) => acc + item.quantity, 0);
     
+    // This calculation is now robust because each item's price is pre-calculated
+    // when it was added to the cart.
     const total = safeCartItems.reduce((acc, item) => {
         return acc + ((item.price ?? 0) * item.quantity);
     }, 0);
