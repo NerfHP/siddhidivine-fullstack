@@ -1,13 +1,9 @@
 {
   "version": 2,
-  "regions": ["iad1"],
   "builds": [
     {
       "src": "api/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 30
-      }
+      "use": "@vercel/node"
     },
     {
       "src": "package.json",
@@ -28,4 +24,3 @@
     }
   ]
 }
-

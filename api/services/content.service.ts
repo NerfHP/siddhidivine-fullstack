@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 import ApiError from '../utils/AppError.js';
 import { prisma } from '../config/prisma.js';
 
-// This is the original, complex include. We will keep it for pages that need it.
 const categoryHierarchyInclude = {
   categories: {
     include: {
@@ -16,13 +15,7 @@ const categoryHierarchyInclude = {
   },
 };
 
-// --- NEW: A simpler, more robust include for homepage cards ---
-const simpleCategoryInclude = {
-    categories: true,
-};
-
-
-// --- HELPER FUNCTIONS (Unchanged) ---
+// --- HELPER FUNCTIONS ---
 async function getDescendantCategoryIds(categoryId: string): Promise<string[]> {
     const children = await prisma.category.findMany({ where: { parentId: categoryId }, select: { id: true } });
     let ids = children.map(child => child.id);
@@ -38,20 +31,25 @@ async function getCategoryAncestry(categoryId: string | null): Promise<Category[
     console.error("getCategoryAncestry was called with a null or undefined categoryId.");
     return [];
   }
+
   try {
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
       include: { parent: true },
     });
+
     if (!category) {
       console.warn(`Category with ID "${categoryId}" not found during ancestry lookup.`);
       return [];
     }
-    if (!category.parent) { return [category]; }
+    if (!category.parent) {
+      return [category];
+    }
     if (category.parentId === category.id) {
-        console.error(`Circular reference detected for ID "${categoryId}".`);
+        console.error(`Circular reference detected in category hierarchy for ID "${categoryId}".`);
         return [category];
     }
+
     const ancestors = await getCategoryAncestry(category.parentId);
     return [...ancestors, category];
   } catch (error) {
@@ -61,6 +59,7 @@ async function getCategoryAncestry(categoryId: string | null): Promise<Category[
 }
 
 // --- MAIN PUBLIC SERVICE FUNCTIONS ---
+
 const getCategoryDataByPath = async (fullPath: string, sortBy?: string, availability?: string[]) => {
   if (!fullPath) throw new ApiError(httpStatus.BAD_REQUEST, 'Category path is required');
   const slugs = fullPath.split('/');
@@ -73,7 +72,7 @@ const getCategoryDataByPath = async (fullPath: string, sortBy?: string, availabi
   const categoryIds = [category.id, ...(await getDescendantCategoryIds(category.id))];
   let orderBy: Prisma.ContentItemOrderByWithRelationInput = { createdAt: 'desc' };
   if (sortBy === 'price-asc') orderBy = { price: 'asc' };
-  if (sortBy === 'price-desc') orderBy = { price: 'desc' };
+  else if (sortBy === 'price-desc') orderBy = { price: 'desc' };
   const where: Prisma.ContentItemWhereInput = { categories: { some: { id: { in: categoryIds } } } };
   if (availability && availability.length > 0) where.availability = { in: availability };
   const items = await prisma.contentItem.findMany({ where, include: categoryHierarchyInclude, orderBy });
@@ -81,41 +80,63 @@ const getCategoryDataByPath = async (fullPath: string, sortBy?: string, availabi
 };
 
 const getProductDataBySlug = async (slug: string) => {
+  console.log(`[Backend Service] Searching for product with slug: "${slug}"`);
   const product = await prisma.contentItem.findFirst({
-    where: { slug: slug, type: 'PRODUCT' },
+    where: { 
+      slug: slug, 
+      type: 'PRODUCT' 
+    },
     include: categoryHierarchyInclude,
   });
-  if (!product) { throw new ApiError(httpStatus.NOT_FOUND, 'Product not found'); }
-  const breadcrumbs = (product.categories && product.categories.length > 0) ? await getCategoryAncestry(product.categories[0].id) : [];
+
+
+  console.log('[Backend Service] Product found in database:', product ? product.name : 'null');
+  if (!product) {
+    console.error(`Product with slug "${slug}" not found.`);
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+  }
+  
+  let breadcrumbs: Category[] = [];
+  if (product.categories && product.categories.length > 0) {
+    breadcrumbs = await getCategoryAncestry(product.categories[0].id);
+  } else {
+    console.warn(`Product with slug "${slug}" has no categories assigned.`);
+  }
   return { product, breadcrumbs };
 };
 
-// UPDATED: This now uses the simpler include for better performance and stability.
 const getAllProducts = async (sortBy?: string, availability?: string[]) => {
   let orderBy: Prisma.ContentItemOrderByWithRelationInput = { createdAt: 'desc' };
   if (sortBy === 'price-asc') orderBy = { price: 'asc' };
-  if (sortBy === 'price-desc') orderBy = { price: 'desc' };
+  else if (sortBy === 'price-desc') orderBy = { price: 'desc' };
   const where: Prisma.ContentItemWhereInput = { type: 'PRODUCT' };
   if (availability && availability.length > 0) where.availability = { in: availability };
-  return prisma.contentItem.findMany({ where, include: simpleCategoryInclude, orderBy });
+  return prisma.contentItem.findMany({ where, include: categoryHierarchyInclude, orderBy });
 };
 
-// --- FIX: UPDATED HOMEPAGE FUNCTIONS ---
-
 const getFeaturedItems = async () => {
-  const products = await prisma.contentItem.findMany({ where: { type: 'PRODUCT' }, take: 4, include: simpleCategoryInclude, orderBy: { createdAt: 'desc' } });
-  const services = await prisma.contentItem.findMany({ where: { type: 'SERVICE' }, take: 2, include: simpleCategoryInclude, orderBy: { createdAt: 'desc' } });
+  const products = await prisma.contentItem.findMany({
+    where: { type: 'PRODUCT' },
+    take: 4,
+    include: categoryHierarchyInclude,
+    orderBy: { createdAt: 'desc' }
+  });
+  const services = await prisma.contentItem.findMany({
+    where: { type: 'SERVICE' },
+    take: 2,
+    include: categoryHierarchyInclude,
+    orderBy: { createdAt: 'desc' }
+  });
   return { products, services };
 };
 
 const getBestsellers = async () => {
-  const items = await prisma.contentItem.findMany({
+  return prisma.contentItem.findMany({
     where: { type: 'PRODUCT' },
     take: 8,
-    include: simpleCategoryInclude, // Using the safer include
+    include: categoryHierarchyInclude,
     orderBy: { createdAt: 'asc' }
   });
-  return items; // Return the array, even if empty
 };
 
 const getFaqs = async () => {
@@ -128,48 +149,73 @@ const getFaqs = async () => {
 };
 
 const getAllServices = async () => {
-  return prisma.contentItem.findMany({ where: { type: 'SERVICE' }, include: simpleCategoryInclude, orderBy: { createdAt: 'desc' } });
+  return prisma.contentItem.findMany({
+    where: { type: 'SERVICE' },
+    include: { categories: true },
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
-
-// --- OTHER FUNCTIONS (Unchanged) ---
 const getItemBySlug = async (slug: string) => {
   const item = await prisma.contentItem.findUnique({ where: { slug }, include: categoryHierarchyInclude });
   if (!item) throw new ApiError(httpStatus.NOT_FOUND, 'Item not found');
   return item;
 };
+
 const getCategories = async () => {
   return prisma.category.findMany({ where: { parentId: null } });
 };
 
 
-// --- ADMIN FUNCTIONS (Unchanged) ---
+// --- ADMIN SERVICE FUNCTIONS (Newly Added) ---
+
 const createProduct = async (productData: any) => {
-    const { categoryIds, ...data } = productData;
-    return prisma.contentItem.create({ data: { ...data, categories: { connect: categoryIds.map((id: string) => ({ id })) }, }, });
+    const { categoryIds, ...data } = productData;
+    return prisma.contentItem.create({
+        data: {
+            ...data,
+            categories: {
+                connect: categoryIds.map((id: string) => ({ id })),
+            },
+        },
+    });
 };
+
 const updateProduct = async (productId: string, productData: any) => {
-    const { categoryIds, ...data } = productData;
-    return prisma.contentItem.update({ where: { id: productId }, data: { ...data, ...(categoryIds && { categories: { set: categoryIds.map((id: string) => ({ id })) }, }), }, });
+    const { categoryIds, ...data } = productData;
+    return prisma.contentItem.update({
+        where: { id: productId },
+        data: {
+            ...data,
+            ...(categoryIds && {
+                categories: {
+                    set: categoryIds.map((id: string) => ({ id })),
+                },
+            }),
+        },
+    });
 };
+
 const deleteProduct = async (productId: string) => {
-    return prisma.contentItem.delete({ where: { id: productId }, });
+    return prisma.contentItem.delete({
+        where: { id: productId },
+    });
 };
 
 
-// --- FINAL EXPORT (Unchanged) ---
 export const contentSerivce = {
-  getItemBySlug, 
-  getCategories, 
-  getFeaturedItems, 
-  getAllProducts, 
-  getCategoryDataByPath, 
-  getProductDataBySlug, 
-  getAllServices, 
-  getBestsellers, 
-  getFaqs, 
-  createProduct, 
-  updateProduct, 
+  // Public
+  getItemBySlug,
+  getCategories,
+  getFeaturedItems,
+  getAllProducts,
+  getCategoryDataByPath,
+  getProductDataBySlug,
+  getAllServices,
+  getBestsellers,
+  getFaqs,
+  // Admin
+  createProduct,
+  updateProduct,
   deleteProduct,
 };
-
