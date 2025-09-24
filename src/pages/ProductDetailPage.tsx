@@ -13,17 +13,18 @@ import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
 import toast from 'react-hot-toast';
 import SEO from '@/components/shared/SEO';
-import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shield } from 'lucide-react';
+import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shield, Zap } from 'lucide-react';
 import ProductInfoAccordion from '@/components/shared/ProductInfoAccordion';
 import ProductImageGallery from '@/components/shared/ProductImageGallery';
 import Reviews from '@/components/shared/Reviews';
 import ProductFaqSection from '@/components/shared/ProductFaqSection';
 
+// --- CHANGE: Re-added optional salePrice to the variant interface for full functionality ---
 interface ProductVariant {
   id: string;
   origin: string;
   price: number;
-  salePrice?: number | null;
+  salePrice?: number | null; // <-- Ensures variants can also have sales
   stock: number;
 }
 
@@ -46,8 +47,10 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+
+  // --- NEW: State for the "Energized" checkbox ---
   const [isEnergized, setIsEnergized] = useState(false);
-  const ENERGIZING_COST = 101;
+  const ENERGIZING_COST = 101; // Define the cost as a constant
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['productDetail', productSlug],
@@ -55,13 +58,7 @@ export default function ProductDetailPage() {
     enabled: !!productSlug,
   });
 
-  if (isLoading) return <div className="flex h-96 items-center justify-center"><Spinner /></div>;
-  if (isError || !data) return <div className="container mx-auto p-8"><Alert type="error" message="Product not found." /></div>;
-
-  const { product, breadcrumbs } = data;
-
-  const productVariants: ProductVariant[] = JSON.parse(product.variants || '[]');
-  const imageArray: string[] = JSON.parse(product.images || '[]');
+  const productVariants: ProductVariant[] = data?.product.variants ? JSON.parse(data.product.variants) : [];
 
   useEffect(() => {
     if (productVariants.length > 0 && !selectedVariant) {
@@ -69,22 +66,31 @@ export default function ProductDetailPage() {
     }
   }, [productVariants, selectedVariant]);
 
-  let basePrice = product.salePrice || product.price || 0;
+  if (isLoading) return <div className="flex h-96 items-center justify-center"><Spinner /></div>;
+  if (isError || !data) return <div className="container mx-auto p-8"><Alert type="error" message="Product not found." /></div>;
+
+  const { product, breadcrumbs } = data;
+
+  // --- CHANGE: Combined price logic for variants, sales, and energizing cost ---
+  let basePrice = product.salePrice ?? product.price ?? 0;
+  // --- FIX: Add fallback to null to prevent TypeScript error ---
   let strikethroughPrice: number | null = product.salePrice ? (product.price ?? null) : null;
 
   if (selectedVariant) {
-    basePrice = selectedVariant.salePrice || selectedVariant.price;
+    basePrice = selectedVariant.salePrice ?? selectedVariant.price;
     strikethroughPrice = selectedVariant.salePrice ? selectedVariant.price : null;
   }
   
   const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);
 
+  const imageArray: string[] = JSON.parse(product.images || '[]');
   const specifications = product.specifications ? JSON.parse(product.specifications as unknown as string) : null;
   const benefits = product.benefits ? JSON.parse(product.benefits as unknown as string) : [];
   const howToUse = product.howToUse ? JSON.parse(product.howToUse as unknown as string) : [];
   const packageContents = product.packageContents ? JSON.parse(product.packageContents as unknown as string) : [];
 
   const handleAddToCart = () => {
+    // --- CHANGE: Pass the `isEnergized` state to the cart context ---
     addToCart(product, selectedVariant, quantity, isEnergized);
     
     const energizedText = isEnergized ? ' (Energized)' : '';
@@ -92,7 +98,7 @@ export default function ProductDetailPage() {
     toast.success(`${quantity} x ${product.name}${variantText}${energizedText} added to cart!`);
 
     setQuantity(1); 
-    setIsEnergized(false);
+    setIsEnergized(false); // Optionally reset the checkbox after adding to cart
   };
   
   const breadcrumbItems = [
@@ -110,154 +116,153 @@ export default function ProductDetailPage() {
       <SEO title={product.name} description={product.description} imageUrl={imageArray[0]} />
       <div className="bg-transparent">
         <div className="container mx-auto px-4 py-8">
-            <Breadcrumbs items={breadcrumbItems} />
+          <Breadcrumbs items={breadcrumbItems} />
 
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div>
-                    <ProductImageGallery images={imageArray} productName={product.name} />
-                </div>
-
-                <div>
-                    <h1 className="font-sans text-4xl font-bold text-text-main">{product.name}</h1>
-                    <p className="text-lg text-gray-600 mt-2">{product.description}</p>
-                    
-                    <div className="flex items-baseline gap-3 my-4">
-                        <p className="text-3xl font-bold text-primary">{formatCurrency(displayPrice)}</p>
-                        {strikethroughPrice && (
-                            <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice + (isEnergized ? ENERGIZING_COST : 0))}</p>
-                        )}
-                    </div>
-
-                    {productVariants.length > 0 && (
-                        <div className="my-6">
-                            <h3 className="text-sm font-medium text-gray-800 mb-2">Origin: <span className="font-bold">{selectedVariant?.origin}</span></h3>
-                            <div className="flex gap-2">
-                                {productVariants.map((variant) => (
-                                    <button
-                                        key={variant.id}
-                                        onClick={() => setSelectedVariant(variant)}
-                                        className={`px-4 py-2 border rounded-lg text-sm transition-all duration-200 ${
-                                            selectedVariant?.id === variant.id
-                                            ? 'bg-primary text-white border-primary ring-2 ring-offset-2 ring-primary'
-                                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-500'
-                                        }`}
-                                    >
-                                        {variant.origin}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    
-                    <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                        <label htmlFor="energize-checkbox" className="flex items-center cursor-pointer">
-                            <input
-                                id="energize-checkbox"
-                                type="checkbox"
-                                checked={isEnergized}
-                                onChange={() => setIsEnergized(!isEnergized)}
-                                className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-                            />
-                            <span className="ml-3 text-sm font-medium text-gray-800">
-                                🎁 Get Siddh/Energized Product (Pran Pratishtha) + {formatCurrency(ENERGIZING_COST)}
-                            </span>
-                        </label>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                        <p className="text-sm font-medium">Quantity:</p>
-                        <div className="flex items-center border rounded-md bg-white">
-                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-50"><Minus size={14} /></button>
-                            <span className="px-4 text-sm font-bold w-12 text-center">{quantity}</span>
-                            <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus size={14} /></button>
-                        </div>
-                    </div>
-                    <div className="mt-6 space-y-4">
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <Button size="lg" onClick={handleAddToCart} className="w-full flex-grow">Add to Cart</Button>
-                            <Button size="lg" variant="secondary" className="w-full flex-grow">Buy It Now</Button>
-                        </div>
-                        <div className="flex gap-3 justify-center">
-                            <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Heart size={16}/> Add to Wishlist</button>
-                            <div className="border-l"></div>
-                            <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Share2 size={16}/> Share</button>
-                        </div>
-                    </div>
-                    <div className="mt-8 pt-6 border-t">
-                        <ProductInfoAccordion />
-                    </div>
-                </div>
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+              <ProductImageGallery images={imageArray} productName={product.name} />
             </div>
+
+            <div>
+              <h1 className="font-sans text-4xl font-bold text-text-main">{product.name}</h1>
+              <p className="text-lg text-gray-600 mt-2">{product.description}</p>
+              
+              <div className="flex items-baseline gap-3 my-4">
+                <p className="text-3xl font-bold text-primary">{formatCurrency(displayPrice)}</p>
+                {strikethroughPrice && (
+                  <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice)}</p>
+                )}
+              </div>
+
+              {productVariants.length > 0 && (
+                <div className="my-6">
+                  <h3 className="text-sm font-medium text-gray-800 mb-2">Origin: <span className="font-bold">{selectedVariant?.origin}</span></h3>
+                  <div className="flex gap-2">
+                    {productVariants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`px-4 py-2 border rounded-lg text-sm transition-all duration-200 ${
+                          selectedVariant?.id === variant.id
+                            ? 'bg-primary text-white border-primary ring-2 ring-offset-2 ring-primary'
+                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        {variant.origin}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* --- NEW: Energized Product Checkbox Section --- */}
+              <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <label htmlFor="energize-checkbox" className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    id="energize-checkbox"
+                    type="checkbox"
+                    checked={isEnergized}
+                    onChange={() => setIsEnergized(!isEnergized)}
+                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <Zap size={20} className="text-orange-500" />
+                  <span className="ml-3 text-sm font-medium text-gray-800">
+                    Get Siddh/Energized Product (Pran Pratishtha) + {formatCurrency(ENERGIZING_COST)}
+                  </span>
+                </label>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <p className="text-sm font-medium">Quantity:</p>
+                <div className="flex items-center border rounded-md bg-white">
+                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-50"><Minus size={14} /></button>
+                  <span className="px-4 text-sm font-bold w-12 text-center">{quantity}</span>
+                  <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus size={14} /></button>
+                </div>
+              </div>
+              <div className="mt-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                      <Button size="lg" onClick={handleAddToCart} className="w-full flex-grow">Add to Cart</Button>
+                      <Button size="lg" variant="secondary" className="w-full flex-grow">Buy It Now</Button>
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                      <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Heart size={16}/> Add to Wishlist</button>
+                      <div className="border-l"></div>
+                      <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Share2 size={16}/> Share</button>
+                  </div>
+              </div>
+              <div className="mt-8 pt-6 border-t">
+                <ProductInfoAccordion />
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-16">
+            {product.content && (
+              <div className="prose max-w-none text-gray-700 mb-8">
+                <p>{product.content}</p>
+              </div>
+            )}
             
-            <div className="mt-16">
-                {product.content && (
-                    <div className="prose max-w-none text-gray-700 mb-8">
-                        <p>{product.content}</p>
+            {specifications && (
+              <div className="mt-8">
+                <h3 className="font-sans text-xl font-bold mb-4">Specifications</h3>
+                <div className="border-t">
+                  {Object.entries(specifications).map(([key, value]) => (
+                    <div key={key} className="flex justify-between py-3 border-b text-sm">
+                      <dt className="text-gray-600">{key}</dt>
+                      <dd className="font-medium text-text-main">{value as string}</dd>
                     </div>
-                )}
-                
-                {/* --- THE FIX IS APPLIED HERE --- */}
-                {specifications && (
-                    <div className="mt-8">
-                        <h3 className="font-sans text-xl font-bold mb-4">Specifications</h3>
-                        <div className="border-t">
-                            {Object.entries(specifications).map(([key, value]) => (
-                                <div key={key} className="flex justify-between py-3 border-b text-sm">
-                                    <dt className="text-gray-600">{key}</dt>
-                                    {/* This check prevents the crash. If 'value' is an object, it's converted to a string. */}
-                                    <dd className="font-medium text-text-main">
-                                        {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}
-                                    </dd>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-                
-                {benefits.length > 0 && (
-                    <div className="mt-8">
-                        <h3 className="font-sans text-xl font-bold mb-4">Key Benefits</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {benefits.map((benefit: {icon: string, text: string}, index: number) => {
-                                const Icon = iconMap[benefit.icon] || CheckCircle;
-                                return (
-                                    <div key={benefit.text || index} className="flex items-center gap-3">
-                                        <Icon className="w-6 h-6 text-primary flex-shrink-0" />
-                                        <span className="text-gray-700">{benefit.text}</span>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                )}
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {benefits.length > 0 && (
+              <div className="mt-8">
+                <h3 className="font-sans text-xl font-bold mb-4">Key Benefits</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {benefits.map((benefit: {icon: string, text: string}) => {
+                    const Icon = iconMap[benefit.icon] || CheckCircle;
+                    return (
+                      <div key={benefit.text} className="flex items-center gap-3">
+                        <Icon className="w-6 h-6 text-primary flex-shrink-0" />
+                        <span className="text-gray-700">{benefit.text}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
-                {howToUse.length > 0 && (
-                    <div className="mt-8">
-                        <h3 className="font-sans text-xl font-bold mb-4">How to Use</h3>
-                        <div className="space-y-4">
-                            {howToUse.map((step: {step: number, instruction: string}) => (
-                                <div key={step.step} className="flex items-start gap-4">
-                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary/10 text-primary font-bold rounded-full">{step.step}</div>
-                                    <p className="text-gray-700 pt-1">{step.instruction}</p>
-                                </div>
-                            ))}
-                        </div>
+            {howToUse.length > 0 && (
+              <div className="mt-8">
+                <h3 className="font-sans text-xl font-bold mb-4">How to Use</h3>
+                <div className="space-y-4">
+                  {howToUse.map((step: {step: number, instruction: string}) => (
+                    <div key={step.step} className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary/10 text-primary font-bold rounded-full">{step.step}</div>
+                      <p className="text-gray-700 pt-1">{step.instruction}</p>
                     </div>
-                )}
+                  ))}
+                </div>
+              </div>
+            )}
 
-                {packageContents.length > 0 && (
-                    <div className="mt-8">
-                        <h3 className="font-sans text-xl font-bold mb-4">What's in the Box</h3>
-                        <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                            {packageContents.map((content: string) => <li key={content}>{content}</li>)}
-                        </ul>
-                    </div>
-                )}
-                <div className="mt-12 pt-8 border-t"><Reviews productId={product.id} /></div>
-                <ProductFaqSection productId={product.id} />
-            </div>
+            {packageContents.length > 0 && (
+              <div className="mt-8">
+                <h3 className="font-sans text-xl font-bold mb-4">What's in the Box</h3>
+                <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                  {packageContents.map((content: string) => <li key={content}>{content}</li>)}
+                </ul>
+              </div>
+            )}
+            <div className="mt-12 pt-8 border-t"><Reviews productId={product.id} /></div>
+            <ProductFaqSection productId={product.id} />
+          </div>
         </div>
       </div>
     </>
   );
 }
+

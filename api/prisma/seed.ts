@@ -121,7 +121,7 @@ async function main() {
       if (category) {
         console.log(`Creating item "${item.name}" with type: "${item.type}"`);
         
-        // --- LOGIC TO DETERMINE THE BASE PRICE ---
+        // --- NEW FEATURE: LOGIC TO DETERMINE THE BASE PRICE ---
         let basePrice = item.price; // Default to the price in JSON
         let salePrice = item.salePrice;
 
@@ -138,7 +138,7 @@ async function main() {
             // When variants exist, the main salePrice on the item itself should be null.
             salePrice = null; 
         }
-        // --- END OF PRICE LOGIC ---
+        // --- END OF NEW FEATURE ---
 
         await prisma.contentItem.create({
           data: {
