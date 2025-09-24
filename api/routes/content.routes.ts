@@ -1,6 +1,6 @@
 import express from 'express';
 import { contentController } from '../controllers/index.js';
-import { auth, authorize } from '../middleware/auth.middleware.js';
+import { authorize } from '../middleware/auth.middleware.js'; 
 
 const router = express.Router();
 
@@ -25,21 +25,18 @@ router.get('/product/:slug', contentController.getItemBySlug);
 // These routes are protected and can only be accessed by logged-in admins.
 router.post(
     '/products', 
-    auth, 
     authorize(['admin']), 
     contentController.createProduct
 );
 
 router.patch(
     '/products/:productId', 
-    auth, 
     authorize(['admin']), 
     contentController.updateProduct
 );
 
 router.delete(
-    '/products/:productId', 
-    auth, 
+    '/products/:productId',  
     authorize(['admin']), 
     contentController.deleteProduct
 );
