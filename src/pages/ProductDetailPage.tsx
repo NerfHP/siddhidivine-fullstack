@@ -248,21 +248,14 @@ export default function ProductDetailPage() {
                   {packageContents.map((content: string, index: number) => <li key={index}>{content}</li>)}
                 </ul>
               </div>
-            )}
-
-            {/* --- DEBUGGING: These child components are temporarily disabled to find the source of the error --- */}
-            {/* After confirming the page loads with these disabled, re-enable them one by one to find the component that crashes the page. */}
-            
-            {/* <div className="mt-12 pt-8 border-t">
+            )}         
+            <div className="mt-12 pt-8 border-t">
               <Reviews productId={product.id} />
             </div>
-            
-            <ProductFaqSection productId={product.id} /> */}
-
+            <ProductFaqSection productId={product.id} />
           </div>
         </div>
       </div>
     </>
   );
 }
-

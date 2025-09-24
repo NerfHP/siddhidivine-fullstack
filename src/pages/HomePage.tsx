@@ -67,7 +67,7 @@ export default function HomePage() {
   });
 
   const handleAddToCart = (item: ContentItem) => {
-    addToCart(item);
+    addToCart(item, null, 1, false);
     toast.success(`${item.name} added to cart!`);
   };
 
