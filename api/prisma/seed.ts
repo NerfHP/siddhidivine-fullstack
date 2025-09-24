@@ -5,15 +5,7 @@ import path from 'path'
 
 const prisma = new PrismaClient();
 
-// --- TYPE DEFINITIONS (UNCHANGED) ---
-type SeedVariant = {
-  id: string;
-  origin: string;
-  price: number;
-  salePrice?: number | null;
-  stock: number;
-}
-
+// This defines the exact shape of your product data from the JSON file
 type SeedItem = {
     name: string;
     slug: string;
@@ -30,7 +22,7 @@ type SeedItem = {
     attributes?: string;
     specifications?: Record<string, string>;
     benefits?: any[];
-    variants?: SeedVariant[];
+    variants?: any[];
     howToUse?: any[];
     packageContents?: string[];
 };
@@ -44,6 +36,7 @@ type SeedCategory = {
     children?: SeedCategory[];
 }
 
+// FAQ types
 interface SeedFaq {
   question: string;
   answer: string;
@@ -76,40 +69,28 @@ async function createCategory(categoryData: SeedCategory, parentId: string | nul
 async function main() {
   console.log('Start seeding ...');
   
-  // --- THE DEFINITIVE FIX: Deleting tables sequentially without a transaction ---
-  // This is a more robust method to avoid the "prepared statement" error on some systems.
-  console.log('Clearing existing data...');
+  // Clear all data in the correct order (be careful with user data)
   await prisma.orderItem.deleteMany();
-  await prisma.productFaq.deleteMany();
-  await prisma.review.deleteMany();
   await prisma.order.deleteMany();
-  // We must delete items that have relations to ContentItem and User first.
-  
-  // Now we can delete the ContentItems themselves
+  await prisma.review.deleteMany();
   await prisma.contentItem.deleteMany();
-
-  // Now we can delete Categories
   await prisma.category.deleteMany();
-  
-  // Now we can delete Users (which will cascade to Tokens)
-  await prisma.user.deleteMany();
-  
-  // Finally, delete independent tables
   await prisma.discount.deleteMany();
-  await prisma.formSubmission.deleteMany(); // Added for completeness
-  console.log('Data cleared.');
   
-  
-  // --- THE REST OF THE SCRIPT REMAINS THE SAME ---
+  // Only delete users if you're sure you want to clear all user data
+  // Comment out the next line if you want to keep existing users
+  await prisma.user.deleteMany();
+
+  // Create a test user with phone number (for testing purposes)
   console.log('Creating test user...');
   await prisma.user.create({ 
     data: { 
-      phone: '9999999999',
+      phone: '9999999999', // Test phone number
       name: 'Test User',
       email: 'testuser@example.com',
       address: 'Test Address, Test City',
       isProfileComplete: true,
-      role: 'admin'
+      role: 'admin' // Make test user an admin
     } 
   });
 
@@ -128,30 +109,18 @@ async function main() {
     try {
       const category = await prisma.category.findUnique({ where: { slug: item.categorySlug } });
       if (category) {
+        // Debug log to see what type value we're getting
         console.log(`Creating item "${item.name}" with type: "${item.type}"`);
         
-        let basePrice = item.price;
-        let salePrice = item.salePrice;
-
-        if (item.variants && item.variants.length > 0) {
-            const lowestVariantPrice = item.variants.reduce((minPrice, variant) => {
-                const currentPrice = variant.salePrice ?? variant.price;
-                return currentPrice < minPrice ? currentPrice : minPrice;
-            }, Infinity);
-
-            basePrice = lowestVariantPrice;
-            salePrice = null; 
-        }
-
         await prisma.contentItem.create({
           data: {
             name: item.name,
             slug: item.slug,
             description: item.description,
-            type: item.type,
+            type: item.type, // This line is crucial and was missing!
             content: item.content,
-            price: basePrice,
-            salePrice: salePrice,
+            price: item.price,
+            salePrice: item.salePrice,
             vendor: item.vendor,
             sku: item.sku,
             availability: item.availability,
@@ -165,12 +134,13 @@ async function main() {
             categories: {
               connect: [{ id: category.id }],
             },
-            stock: 100,
-            isPublished: true,
+            stock: 100, // Set default stock
+            isPublished: true, // Make all items visible
           },
         });
         createdCount++;
         
+        // Log progress every 50 items instead of 100
         if (createdCount % 50 === 0) {
           console.log(`Created ${createdCount} products so far...`);
         }
@@ -195,12 +165,35 @@ async function main() {
     });
   }
 
+  // Create sample discount codes
   console.log('Creating sample discount codes...');
-  await prisma.discount.create({ data: { code: 'WELCOME10', discountType: 'PERCENTAGE', value: 10, isActive: true } });
-  await prisma.discount.create({ data: { code: 'DIWALI500', discountType: 'FIXED_AMOUNT', value: 500, isActive: true } });
-  await prisma.discount.create({ data: { code: 'FIRSTTIME', discountType: 'PERCENTAGE', value: 15, isActive: true } });
+  await prisma.discount.create({
+    data: {
+        code: 'WELCOME10',
+        discountType: 'PERCENTAGE',
+        value: 10,
+        isActive: true,
+    }
+  });
+  await prisma.discount.create({
+    data: {
+        code: 'DIWALI500',
+        discountType: 'FIXED_AMOUNT',
+        value: 500,
+        isActive: true,
+    }
+  });
+  await prisma.discount.create({
+    data: {
+        code: 'FIRSTTIME',
+        discountType: 'PERCENTAGE',
+        value: 15,
+        isActive: true,
+    }
+  });
   console.log('Sample discount codes created.');
 
+  // Seed Product FAQs
   console.log('Seeding Product FAQs...');
   const faqDataPath = path.resolve(process.cwd(), 'api', 'prisma', 'seed-faqs.json');
 
@@ -210,11 +203,20 @@ async function main() {
     const faqData: SeedFaqEntry[] = JSON.parse(fs.readFileSync(faqDataPath, 'utf-8'));
 
     for (const faqEntry of faqData) {
-      const product = await prisma.contentItem.findUnique({ where: { slug: faqEntry.productSlug } });
+      const product = await prisma.contentItem.findUnique({
+        where: { slug: faqEntry.productSlug },
+      });
+
       if (product) {
+        // Delete existing FAQs for this product to avoid duplicates
         await prisma.productFaq.deleteMany({ where: { productId: product.id } });
+
+        // Create new FAQs
         await prisma.productFaq.createMany({
-          data: faqEntry.faqs.map((faq) => ({ ...faq, productId: product.id })),
+          data: faqEntry.faqs.map((faq) => ({
+            ...faq,
+            productId: product.id,
+          })),
         });
         console.log(`Seeded ${faqEntry.faqs.length} FAQs for ${product.name}.`);
       } else {
@@ -234,4 +236,3 @@ main()
   .finally(async () => { 
     await prisma.$disconnect(); 
   });
-

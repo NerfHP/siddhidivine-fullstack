@@ -1,23 +1,14 @@
 import { CartItem, ContentItem } from '@/types';
 import { createContext, ReactNode, useState, useEffect, useMemo } from 'react';
 
-// Define the structure of a single variant, consistent with the Product Detail Page
-interface ProductVariant {
-  id: string;
-  origin: string;
-  price: number;
-  salePrice?: number | null;
-  stock: number;
-}
-
-// The signature for `addToCart` is updated to accept the `isEnergized` flag
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: ContentItem, variant: ProductVariant | null, quantity: number, isEnergized: boolean) => void;
-  removeFromCart: (cartItemId: string) => void;
-  updateQuantity: (cartItemId: string, quantity: number) => void;
+  addToCart: (item: ContentItem) => void;
+  removeFromCart: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
+  // **UPGRADE**: Renamed cartTotal to subtotal for clarity
   subtotal: number; 
 }
 
@@ -27,91 +18,74 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const localData = localStorage.getItem('cart');
-      return localData ? JSON.parse(localData) : [];
+      if (localData) {
+        const parsedData = JSON.parse(localData);
+        if (Array.isArray(parsedData)) {
+          return parsedData;
+        }
+      }
     } catch (error) {
       console.error("Failed to parse cart from localStorage", error);
-      return [];
     }
+    return [];
   });
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (item: ContentItem, variant: ProductVariant | null, quantity: number, isEnergized: boolean) => {
-    const ENERGIZING_COST = 101;
-
-    // Create a unique ID for the cart item based on all its options.
-    const cartItemId = `${item.id}${variant ? `-${variant.id}` : ''}${isEnergized ? '-energized' : ''}`;
-
+  const addToCart = (item: ContentItem) => {
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((cartItem) => cartItem.id === cartItemId);
-
+      const currentItems = Array.isArray(prevItems) ? prevItems : [];
+      const existingItem = currentItems.find((cartItem) => cartItem.id === item.id);
       if (existingItem) {
-        // If this exact item exists, just increase its quantity.
-        return prevItems.map((cartItem) =>
-          cartItem.id === cartItemId
-            ? { ...cartItem, quantity: cartItem.quantity + quantity }
-            : cartItem
+        return currentItems.map((cartItem) =>
+          cartItem.id === item.id
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            : cartItem,
         );
-      } else {
-        // If it's a new item, construct it with all the correct details.
-        let finalPrice = variant?.salePrice ?? variant?.price ?? item.salePrice ?? item.price ?? 0;
-        let finalName = item.name;
-
-        if (variant) {
-          finalName += ` (${variant.origin})`;
-        }
-
-        if (isEnergized) {
-          finalName += ' (Energized)';
-          finalPrice += ENERGIZING_COST;
-        }
-
-        const newItemToAdd: CartItem = {
-          ...item,
-          id: cartItemId,
-          name: finalName,
-          price: finalPrice,
-          salePrice: null, // Nullify original salePrice as it's now part of the final price
-          quantity: quantity,
-        };
-        
-        return [...prevItems, newItemToAdd];
       }
+      return [...currentItems, { ...item, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (cartItemId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== cartItemId));
+  const removeFromCart = (itemId: string) => {
+    setCartItems((prevItems) =>
+      (Array.isArray(prevItems) ? prevItems : []).filter((item) => item.id !== itemId),
+    );
   };
 
-  const updateQuantity = (cartItemId: string, quantity: number) => {
+  const updateQuantity = (itemId: string, quantity: number) => {
     setCartItems((prevItems) =>
-      prevItems
-        .map((item) => (item.id === cartItemId ? { ...item, quantity: Math.max(0, quantity) } : item))
-        .filter((item) => item.quantity > 0)
+      (Array.isArray(prevItems) ? prevItems : []).map((item) =>
+        item.id === itemId ? { ...item, quantity: Math.max(0, quantity) } : item,
+      ).filter(item => item.quantity > 0)
     );
   };
 
   const clearCart = () => {
     setCartItems([]);
   };
+
+  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
   
+  // **UPGRADE**: useMemo efficiently recalculates values only when cartItems changes
   const { cartCount, subtotal } = useMemo(() => {
-    const count = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    const count = safeCartItems.reduce((acc, item) => acc + item.quantity, 0);
     
-    // This calculation includes a fallback of 0 to prevent TypeScript errors.
-    const total = cartItems.reduce((acc, item) => {
-        return acc + ((item.price ?? 0) * item.quantity);
+    // **THE FIX**: This now correctly uses salePrice if it exists, otherwise it uses the regular price.
+    const total = safeCartItems.reduce((acc, item) => {
+        const price = item.salePrice ?? item.price ?? 0;
+        return acc + (price * item.quantity);
     }, 0);
 
     return { cartCount: count, subtotal: total };
-  }, [cartItems]);
+  }, [safeCartItems]);
+
 
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, subtotal }}
+      value={{ cartItems: safeCartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, subtotal }}
     >
       {children}
     </CartContext.Provider>
