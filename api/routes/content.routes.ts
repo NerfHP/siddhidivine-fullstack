@@ -8,8 +8,8 @@ const router = express.Router();
 // These are accessible to everyone.
 router.get('/categories', contentController.getCategories);
 router.get('/products', contentController.getAllProducts);
-router.get('/products/featured', contentController.getFeaturedItems);
-router.get('/products/bestsellers', contentController.getBestsellers);
+router.get('/featured', contentController.getFeaturedItems);
+router.get('/bestsellers', contentController.getBestsellers);
 router.get('/services', contentController.getAllServices);
 router.get('/faqs', contentController.getFaqs);
 
@@ -18,7 +18,7 @@ router.get('/category-data/*', contentController.getCategoryPageData);
 // This route is for a single product's detail page data.
 router.get('/product-data/:slug', contentController.getProductPageData);
 // This is a legacy/alternative route for getting an item by slug.
-router.get('/:slug', contentController.getItemBySlug);
+router.get('/product/:slug', contentController.getItemBySlug);
 
 
 // --- ADMIN ROUTES ---
