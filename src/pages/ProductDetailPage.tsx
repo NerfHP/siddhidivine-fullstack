@@ -1,5 +1,3 @@
-// In client/src/pages/ProductDetailPage.tsx
-
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -19,20 +17,16 @@ import ProductImageGallery from '@/components/shared/ProductImageGallery';
 import Reviews from '@/components/shared/Reviews';
 import ProductFaqSection from '../components/shared/ProductFaqSection';
 
-// This page expects a clear response with product data and its full breadcrumb trail.
 interface ProductResponse {
   product: ContentItem;
   breadcrumbs: Category[];
 }
 
-// We use the dedicated API endpoint for fetching all product page data.
 const fetchProductData = async (slug: string) => {
-  // IMPORTANT: baseURL already includes /api, so we only call /content/...
   const { data } = await api.get(`/content/product-data/${slug}`);
   return data as ProductResponse;
 }
 
-// A map to render icons dynamically, just like in your version.
 const iconMap: { [key: string]: React.ElementType } = {
   CheckCircle, Package, Target, Sparkles, Shield, Heart
 };
@@ -41,10 +35,11 @@ export default function ProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  
+  // --- NEW: State for the "Energized" checkbox ---
+  const [isEnergized, setIsEnergized] = useState(false);
+  const ENERGIZING_COST = 151; // Define the cost as a constant
 
-  console.log(`ProductDetailPage is fetching data for slug:`, productSlug);
-
-  // This hook now fetches both the product and its breadcrumbs in one call.
   const { data, isLoading, isError } = useQuery({
     queryKey: ['productDetail', productSlug],
     queryFn: () => fetchProductData(productSlug!),
@@ -54,26 +49,34 @@ export default function ProductDetailPage() {
   if (isLoading) return <div className="flex h-96 items-center justify-center"><Spinner /></div>;
   if (isError || !data) return <div className="container mx-auto p-8"><Alert type="error" message="Product not found." /></div>;
 
-  // Destructure the data from the API response
   const { product, breadcrumbs } = data;
-
-  // --- All of your detailed logic and state is preserved ---
-  const imageArray: string[] = JSON.parse(product.images || '[]');
-  const finalPrice = product.salePrice || product.price || 0;
   
+  const imageArray: string[] = JSON.parse(product.images || '[]');
+  
+  // --- CHANGE: Price logic now includes the energizing cost ---
+  const basePrice = product.salePrice || product.price || 0;
+  const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);
+  const strikethroughPrice = product.salePrice ? product.price : null;
+
+
   const specifications = product.specifications ? JSON.parse(product.specifications as unknown as string) : null;
   const benefits = product.benefits ? JSON.parse(product.benefits as unknown as string) : [];
   const howToUse = product.howToUse ? JSON.parse(product.howToUse as unknown as string) : [];
   const packageContents = product.packageContents ? JSON.parse(product.packageContents as unknown as string) : [];
 
   const handleAddToCart = () => {
-    const itemToAdd = { ...product, price: finalPrice };
-    for (let i = 0; i < quantity; i++) addToCart(itemToAdd);
-    toast.success(`${quantity} x ${product.name} added to cart!`);
+    // --- CHANGE: Pass the `isEnergized` state to the cart context ---
+    const itemToAdd = { ...product, price: basePrice };
+    addToCart(itemToAdd, quantity, isEnergized);
+    
+    const energizedText = isEnergized ? ' (Energized)' : '';
+    toast.success(`${quantity} x ${product.name}${energizedText} added to cart!`);
+    
+    // Reset state after adding
+    setQuantity(1);
+    setIsEnergized(false);
   };
 
-  // --- BREADCRUMB LOGIC (IMPROVED) ---
-  // This builds the full, correct, nested breadcrumb trail.
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Products', href: '/products' },
@@ -89,25 +92,37 @@ export default function ProductDetailPage() {
       <SEO title={product.name} description={product.description} imageUrl={imageArray[0]} />
       <div className="bg-transparent">
         <div className="container mx-auto px-4 py-8">
-          {/* Your breadcrumbs will now be perfectly nested */}
           <Breadcrumbs items={breadcrumbItems} />
 
-          {/* --- ALL OF YOUR DETAILED JSX IS PRESERVED BELOW --- */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
             
-            {/* Left Column: Image */}
             <div>
               <ProductImageGallery images={imageArray} productName={product.name} />
             </div>
 
-            {/* Right Column: Details */}
             <div>
               <h1 className="font-sans text-4xl font-bold text-text-main">{product.name}</h1>
               <p className="text-lg text-gray-600 mt-2">{product.description}</p>
               
               <div className="flex items-baseline gap-3 my-4">
-                <p className="text-3xl font-bold text-primary">{formatCurrency(finalPrice)}</p>
-                {product.salePrice && product.price && <p className="text-xl text-gray-400 line-through">{formatCurrency(product.price)}</p>}
+                <p className="text-3xl font-bold text-primary">{formatCurrency(displayPrice)}</p>
+                {strikethroughPrice && <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice)}</p>}
+              </div>
+
+              {/* --- NEW: Energized Product Checkbox Section --- */}
+              <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <label htmlFor="energize-checkbox" className="flex items-center cursor-pointer">
+                  <input
+                    id="energize-checkbox"
+                    type="checkbox"
+                    checked={isEnergized}
+                    onChange={() => setIsEnergized(!isEnergized)}
+                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="ml-3 text-sm font-medium text-gray-800">
+                    🎁 Get Siddh/Energized Product (Pran Pratishtha) + {formatCurrency(ENERGIZING_COST)}
+                  </span>
+                </label>
               </div>
               
               <div className="flex items-center gap-4">
@@ -135,7 +150,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
           
-          {/* Detailed Info Sections */}
           <div className="mt-16">
             {product.content && (
               <div className="prose max-w-none text-gray-700 mb-8">
@@ -200,7 +214,6 @@ export default function ProductDetailPage() {
               <Reviews productId={product.id} />
             </div>
 
-            {/* --- ADD THE NEW FAQ SECTION HERE --- */}
             <ProductFaqSection productId={product.id} />
 
           </div>
@@ -209,4 +222,3 @@ export default function ProductDetailPage() {
     </>
   );
 }
-

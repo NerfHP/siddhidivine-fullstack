@@ -305,7 +305,7 @@
           "slug": "21-mukhi-rudraksha",
           "type": "PRODUCT",
           "description": "Represents Lord Vishnu, promoting spiritual enlightenment."
-        },
+        },                                      
         {
           "name": "Gauri Shankar Rudraksha",
           "slug": "gauri-shankar-rudraksha",
@@ -455,9 +455,7 @@
       "content": "The Navgrah Yantra is a powerful tool in Vedic astrology designed to harmonize the influences of the nine planets (Navagraha) in your life. It attracts prosperity, peace, and protection while removing obstacles caused by planetary doshas.",
       "price": 3500,
       "salePrice": 3500,
-      "images": [
-        "/images/products/navgrah-yantra.jpg"
-      ],
+      "images": ["/images/products/navgrah-yantra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "navgrah-yantra",
       "vendor": "Siddhi Divine",
@@ -470,36 +468,15 @@
         "Blessed By": "Vedic Priest"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Balances planetary energies in your horoscope."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Removes obstacles and negative influences."
-        },
-        {
-          "icon": "Shield",
-          "text": "Brings prosperity, success, and good luck."
-        },
-        {
-          "icon": "Star",
-          "text": "Promotes peace, health, and harmony in life."
-        }
+        { "icon": "Target", "text": "Balances planetary energies in your horoscope." },
+        { "icon": "Sparkles", "text": "Removes obstacles and negative influences." },
+        { "icon": "Shield", "text": "Brings prosperity, success, and good luck." },
+        { "icon": "Star", "text": "Promotes peace, health, and harmony in life." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Place the Yantra on a clean altar or pooja space facing east or north."
-        },
-        {
-          "step": 2,
-          "instruction": "Light a diya or incense in front of it daily and chant the Navgrah mantra for 5–10 minutes."
-        },
-        {
-          "step": 3,
-          "instruction": "Keep it energized by occasional cleansing with Ganga Jal and meditation."
-        }
+        { "step": 1, "instruction": "Place the Yantra on a clean altar or pooja space facing east or north." },
+        { "step": 2, "instruction": "Light a diya or incense in front of it daily and chant the Navgrah mantra for 5–10 minutes." },
+        { "step": 3, "instruction": "Keep it energized by occasional cleansing with Ganga Jal and meditation." }
       ],
       "packageContents": [
         "One Navgrah Yantra",
@@ -3675,8 +3652,8 @@
       "slug": "rudraksha-bracelet",
       "description": "Authentic Rudraksha bracelet, crafted for energy and wellness.",
       "content": "The Rudraksha Bracelet is known for its spiritual and healing properties.",
-      "price": null,
-      "salePrice": null,
+      "price": 100,
+      "salePrice": 200,
       "images": [
         "/images/products/rudraksha.jpg"
       ],
@@ -3725,22 +3702,6 @@
         "One Rudraksha Bracelet",
         "Certificate of Authenticity",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 100.0,
-          "salePrice": 200.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 80.0,
-          "salePrice": 150.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -3748,8 +3709,8 @@
       "slug": "rudraksha-and-clear-quartz",
       "description": "Authentic Rudraksha and Clear Quartz bracelet, crafted for energy and wellness.",
       "content": "The Rudraksha and Clear Quartz Bracelet is known for its spiritual and healing properties.",
-      "price": null,
-      "salePrice": null,
+      "price": 100,
+      "salePrice": 200,
       "images": [
         "/images/products/rudraksha-and-clear-quartz.jpg"
       ],
@@ -3798,22 +3759,6 @@
         "One Rudraksha and Clear Quartz Bracelet",
         "Certificate of Authenticity",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 100.0,
-          "salePrice": 200.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 80.0,
-          "salePrice": 150.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -5759,8 +5704,8 @@
       "slug": "rudraksha-and-diamond-cut-clear-quartz",
       "description": "Authentic Rudraksha & Diamond Cut Clear Quartz bracelet, crafted for energy and wellness.",
       "content": "The Rudraksha & Diamond Cut Clear Quartz Bracelet is known for its spiritual and healing properties.",
-      "price": null,
-      "salePrice": null,
+      "price": 100,
+      "salePrice": 200,
       "images": [
         "/images/products/rudraksha-and-diamond-cut-clear-quartz.jpg"
       ],
@@ -5809,22 +5754,6 @@
         "One Rudraksha & Diamond Cut Clear Quartz Bracelet",
         "Certificate of Authenticity",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 100.0,
-          "salePrice": 200.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 80.0,
-          "salePrice": 150.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10122,36 +10051,15 @@
         "Quality Options": "Medium / Top"
       },
       "benefits": [
-        {
-          "icon": "Sparkles",
-          "text": "Attracts spiritual growth"
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Brings success"
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Attracts wealth"
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Heals clarity"
-        }
+        {"icon": "Sparkles","text": "Attracts spiritual growth"},
+        {"icon": "Sparkles","text": "Brings success"},
+        {"icon": "Sparkles","text": "Attracts wealth"},
+        {"icon": "Sparkles","text": "Heals clarity"}
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Wear on ankle for best effect"
-        },
-        {
-          "step": 2,
-          "instruction": "Cleanse with incense smoke"
-        },
-        {
-          "step": 3,
-          "instruction": "Chant 'Om Namah Shivaya' during use"
-        }
+        {"step": 1,"instruction": "Wear on ankle for best effect"},
+        {"step": 2,"instruction": "Cleanse with incense smoke"},
+        {"step": 3,"instruction": "Chant 'Om Namah Shivaya' during use"}
       ],
       "packageContents": [
         "One Fertility Bracelet",
@@ -10160,62 +10068,39 @@
       ]
     },
     {
-      "name": "Karungali Bracelet",
-      "slug": "karungali-bracelet",
-      "description": "Sacred Karungali (Ebony wood) bracelet, known for its divine and protective energies.",
-      "content": "The Karungali Bracelet is revered in spiritual traditions for warding off evil, balancing energies, and enhancing inner strength. It is widely used for protection, stability, and attracting positive vibrations.",
-      "price": 500,
-      "salePrice": 650,
-      "images": [
-        "/images/products/karungali-bracelet.jpg"
-      ],
-      "type": "PRODUCT",
-      "categorySlug": "karungali-bracelets",
-      "vendor": "Siddhi Divine",
-      "sku": "SKN-BR-KARUNGALI",
-      "availability": "In Stock",
-      "specifications": {
-        "Material": "Karungali (Ebony Wood)",
-        "Origin": "India",
-        "Usage": "Spiritual Protection"
-      },
-      "benefits": [
-        {
-          "icon": "Shield",
-          "text": "Protects against evil eye and negative forces."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Balances energy and promotes positivity."
-        },
-        {
-          "icon": "Heart",
-          "text": "Enhances mental peace and emotional stability."
-        },
-        {
-          "icon": "Target",
-          "text": "Strengthens spiritual connection and focus."
-        }
-      ],
-      "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Wear on the right wrist to attract protective energy."
-        },
-        {
-          "step": 2,
-          "instruction": "Cleanse with incense smoke or camphor once a week."
-        },
-        {
-          "step": 3,
-          "instruction": "Chant 'Om Namah Shivaya' or your personal mantra while wearing."
-        }
-      ],
-      "packageContents": [
-        "One Karungali Bracelet",
-        "Usage Instructions"
-      ]
+    "name": "Karungali Bracelet",
+    "slug": "karungali-bracelet",
+    "description": "Sacred Karungali (Ebony wood) bracelet, known for its divine and protective energies.",
+    "content": "The Karungali Bracelet is revered in spiritual traditions for warding off evil, balancing energies, and enhancing inner strength. It is widely used for protection, stability, and attracting positive vibrations.",
+    "price": 500,
+    "salePrice": 650,
+    "images": ["/images/products/karungali-bracelet.jpg"],
+    "type": "PRODUCT",
+    "categorySlug": "karungali-bracelets",
+    "vendor": "Siddhi Divine",
+    "sku": "SKN-BR-KARUNGALI",
+    "availability": "In Stock",
+    "specifications": {
+      "Material": "Karungali (Ebony Wood)",
+      "Origin": "India",
+      "Usage": "Spiritual Protection"
     },
+    "benefits": [
+      { "icon": "Shield", "text": "Protects against evil eye and negative forces." },
+      { "icon": "Sparkles", "text": "Balances energy and promotes positivity." },
+      { "icon": "Heart", "text": "Enhances mental peace and emotional stability." },
+      { "icon": "Target", "text": "Strengthens spiritual connection and focus." }
+    ],
+    "howToUse": [
+      { "step": 1, "instruction": "Wear on the right wrist to attract protective energy." },
+      { "step": 2, "instruction": "Cleanse with incense smoke or camphor once a week." },
+      { "step": 3, "instruction": "Chant 'Om Namah Shivaya' or your personal mantra while wearing." }
+    ],
+    "packageContents": [
+      "One Karungali Bracelet",
+      "Usage Instructions"
+    ]
+  },
     {
       "name": "Pure Asthdhatu OM Namah Shivaay Bracelet",
       "slug": "pure-asthdhatu-om-namah-shivaay-bracelet",
@@ -10223,9 +10108,7 @@
       "content": "This sacred bracelet is crafted from Asthdhatu (a blend of eight metals) symbolizing balance and harmony. The OM Namah Shivaya charm enhances spiritual vibrations, making it an ideal daily wear accessory.",
       "price": 1000,
       "salePrice": 400,
-      "images": [
-        "/images/products/bracelet-om.jpg"
-      ],
+      "images": ["/images/products/bracelet-om.jpg"],
       "type": "PRODUCT",
       "categorySlug": "bracelets",
       "vendor": "Siddhi Divine",
@@ -10238,28 +10121,13 @@
         "Origin": "India"
       },
       "benefits": [
-        {
-          "icon": "Sparkles",
-          "text": "Balances spiritual and material energies."
-        },
-        {
-          "icon": "Heart",
-          "text": "Promotes devotion and inner peace."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects from negative influences."
-        }
+        { "icon": "Sparkles", "text": "Balances spiritual and material energies." },
+        { "icon": "Heart", "text": "Promotes devotion and inner peace." },
+        { "icon": "Shield", "text": "Protects from negative influences." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Wear on your right wrist after purification with Ganga Jal."
-        },
-        {
-          "step": 2,
-          "instruction": "Chant 'Om Namah Shivaya' while wearing it for maximum effect."
-        }
+        { "step": 1, "instruction": "Wear on your right wrist after purification with Ganga Jal." },
+        { "step": 2, "instruction": "Chant 'Om Namah Shivaya' while wearing it for maximum effect." }
       ],
       "packageContents": [
         "One Asthdhatu OM Bracelet",
@@ -10274,9 +10142,7 @@
       "content": "This bracelet combines the healing power of seven chakra stones with the calming fragrance of white sandalwood beads. It is designed to balance energy centers and promote harmony in mind and body.",
       "price": 1499,
       "salePrice": 1499,
-      "images": [
-        "/images/products/bracelet-chakra.jpg"
-      ],
+      "images": ["/images/products/bracelet-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "crystal-bracelets",
       "vendor": "Siddhi Divine",
@@ -10288,28 +10154,13 @@
         "Origin": "India"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Helps align and balance the chakras."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Supports physical and emotional healing."
-        },
-        {
-          "icon": "Heart",
-          "text": "Provides peace and positivity."
-        }
+        { "icon": "Target", "text": "Helps align and balance the chakras." },
+        { "icon": "Sparkles", "text": "Supports physical and emotional healing." },
+        { "icon": "Heart", "text": "Provides peace and positivity." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Wear on either wrist after cleansing with incense smoke."
-        },
-        {
-          "step": 2,
-          "instruction": "Meditate focusing on the seven chakras."
-        }
+        { "step": 1, "instruction": "Wear on either wrist after cleansing with incense smoke." },
+        { "step": 2, "instruction": "Meditate focusing on the seven chakras." }
       ],
       "packageContents": [
         "Seven Chakra Bracelet with Sandalwood",
@@ -10322,11 +10173,9 @@
       "slug": "1-mukhi-indonesian-rudraksha-bracelet",
       "description": "Adjustable bracelet with a single-face Indonesian rudraksha bead; promotes clarity and focus.",
       "content": "This bracelet is embedded with an authentic 1 Mukhi Indonesian Rudraksha, known for enhancing clarity, focus, and spiritual enlightenment.",
-      "price": null,
-      "salePrice": null,
-      "images": [
-        "/images/products/bracelet-rud-1.jpg"
-      ],
+      "price": 4000,
+      "salePrice": 4500,
+      "images": ["/images/products/bracelet-rud-1.jpg"],
       "type": "PRODUCT",
       "categorySlug": "rudraksha-bracelets",
       "vendor": "Siddhi Divine",
@@ -10341,49 +10190,18 @@
         "Beej Mantra": "Om Hreem Namah"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Sharpens focus and concentration."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Supports spiritual awakening."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects against negativity."
-        }
+        { "icon": "Target", "text": "Sharpens focus and concentration." },
+        { "icon": "Sparkles", "text": "Supports spiritual awakening." },
+        { "icon": "Shield", "text": "Protects against negativity." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Purify with Ganga Jal and incense smoke."
-        },
-        {
-          "step": 2,
-          "instruction": "Chant 'Om Hreem Namah' before wearing."
-        }
+        { "step": 1, "instruction": "Purify with Ganga Jal and incense smoke." },
+        { "step": 2, "instruction": "Chant 'Om Hreem Namah' before wearing." }
       ],
       "packageContents": [
         "One 1 Mukhi Rudraksha Bracelet",
         "Certificate of Authenticity",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 4000.0,
-          "salePrice": 4500.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 3200.0,
-          "salePrice": 3375.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10391,11 +10209,9 @@
       "slug": "10-mukhi-rudraksha-bracelet-adjustable",
       "description": "Adjustable ten-mukhi rudraksha bracelet; believed to protect from negative influences.",
       "content": "The 10 Mukhi Rudraksha represents Lord Vishnu. This bracelet shields the wearer from negative energies, psychic attacks, and evil influences.",
-      "price": null,
-      "salePrice": null,
-      "images": [
-        "/images/products/bracelet-rud-10.jpg"
-      ],
+      "price": 6000,
+      "salePrice": 6000,
+      "images": ["/images/products/bracelet-rud-10.jpg"],
       "type": "PRODUCT",
       "categorySlug": "rudraksha-bracelets",
       "vendor": "Siddhi Divine",
@@ -10410,49 +10226,18 @@
         "Beej Mantra": "Om Hreem Namah"
       },
       "benefits": [
-        {
-          "icon": "Shield",
-          "text": "Protects from evil energies."
-        },
-        {
-          "icon": "Target",
-          "text": "Removes obstacles and fears."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Brings peace and harmony."
-        }
+        { "icon": "Shield", "text": "Protects from evil energies." },
+        { "icon": "Target", "text": "Removes obstacles and fears." },
+        { "icon": "Sparkles", "text": "Brings peace and harmony." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Wash with Ganga Jal before first use."
-        },
-        {
-          "step": 2,
-          "instruction": "Chant 'Om Hreem Namah' 108 times."
-        }
+        { "step": 1, "instruction": "Wash with Ganga Jal before first use." },
+        { "step": 2, "instruction": "Chant 'Om Hreem Namah' 108 times." }
       ],
       "packageContents": [
         "One 10 Mukhi Rudraksha Bracelet",
         "Certificate of Authenticity",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 6000.0,
-          "salePrice": 6000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 4800.0,
-          "salePrice": 4500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10460,11 +10245,9 @@
       "slug": "ek-mukhi-rudraksha-locket",
       "description": "Lab-certified 1 Mukhi Rudraksha pendant with silver capping; energized and supplied with certificate.",
       "content": "The 1 Mukhi Rudraksha is the rarest and most powerful bead symbolizing Lord Shiva. This locket version with silver capping is easy to wear and radiates divine vibrations.",
-      "price": null,
-      "salePrice": null,
-      "images": [
-        "/images/products/rud-nepal-1.jpg"
-      ],
+      "price": 4000,
+      "salePrice": 4000,
+      "images": ["/images/products/rud-nepal-1.jpg"],
       "type": "PRODUCT",
       "categorySlug": "1-mukhi-rudraksha",
       "vendor": "Siddhi Divine",
@@ -10479,49 +10262,18 @@
         "Beej Mantra": "Om Hreem Namah"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Enhances focus and clarity."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Promotes spiritual awakening."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects against negative energies."
-        }
+        { "icon": "Target", "text": "Enhances focus and clarity." },
+        { "icon": "Sparkles", "text": "Promotes spiritual awakening." },
+        { "icon": "Shield", "text": "Protects against negative energies." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Sanctify with Ganga Jal before wearing."
-        },
-        {
-          "step": 2,
-          "instruction": "Chant 'Om Hreem Namah' while wearing around the neck."
-        }
+        { "step": 1, "instruction": "Sanctify with Ganga Jal before wearing." },
+        { "step": 2, "instruction": "Chant 'Om Hreem Namah' while wearing around the neck." }
       ],
       "packageContents": [
         "One 1 Mukhi Rudraksha with Silver Capping",
         "Certificate of Authenticity",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 4000.0,
-          "salePrice": 4000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 3200.0,
-          "salePrice": 3000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10529,8 +10281,8 @@
       "slug": "1-mukhi-rudraksh",
       "description": "The rarest Rudraksha representing Lord Shiva himself, symbol of ultimate truth and moksha.",
       "content": "The rarest Rudraksha representing Lord Shiva himself, symbol of ultimate truth and moksha. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 150000,
+      "salePrice": 120000,
       "images": [
         "/images/products/1-mukhi-rudraksha.jpg"
       ],
@@ -10581,22 +10333,6 @@
         "One Energized 1 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 150000.0,
-          "salePrice": 120000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 120000.0,
-          "salePrice": 90000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10604,8 +10340,8 @@
       "slug": "2-mukhi-rudraksh",
       "description": "Represents Ardhanarishvara, the union of Shiva and Shakti. Promotes harmony in relationships.",
       "content": "Represents Ardhanarishvara, the union of Shiva and Shakti. Promotes harmony in relationships. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 3000,
+      "salePrice": 2000,
       "images": [
         "/images/products/2-mukhi-rudraksha.jpg"
       ],
@@ -10656,22 +10392,6 @@
         "One Energized 2 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 3000.0,
-          "salePrice": 2000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 2400.0,
-          "salePrice": 1500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10679,8 +10399,8 @@
       "slug": "3-mukhi-rudraksh",
       "description": "Symbolizes Agni (fire). Burns past karmas and liberates from sins.",
       "content": "Symbolizes Agni (fire). Burns past karmas and liberates from sins. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 4500,
+      "salePrice": 3000,
       "images": [
         "/images/products/3-mukhi-rudraksha.jpg"
       ],
@@ -10731,22 +10451,6 @@
         "One Energized 3 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 4500.0,
-          "salePrice": 3000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 3600.0,
-          "salePrice": 2250.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10754,8 +10458,8 @@
       "slug": "4-mukhi-rudraksh",
       "description": "Represents Lord Brahma. Enhances knowledge, memory, and creativity.",
       "content": "Represents Lord Brahma. Enhances knowledge, memory, and creativity. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 5000,
+      "salePrice": 3500,
       "images": [
         "/images/products/4-mukhi-rudraksha.jpg"
       ],
@@ -10806,22 +10510,6 @@
         "One Energized 4 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 5000.0,
-          "salePrice": 3500.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 4000.0,
-          "salePrice": 2625.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10829,8 +10517,8 @@
       "slug": "5-mukhi-rudraksh",
       "description": "The most common Rudraksha representing Lord Kalagni Rudra. Brings peace and spiritual growth.",
       "content": "The most common Rudraksha representing Lord Kalagni Rudra. Brings peace and spiritual growth. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 1500,
+      "salePrice": 1000,
       "images": [
         "/images/products/5-mukhi-rudraksha.jpg"
       ],
@@ -10881,22 +10569,6 @@
         "One Energized 5 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 1500.0,
-          "salePrice": 1000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 1200.0,
-          "salePrice": 750.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10904,8 +10576,8 @@
       "slug": "6-mukhi-rudraksh",
       "description": "Represents Lord Kartikeya. Enhances willpower and focus.",
       "content": "Represents Lord Kartikeya. Enhances willpower and focus. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 8000,
+      "salePrice": 6000,
       "images": [
         "/images/products/6-mukhi-rudraksha.jpg"
       ],
@@ -10956,22 +10628,6 @@
         "One Energized 6 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 8000.0,
-          "salePrice": 6000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 6400.0,
-          "salePrice": 4500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -10979,8 +10635,8 @@
       "slug": "7-mukhi-rudraksh",
       "description": "Associated with Goddess Mahalakshmi. Brings wealth and prosperity.",
       "content": "Associated with Goddess Mahalakshmi. Brings wealth and prosperity. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 12000,
+      "salePrice": 9000,
       "images": [
         "/images/products/7-mukhi-rudraksha.jpg"
       ],
@@ -11031,22 +10687,6 @@
         "One Energized 7 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 12000.0,
-          "salePrice": 9000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 9600.0,
-          "salePrice": 6750.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11054,8 +10694,8 @@
       "slug": "8-mukhi-rudraksh",
       "description": "Represents Lord Ganesha. Removes obstacles and brings success.",
       "content": "Represents Lord Ganesha. Removes obstacles and brings success. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 18000,
+      "salePrice": 15000,
       "images": [
         "/images/products/8-mukhi-rudraksha.jpg"
       ],
@@ -11106,22 +10746,6 @@
         "One Energized 8 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 18000.0,
-          "salePrice": 15000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 14400.0,
-          "salePrice": 11250.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11129,8 +10753,8 @@
       "slug": "9-mukhi-rudraksh",
       "description": "Symbol of Goddess Durga. Provides energy, courage, and protection.",
       "content": "Symbol of Goddess Durga. Provides energy, courage, and protection. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 22000,
+      "salePrice": 18000,
       "images": [
         "/images/products/9-mukhi-rudraksha.jpg"
       ],
@@ -11181,22 +10805,6 @@
         "One Energized 9 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 22000.0,
-          "salePrice": 18000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 17600.0,
-          "salePrice": 13500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11204,8 +10812,8 @@
       "slug": "10-mukhi-rudraksh",
       "description": "Represents Lord Vishnu. Protects from negative energies and evil influences.",
       "content": "Represents Lord Vishnu. Protects from negative energies and evil influences. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 25000,
+      "salePrice": 20000,
       "images": [
         "/images/products/10-mukhi-rudraksha.jpg"
       ],
@@ -11256,22 +10864,6 @@
         "One Energized 10 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 25000.0,
-          "salePrice": 20000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 20000.0,
-          "salePrice": 15000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11279,8 +10871,8 @@
       "slug": "11-mukhi-rudraksh",
       "description": "Associated with Lord Hanuman. Grants strength, fearlessness, and devotion.",
       "content": "Associated with Lord Hanuman. Grants strength, fearlessness, and devotion. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 30000,
+      "salePrice": 25000,
       "images": [
         "/images/products/11-mukhi-rudraksha.jpg"
       ],
@@ -11323,22 +10915,6 @@
         "One Energized 11 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 30000.0,
-          "salePrice": 25000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 24000.0,
-          "salePrice": 18750.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11346,8 +10922,8 @@
       "slug": "12-mukhi-rudraksh",
       "description": "Represents Surya (Sun). Boosts leadership, vitality, and confidence.",
       "content": "Represents Surya (Sun). Boosts leadership, vitality, and confidence. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 40000,
+      "salePrice": 32000,
       "images": [
         "/images/products/12-mukhi-rudraksha.jpg"
       ],
@@ -11390,22 +10966,6 @@
         "One Energized 12 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 40000.0,
-          "salePrice": 32000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 32000.0,
-          "salePrice": 24000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11413,8 +10973,8 @@
       "slug": "13-mukhi-rudraksh",
       "description": "Symbol of Lord Indra and Kamadeva. Brings charm, attraction, and fulfillment of desires.",
       "content": "Symbol of Lord Indra and Kamadeva. Brings charm, attraction, and fulfillment of desires. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 50000,
+      "salePrice": 40000,
       "images": [
         "/images/products/13-mukhi-rudraksha.jpg"
       ],
@@ -11457,22 +11017,6 @@
         "One Energized 13 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 50000.0,
-          "salePrice": 40000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 40000.0,
-          "salePrice": 30000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11480,8 +11024,8 @@
       "slug": "14-mukhi-rudraksh",
       "description": "Represents Lord Hanuman. Awakens intuition and protects from misfortunes.",
       "content": "Represents Lord Hanuman. Awakens intuition and protects from misfortunes. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 60000,
+      "salePrice": 50000,
       "images": [
         "/images/products/14-mukhi-rudraksha.jpg"
       ],
@@ -11524,22 +11068,6 @@
         "One Energized 14 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 60000.0,
-          "salePrice": 50000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 48000.0,
-          "salePrice": 37500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11547,8 +11075,8 @@
       "slug": "15-mukhi-rudraksh",
       "description": "Associated with Lord Pashupatinath. Heals relationships and increases compassion.",
       "content": "Associated with Lord Pashupatinath. Heals relationships and increases compassion. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 75000,
+      "salePrice": 60000,
       "images": [
         "/images/products/15-mukhi-rudraksha.jpg"
       ],
@@ -11591,22 +11119,6 @@
         "One Energized 15 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 75000.0,
-          "salePrice": 60000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 60000.0,
-          "salePrice": 45000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11614,8 +11126,8 @@
       "slug": "16-mukhi-rudraksh",
       "description": "Represents Lord Rama. Protects against theft, accidents, and adversaries.",
       "content": "Represents Lord Rama. Protects against theft, accidents, and adversaries. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 90000,
+      "salePrice": 75000,
       "images": [
         "/images/products/16-mukhi-rudraksha.jpg"
       ],
@@ -11658,22 +11170,6 @@
         "One Energized 16 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 90000.0,
-          "salePrice": 75000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 72000.0,
-          "salePrice": 56250.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11681,8 +11177,8 @@
       "slug": "17-mukhi-rudraksh",
       "description": "Symbol of Goddess Katyayani. Attracts immense wealth and spiritual elevation.",
       "content": "Symbol of Goddess Katyayani. Attracts immense wealth and spiritual elevation. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 100000,
+      "salePrice": 85000,
       "images": [
         "/images/products/17-mukhi-rudraksha.jpg"
       ],
@@ -11725,22 +11221,6 @@
         "One Energized 17 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 100000.0,
-          "salePrice": 85000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 80000.0,
-          "salePrice": 63750.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11748,8 +11228,8 @@
       "slug": "18-mukhi-rudraksh",
       "description": "Associated with Goddess Bhumi Devi. Grants prosperity, fertility, and stability.",
       "content": "Associated with Goddess Bhumi Devi. Grants prosperity, fertility, and stability. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 110000,
+      "salePrice": 90000,
       "images": [
         "/images/products/18-mukhi-rudraksha.jpg"
       ],
@@ -11792,22 +11272,6 @@
         "One Energized 18 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 110000.0,
-          "salePrice": 90000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 88000.0,
-          "salePrice": 67500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11815,8 +11279,8 @@
       "slug": "19-mukhi-rudraksh",
       "description": "Represents Lord Narayana. Brings success in business and material gains.",
       "content": "Represents Lord Narayana. Brings success in business and material gains. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 115000,
+      "salePrice": 95000,
       "images": [
         "/images/products/19-mukhi-rudraksha.jpg"
       ],
@@ -11859,22 +11323,6 @@
         "One Energized 19 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 115000.0,
-          "salePrice": 95000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 92000.0,
-          "salePrice": 71250.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11882,8 +11330,8 @@
       "slug": "20-mukhi-rudraksh",
       "description": "Symbol of Lord Brahma. Enhances creativity, knowledge, and spiritual growth.",
       "content": "Symbol of Lord Brahma. Enhances creativity, knowledge, and spiritual growth. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 120000,
+      "salePrice": 100000,
       "images": [
         "/images/products/20-mukhi-rudraksha.jpg"
       ],
@@ -11926,22 +11374,6 @@
         "One Energized 20 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 120000.0,
-          "salePrice": 100000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 96000.0,
-          "salePrice": 75000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -11949,8 +11381,8 @@
       "slug": "21-mukhi-rudraksh",
       "description": "Extremely rare. Represents Lord Kubera. Bestows immense wealth, power, and fulfillment.",
       "content": "Extremely rare. Represents Lord Kubera. Bestows immense wealth, power, and fulfillment. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 300000,
+      "salePrice": 250000,
       "images": [
         "/images/products/21-mukhi-rudraksha.jpg"
       ],
@@ -11993,22 +11425,6 @@
         "One Energized 21 Mukhi Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 300000.0,
-          "salePrice": 250000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 240000.0,
-          "salePrice": 187500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -12016,8 +11432,8 @@
       "slug": "gauri-shanker-rudraksha",
       "description": "Naturally joined Rudraksha symbolizing Shiva and Parvati. Brings harmony in marriage and unity.",
       "content": "Naturally joined Rudraksha symbolizing Shiva and Parvati. Brings harmony in marriage and unity. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 85000,
+      "salePrice": 70000,
       "images": [
         "/images/products/gauri-shankar-rudraksha.jpg"
       ],
@@ -12060,22 +11476,6 @@
         "One Energized Gauri Shankar Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 85000.0,
-          "salePrice": 70000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 68000.0,
-          "salePrice": 52500.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -12083,8 +11483,8 @@
       "slug": "garbh-gauri-rudraksh",
       "description": "Rare Rudraksha representing mother and child. Blesses with fertility and maternal protection.",
       "content": "Rare Rudraksha representing mother and child. Blesses with fertility and maternal protection. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 100000,
+      "salePrice": 85000,
       "images": [
         "/images/products/garbh-gauri-rudraksha.jpg"
       ],
@@ -12127,22 +11527,6 @@
         "One Energized Garbh Gauri Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 100000.0,
-          "salePrice": 85000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 80000.0,
-          "salePrice": 63750.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -12150,8 +11534,8 @@
       "slug": "ganesha-rudraksha",
       "description": "Unique Rudraksha with trunk-like marking. Removes obstacles and brings success.",
       "content": "Unique Rudraksha with trunk-like marking. Removes obstacles and brings success. This Rudraksha is energized and blessed by Vedic rituals for maximum spiritual benefits.",
-      "price": null,
-      "salePrice": null,
+      "price": 50000,
+      "salePrice": 40000,
       "images": [
         "/images/products/ganesh-rudraksha.jpg"
       ],
@@ -12194,22 +11578,6 @@
         "One Energized Ganesh Rudraksha",
         "Certificate of Authenticity",
         "Worship Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 50000.0,
-          "salePrice": 40000.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 40000.0,
-          "salePrice": 30000.0,
-          "stock": 100
-        }
       ]
     },
     {
@@ -12217,11 +11585,9 @@
       "slug": "original-karungali-malai",
       "description": "Authentic Ebony wood mala for protection against negative energy.",
       "content": "Karungali Malai is known to absorb negative energy and radiate positive vibrations. It is a traditional protective mala.",
-      "price": 1100.0,
+      "price": 1100.00,
       "salePrice": null,
-      "images": [
-        "/images/products/mala-karungali.jpg"
-      ],
+      "images": ["/images/products/mala-karungali.jpg"],
       "type": "PRODUCT",
       "categorySlug": "karungali-malai",
       "vendor": "Siddhi Divine",
@@ -12233,24 +11599,12 @@
         "Origin": "India"
       },
       "benefits": [
-        {
-          "icon": "Shield",
-          "text": "Protects from negative forces."
-        },
-        {
-          "icon": "Heart",
-          "text": "Promotes calmness and stability."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Energizes the aura."
-        }
+        { "icon": "Shield", "text": "Protects from negative forces." },
+        { "icon": "Heart", "text": "Promotes calmness and stability." },
+        { "icon": "Sparkles", "text": "Energizes the aura." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Use for chanting or wear around the neck."
-        }
+        { "step": 1, "instruction": "Use for chanting or wear around the neck." }
       ],
       "packageContents": [
         "One Karungali Malai",
@@ -12262,11 +11616,9 @@
       "slug": "rose-quartz-crystal-mala",
       "description": "A beautiful mala made from Rose Quartz, the stone of universal love.",
       "content": "Rose Quartz restores trust and harmony in relationships, encouraging unconditional love. Wearing this mala enhances compassion and emotional healing.",
-      "price": 950.0,
-      "salePrice": 799.0,
-      "images": [
-        "/images/products/mala-rosequartz.jpg"
-      ],
+      "price": 950.00,
+      "salePrice": 799.00,
+      "images": ["/images/products/mala-rosequartz.jpg"],
       "type": "PRODUCT",
       "categorySlug": "crystal-mala",
       "vendor": "Siddhi Divine",
@@ -12278,24 +11630,12 @@
         "Origin": "India"
       },
       "benefits": [
-        {
-          "icon": "Heart",
-          "text": "Attracts love and compassion."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Heals emotional wounds."
-        },
-        {
-          "icon": "Target",
-          "text": "Promotes harmony in relationships."
-        }
+        { "icon": "Heart", "text": "Attracts love and compassion." },
+        { "icon": "Sparkles", "text": "Heals emotional wounds." },
+        { "icon": "Target", "text": "Promotes harmony in relationships." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Wear as a mala or use for chanting mantras of love and harmony."
-        }
+        { "step": 1, "instruction": "Wear as a mala or use for chanting mantras of love and harmony." }
       ],
       "packageContents": [
         "One Rose Quartz Mala",
@@ -13048,8 +12388,8 @@
       "slug": "rudraksha-and-clear-quartz-mala",
       "description": "108+1 bead Rudraksha & Clear Quartz Mala for spiritual balance and wellness.",
       "content": "The Rudraksha & Clear Quartz Mala supports meditation, healing, and inner peace.",
-      "price": null,
-      "salePrice": null,
+      "price": 350,
+      "salePrice": 350,
       "images": [
         "/images/products/rudraksha-and-clear-quartz-mala.jpg"
       ],
@@ -13098,22 +12438,6 @@
       "packageContents": [
         "One Rudraksha & Clear Quartz Mala",
         "Usage Instructions"
-      ],
-      "variants": [
-        {
-          "id": "nepali",
-          "origin": "Nepali",
-          "price": 350.0,
-          "salePrice": 350.0,
-          "stock": 50
-        },
-        {
-          "id": "indonesian",
-          "origin": "Indonesian",
-          "price": 280.0,
-          "salePrice": 262.5,
-          "stock": 100
-        }
       ]
     },
     {
@@ -13121,11 +12445,9 @@
       "slug": "seven-chakra-healing-stones-set",
       "description": "A complete set of seven stones to balance your chakras.",
       "content": "Includes Amethyst, Lapis Lazuli, Blue Aventurine, Green Aventurine, Yellow Aventurine, Carnelian, and Red Jasper to harmonize and heal all seven chakras.",
-      "price": 1400.0,
+      "price": 1400.00,
       "salePrice": null,
-      "images": [
-        "/images/products/stones-chakra.jpg"
-      ],
+      "images": ["/images/products/stones-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13137,28 +12459,13 @@
         "Origin": "India"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Balances all seven chakras."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Supports healing and meditation."
-        },
-        {
-          "icon": "Heart",
-          "text": "Brings harmony to mind, body, and soul."
-        }
+        { "icon": "Target", "text": "Balances all seven chakras." },
+        { "icon": "Sparkles", "text": "Supports healing and meditation." },
+        { "icon": "Heart", "text": "Brings harmony to mind, body, and soul." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Place stones on respective chakra positions during meditation."
-        },
-        {
-          "step": 2,
-          "instruction": "Keep in living space for continuous energy balance."
-        }
+        { "step": 1, "instruction": "Place stones on respective chakra positions during meditation." },
+        { "step": 2, "instruction": "Keep in living space for continuous energy balance." }
       ],
       "packageContents": [
         "Seven Chakra Healing Stones Set",
@@ -13173,9 +12480,7 @@
       "content": "The Root Chakra Stone Set is designed to ground and stabilize your energy, providing strength, security, and balance. These stones help anchor you to the Earth, creating a strong foundation for physical and emotional well-being.",
       "price": 800,
       "salePrice": 800,
-      "images": [
-        "/images/stones/root-chakra.jpg"
-      ],
+      "images": ["/images/stones/root-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13183,45 +12488,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Red Jasper",
-          "Hematite",
-          "Garnet"
-        ],
+        "Stone Types": ["Red Jasper", "Hematite", "Garnet"],
         "Chakra": "Root",
         "Element": "Earth"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Enhances grounding and stability."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Boosts physical energy and vitality."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects against negative energies."
-        },
-        {
-          "icon": "Heart",
-          "text": "Improves emotional balance and security."
-        }
+        { "icon": "Target", "text": "Enhances grounding and stability." },
+        { "icon": "Sparkles", "text": "Boosts physical energy and vitality." },
+        { "icon": "Shield", "text": "Protects against negative energies." },
+        { "icon": "Heart", "text": "Improves emotional balance and security." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Place stones near your workspace or living area."
-        },
-        {
-          "step": 2,
-          "instruction": "Meditate holding the stones focusing on the root chakra."
-        },
-        {
-          "step": 3,
-          "instruction": "Cleanse stones weekly using sunlight or moonlight."
-        }
+        { "step": 1, "instruction": "Place stones near your workspace or living area." },
+        { "step": 2, "instruction": "Meditate holding the stones focusing on the root chakra." },
+        { "step": 3, "instruction": "Cleanse stones weekly using sunlight or moonlight." }
       ],
       "packageContents": [
         "Set of Root Chakra stones (Red Jasper, Hematite, Garnet)",
@@ -13236,9 +12516,7 @@
       "content": "The Sacral Chakra Stone Set activates creativity, passion, and joy. These stones help release blocked emotions, encourage intimacy, and bring balance to relationships while boosting artistic inspiration.",
       "price": 850,
       "salePrice": 850,
-      "images": [
-        "/images/stones/sacral-chakra.jpg"
-      ],
+      "images": ["/images/stones/sacral-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13246,45 +12524,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Carnelian",
-          "Orange Calcite",
-          "Moonstone"
-        ],
+        "Stone Types": ["Carnelian", "Orange Calcite", "Moonstone"],
         "Chakra": "Sacral",
         "Element": "Water"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Stimulates creativity and passion."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Balances emotions and encourages joy."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects against emotional negativity."
-        },
-        {
-          "icon": "Heart",
-          "text": "Enhances intimacy and healthy relationships."
-        }
+        { "icon": "Target", "text": "Stimulates creativity and passion." },
+        { "icon": "Sparkles", "text": "Balances emotions and encourages joy." },
+        { "icon": "Shield", "text": "Protects against emotional negativity." },
+        { "icon": "Heart", "text": "Enhances intimacy and healthy relationships." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Keep stones in your workspace or near your meditation area."
-        },
-        {
-          "step": 2,
-          "instruction": "Hold stones during meditation focusing on sacral chakra."
-        },
-        {
-          "step": 3,
-          "instruction": "Cleanse with running water or moonlight regularly."
-        }
+        { "step": 1, "instruction": "Keep stones in your workspace or near your meditation area." },
+        { "step": 2, "instruction": "Hold stones during meditation focusing on sacral chakra." },
+        { "step": 3, "instruction": "Cleanse with running water or moonlight regularly." }
       ],
       "packageContents": [
         "Set of Sacral Chakra stones (Carnelian, Orange Calcite, Moonstone)",
@@ -13299,9 +12552,7 @@
       "content": "The Solar Plexus Chakra Stone Set strengthens confidence, determination, and willpower. These stones ignite personal empowerment, sharpen focus, and help you overcome self-doubt to achieve success.",
       "price": 900,
       "salePrice": 900,
-      "images": [
-        "/images/stones/solar-plexus-chakra.jpg"
-      ],
+      "images": ["/images/stones/solar-plexus-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13309,45 +12560,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Citrine",
-          "Tiger's Eye",
-          "Yellow Jasper"
-        ],
+        "Stone Types": ["Citrine", "Tiger's Eye", "Yellow Jasper"],
         "Chakra": "Solar Plexus",
         "Element": "Fire"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Boosts self-confidence and personal power."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Enhances focus and decision-making."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects from negative energies and manipulation."
-        },
-        {
-          "icon": "Heart",
-          "text": "Encourages motivation and determination."
-        }
+        { "icon": "Target", "text": "Boosts self-confidence and personal power." },
+        { "icon": "Sparkles", "text": "Enhances focus and decision-making." },
+        { "icon": "Shield", "text": "Protects from negative energies and manipulation." },
+        { "icon": "Heart", "text": "Encourages motivation and determination." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Place stones where you can see them daily."
-        },
-        {
-          "step": 2,
-          "instruction": "Meditate holding stones while visualizing a golden light in stomach area."
-        },
-        {
-          "step": 3,
-          "instruction": "Charge under sunlight for extra energy."
-        }
+        { "step": 1, "instruction": "Place stones where you can see them daily." },
+        { "step": 2, "instruction": "Meditate holding stones while visualizing a golden light in stomach area." },
+        { "step": 3, "instruction": "Charge under sunlight for extra energy." }
       ],
       "packageContents": [
         "Set of Solar Plexus Chakra stones (Citrine, Tiger's Eye, Yellow Jasper)",
@@ -13362,9 +12588,7 @@
       "content": "The Heart Chakra Stone Set opens the heart to love, compassion, and forgiveness. These stones heal emotional wounds, strengthen relationships, and promote harmony and kindness in daily life.",
       "price": 950,
       "salePrice": 950,
-      "images": [
-        "/images/stones/heart-chakra.jpg"
-      ],
+      "images": ["/images/stones/heart-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13372,45 +12596,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Rose Quartz",
-          "Green Aventurine",
-          "Jade"
-        ],
+        "Stone Types": ["Rose Quartz", "Green Aventurine", "Jade"],
         "Chakra": "Heart",
         "Element": "Air"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Promotes love and compassion."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Enhances emotional healing."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects against negative emotions."
-        },
-        {
-          "icon": "Heart",
-          "text": "Encourages harmony in relationships."
-        }
+        { "icon": "Target", "text": "Promotes love and compassion." },
+        { "icon": "Sparkles", "text": "Enhances emotional healing." },
+        { "icon": "Shield", "text": "Protects against negative emotions." },
+        { "icon": "Heart", "text": "Encourages harmony in relationships." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Keep stones near your bedroom or meditation space."
-        },
-        {
-          "step": 2,
-          "instruction": "Hold stones while focusing on the heart during meditation."
-        },
-        {
-          "step": 3,
-          "instruction": "Cleanse with moonlight or rose water weekly."
-        }
+        { "step": 1, "instruction": "Keep stones near your bedroom or meditation space." },
+        { "step": 2, "instruction": "Hold stones while focusing on the heart during meditation." },
+        { "step": 3, "instruction": "Cleanse with moonlight or rose water weekly." }
       ],
       "packageContents": [
         "Set of Heart Chakra stones (Rose Quartz, Green Aventurine, Jade)",
@@ -13425,9 +12624,7 @@
       "content": "The Throat Chakra Stone Set supports clear communication, truth, and expression. These stones help you speak with confidence, listen openly, and create harmony in conversations.",
       "price": 900,
       "salePrice": 900,
-      "images": [
-        "/images/stones/throat-chakra.jpg"
-      ],
+      "images": ["/images/stones/throat-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13435,45 +12632,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Lapis Lazuli",
-          "Sodalite",
-          "Blue Lace Agate"
-        ],
+        "Stone Types": ["Lapis Lazuli", "Sodalite", "Blue Lace Agate"],
         "Chakra": "Throat",
         "Element": "Ether"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Enhances communication and self-expression."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Encourages honesty and truthfulness."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects from negative speech and criticism."
-        },
-        {
-          "icon": "Heart",
-          "text": "Supports listening and understanding others."
-        }
+        { "icon": "Target", "text": "Enhances communication and self-expression." },
+        { "icon": "Sparkles", "text": "Encourages honesty and truthfulness." },
+        { "icon": "Shield", "text": "Protects from negative speech and criticism." },
+        { "icon": "Heart", "text": "Supports listening and understanding others." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Place stones on your desk or speaking area."
-        },
-        {
-          "step": 2,
-          "instruction": "Meditate holding stones focusing on throat chakra."
-        },
-        {
-          "step": 3,
-          "instruction": "Cleanse with sage or water regularly."
-        }
+        { "step": 1, "instruction": "Place stones on your desk or speaking area." },
+        { "step": 2, "instruction": "Meditate holding stones focusing on throat chakra." },
+        { "step": 3, "instruction": "Cleanse with sage or water regularly." }
       ],
       "packageContents": [
         "Set of Throat Chakra stones (Lapis Lazuli, Sodalite, Blue Lace Agate)",
@@ -13488,9 +12660,7 @@
       "content": "The Third Eye Chakra Stone Set awakens intuition, wisdom, and clarity. These stones enhance spiritual insight, deepen meditation, and help you trust your inner guidance.",
       "price": 1000,
       "salePrice": 1000,
-      "images": [
-        "/images/stones/third-eye-chakra.jpg"
-      ],
+      "images": ["/images/stones/third-eye-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13498,45 +12668,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Amethyst",
-          "Fluorite",
-          "Labradorite"
-        ],
+        "Stone Types": ["Amethyst", "Fluorite", "Labradorite"],
         "Chakra": "Third Eye",
         "Element": "Light"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Enhances intuition and psychic abilities."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Improves mental clarity and insight."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects against negative mental energies."
-        },
-        {
-          "icon": "Heart",
-          "text": "Supports meditation and spiritual growth."
-        }
+        { "icon": "Target", "text": "Enhances intuition and psychic abilities." },
+        { "icon": "Sparkles", "text": "Improves mental clarity and insight." },
+        { "icon": "Shield", "text": "Protects against negative mental energies." },
+        { "icon": "Heart", "text": "Supports meditation and spiritual growth." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Keep stones near meditation space or bedside."
-        },
-        {
-          "step": 2,
-          "instruction": "Hold stones while meditating on third eye area."
-        },
-        {
-          "step": 3,
-          "instruction": "Cleanse using moonlight or sound vibrations weekly."
-        }
+        { "step": 1, "instruction": "Keep stones near meditation space or bedside." },
+        { "step": 2, "instruction": "Hold stones while meditating on third eye area." },
+        { "step": 3, "instruction": "Cleanse using moonlight or sound vibrations weekly." }
       ],
       "packageContents": [
         "Set of Third Eye Chakra stones (Amethyst, Fluorite, Labradorite)",
@@ -13551,9 +12696,7 @@
       "content": "The Crown Chakra Stone Set connects you to higher consciousness, divine wisdom, and universal energy. These stones promote peace, spiritual awakening, and alignment with your higher self.",
       "price": 1050,
       "salePrice": 1050,
-      "images": [
-        "/images/stones/crown-chakra.jpg"
-      ],
+      "images": ["/images/stones/crown-chakra.jpg"],
       "type": "PRODUCT",
       "categorySlug": "chakra-stones",
       "vendor": "Siddhi Divine",
@@ -13561,45 +12704,20 @@
       "availability": "In Stock",
       "specifications": {
         "Origin": "Natural",
-        "Stone Types": [
-          "Clear Quartz",
-          "Selenite",
-          "Lepidolite"
-        ],
+        "Stone Types": ["Clear Quartz", "Selenite", "Lepidolite"],
         "Chakra": "Crown",
         "Element": "Spirit"
       },
       "benefits": [
-        {
-          "icon": "Target",
-          "text": "Enhances spiritual connection and consciousness."
-        },
-        {
-          "icon": "Sparkles",
-          "text": "Promotes meditation and inner peace."
-        },
-        {
-          "icon": "Shield",
-          "text": "Protects from negative spiritual energies."
-        },
-        {
-          "icon": "Heart",
-          "text": "Balances energy and harmonizes mind and body."
-        }
+        { "icon": "Target", "text": "Enhances spiritual connection and consciousness." },
+        { "icon": "Sparkles", "text": "Promotes meditation and inner peace." },
+        { "icon": "Shield", "text": "Protects from negative spiritual energies." },
+        { "icon": "Heart", "text": "Balances energy and harmonizes mind and body." }
       ],
       "howToUse": [
-        {
-          "step": 1,
-          "instruction": "Keep stones near meditation or altar space."
-        },
-        {
-          "step": 2,
-          "instruction": "Meditate focusing on crown chakra energy while holding stones."
-        },
-        {
-          "step": 3,
-          "instruction": "Charge regularly with sunlight or moonlight."
-        }
+        { "step": 1, "instruction": "Keep stones near meditation or altar space." },
+        { "step": 2, "instruction": "Meditate focusing on crown chakra energy while holding stones." },
+        { "step": 3, "instruction": "Charge regularly with sunlight or moonlight." }
       ],
       "packageContents": [
         "Set of Crown Chakra stones (Clear Quartz, Selenite, Lepidolite)",
@@ -15677,11 +14795,9 @@
       "slug": "kundali-prediction-online",
       "description": "Book an online Kundali prediction session with expert astrologers.",
       "content": "Our astrologers will prepare and analyze your Kundali (birth chart) based on your date, time, and place of birth. You will receive detailed insights into your personality, career, relationships, health, and future guidance in a live consultation.",
-      "price": 2100.0,
-      "salePrice": 1500.0,
-      "images": [
-        "/images/services/kundali.jpg"
-      ],
+      "price": 2100.00,
+      "salePrice": 1500.00,
+      "images": ["/images/services/kundali.jpg"],
       "type": "SERVICE",
       "categorySlug": "astrology"
     },
@@ -15690,13 +14806,12 @@
       "slug": "premium-kundali-report",
       "description": "A comprehensive, in-depth life report based on your birth chart, covering all major life aspects.",
       "content": "Our astrologers will prepare and analyze your Kundali (birth chart) based on your date, time, and place of birth. You will receive detailed insights into your personality, career, relationships, health, and future guidance in a live consultation and we sent you fully prepared Kundali through POST.",
-      "price": 4999.0,
-      "salePrice": 3499.0,
-      "images": [
-        "/images/services/kundalii.jpg"
-      ],
+      "price": 4999.00,
+      "salePrice": 3499.00,
+      "images": ["/images/services/kundalii.jpg"],
       "type": "SERVICE",
       "categorySlug": "astrology"
     }
   ]
 }
+
