@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
@@ -58,18 +58,36 @@ export default function ProductDetailPage() {
 
   const { product, breadcrumbs } = data;
   
-  const productVariants: ProductVariant[] = product.variants && typeof product.variants === 'string'
-    ? JSON.parse(product.variants)
-    : [];
+  // Safe JSON parse helper
+  const safeParse = <T,>(value: unknown, fallback: T): T => {
+    if (value == null) return fallback;
+    try {
+      if (typeof value === 'string') return JSON.parse(value) as unknown as T;
+      return value as T;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to parse JSON field:', err);
+      return fallback;
+    }
+  };
+
+  // Memoize parsed arrays/objects so identity is stable across renders
+  const productVariants: ProductVariant[] = useMemo(
+    () => safeParse<ProductVariant[]>(product.variants, []),
+    [product.variants]
+  );
 
   useEffect(() => {
     if (productVariants.length > 0 && !selectedVariant) {
       setSelectedVariant(productVariants[0]);
     }
-  }, [productVariants, selectedVariant]);
+    // only run when length or selectedVariant changes
+  }, [productVariants.length, selectedVariant]);
 
-  
-  const imageArray: string[] = typeof product.images === 'string' ? JSON.parse(product.images) : [];
+  const imageArray: string[] = useMemo(
+    () => safeParse<string[]>(product.images, []),
+    [product.images]
+  );
   
   let basePrice = product.salePrice ?? product.price ?? 0;
   let strikethroughPrice = product.salePrice ? product.price : null;
@@ -81,10 +99,22 @@ export default function ProductDetailPage() {
 
   const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);
 
-  const specifications = product.specifications && typeof product.specifications === 'string' ? JSON.parse(product.specifications) : product.specifications || null;
-  const benefits = product.benefits && typeof product.benefits === 'string' ? JSON.parse(product.benefits) : product.benefits || [];
-  const howToUse = product.howToUse && typeof product.howToUse === 'string' ? JSON.parse(product.howToUse) : product.howToUse || [];
-  const packageContents = product.packageContents && typeof product.packageContents === 'string' ? JSON.parse(product.packageContents) : product.packageContents || [];
+  const specifications = useMemo(
+    () => safeParse<Record<string, any> | null>(product.specifications, product.specifications ?? null),
+    [product.specifications]
+  );
+  const benefits = useMemo(
+    () => safeParse<any[]>(product.benefits, product.benefits ?? []),
+    [product.benefits]
+  );
+  const howToUse = useMemo(
+    () => safeParse<any[]>(product.howToUse, product.howToUse ?? []),
+    [product.howToUse]
+  );
+  const packageContents = useMemo(
+    () => safeParse<string[]>(product.packageContents, product.packageContents ?? []),
+    [product.packageContents]
+  );
 
 
   const handleAddToCart = () => {
@@ -183,9 +213,9 @@ export default function ProductDetailPage() {
                 </div>
               </div>
               {/* --- DEBUGGING: This component is temporarily disabled --- */}
-              {/* <div className="mt-8 pt-6 border-t">
+              <div className="mt-8 pt-6 border-t">
                 <ProductInfoAccordion />
-              </div> */}
+              </div>
             </div>
           </div>
           
