@@ -56,6 +56,8 @@ export default function HomePage() {
     queryFn: fetchFaqs,
   });
 
+  // The handleAddToCart function is no longer needed here, as the Card component handles its own logic.
+
   return (
     <>
       <SEO 
@@ -103,7 +105,7 @@ export default function HomePage() {
               featuredData?.products && featuredData.products.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {featuredData.products.map((item: ContentItem) => (
-                    // --- FIX: The onAddToCart prop is no longer needed ---
+                    // --- FIX: The onAddToCart prop has been removed ---
                     <Card key={item.id} item={item} />
                   ))}
                 </div>
@@ -128,7 +130,7 @@ export default function HomePage() {
              : (
               bestsellers && bestsellers.length > 0 ? (
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                  {/* --- FIX: The onAddToCart prop is no longer needed --- */}
+                  {/* --- FIX: The onAddToCart prop has been removed --- */}
                   {bestsellers.slice(0, 4).map((item) => <Card key={item.id} item={item} />)}
                 </div>
               ) : <p className="text-center text-gray-500 mt-8">No bestsellers to show right now.</p>
@@ -138,14 +140,15 @@ export default function HomePage() {
           {/* Our Services Section */}
           <section className="container mx-auto px-4">
             <div 
-              className="relative overflow-hidden rounded-2xl bg-slate-900 p-8 sm:p-12 text-center text-white shadow-2xl"
-              style={{backgroundImage: `url('/images/service-banner.jpg')`}}
+              className="relative overflow-hidden rounded-2xl bg-slate-900 p-8 sm:p-12 text-center text-white shadow-2xl bg-cover bg-center"
+              style={{backgroundImage: `url('/images/service-banner-bg.jpg')`}}
             >
+              <div className="absolute inset-0 bg-black/50"></div>
               <div className="relative z-10">
-                <h2 className="font-sans text-4xl font-bold text-text-main">
+                <h2 className="font-sans text-4xl font-bold">
                   Guidance for Your Spiritual Path
                 </h2>
-                <p className="mt-4 mx-auto max-w-2xl text-lg text-gray-600">
+                <p className="mt-4 mx-auto max-w-2xl text-lg text-slate-300">
                   Whether you seek clarity through a personalized Kundali report or wish to perform powerful Puja services, our experts are here to connect you with ancient traditions and unlock your harmony.
                 </p>
                 <div className="mt-8">
