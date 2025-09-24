@@ -5,7 +5,16 @@ import ApiError from '../utils/AppError.js';
 const prisma = new PrismaClient();
 
 /**
- * Get user by email. This will be the primary method for finding users.
+ * Get user by their Clerk ID. This will be the new primary way to find users.
+ * @param {string} clerkId
+ * @returns {Promise<User | null>}
+ */
+const getUserByClerkId = async (clerkId: string) => {
+    return prisma.user.findUnique({ where: { clerkId } });
+};
+
+/**
+ * Get user by email. Still useful for checks.
  * @param {string} email
  * @returns {Promise<User | null>}
  */
@@ -14,59 +23,73 @@ const getUserByEmail = async (email: string) => {
 };
 
 /**
- * Get user by phone number. Still useful for checking for duplicates.
- * @param {string} phone
- * @returns {Promise<User | null>}
- */
-const getUserByPhone = async (phone: string) => {
-  return prisma.user.findUnique({ where: { phone } });
-};
-
-/**
- * Get user by ID.
- * @param {string} id
- * @returns {Promise<User | null>}
- */
-const getUserById = async (id: string) => {
-    return prisma.user.findUnique({ where: { id } });
-};
-
-/**
- * Check if an email is already taken.
- * @param {string} email
- * @returns {Promise<boolean>}
- */
-const isEmailTaken = async (email: string) => {
-    const user = await prisma.user.findUnique({ where: { email } });
-    return !!user;
-}
-
-/**
  * Create a new user in the database.
- * This is called after Firebase has successfully created the user.
- * @param {object} userData - The user's details from the registration form.
+ * This is called by the Clerk webhook when a new user signs up.
+ * @param {object} userData - The user's details from the Clerk webhook payload.
  * @returns {Promise<User>}
  */
-const createUser = async (userData: {
-    name: string;
+const createUserFromClerk = async (userData: {
+    clerkId: string;
     email: string;
-    phone: string;
-    address: string;
+    name?: string;
+    phone?: string;
 }) => {
-  return prisma.user.create({
-    data: {
-      ...userData,
-      isProfileComplete: true, // The profile is complete on creation.
-      // NOTE: We do NOT store the password. It is managed securely by Firebase.
-    },
-  });
+    // Check if a user with this email or Clerk ID already exists to prevent duplicates.
+    const existingUser = await prisma.user.findFirst({
+        where: { OR: [{ clerkId: userData.clerkId }, { email: userData.email }] }
+    });
+
+    if (existingUser) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'User already exists.');
+    }
+
+    return prisma.user.create({
+        data: {
+            clerkId: userData.clerkId,
+            email: userData.email,
+            name: userData.name || '',
+            phone: userData.phone,
+            isProfileComplete: true, // The user is created with all available info from Clerk.
+        },
+    });
 };
 
+/**
+ * Update a user's details in the database.
+ * This is called by the Clerk webhook when a user updates their profile.
+ * @param {string} clerkId
+ * @param {object} dataToUpdate
+ * @returns {Promise<User>}
+ */
+const updateUserByClerkId = async (clerkId: string, dataToUpdate: { email: string, name?: string, phone?: string }) => {
+    return prisma.user.update({
+        where: { clerkId },
+        data: {
+            email: dataToUpdate.email,
+            name: dataToUpdate.name || '',
+            phone: dataToUpdate.phone,
+        },
+    });
+};
+
+/**
+ * Delete a user from the database.
+ * This is called by the Clerk webhook when a user is deleted.
+ * @param {string} clerkId
+ * @returns {Promise<User>}
+ */
+const deleteUserByClerkId = async (clerkId: string) => {
+    return prisma.user.delete({
+        where: { clerkId },
+    });
+};
+
+
 export const userService = {
+  getUserByClerkId,
   getUserByEmail,
-  getUserByPhone,
-  getUserById,
-  isEmailTaken,
-  createUser,
+  createUserFromClerk,
+  updateUserByClerkId,
+  deleteUserByClerkId,
 };
 

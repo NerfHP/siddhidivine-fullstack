@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
+import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
 import { useCart } from '@/hooks/useCart';
 import logo from '@/assets/LOGO.png';
 
@@ -207,8 +207,7 @@ export default function Header({ onSearchClick = () => {}, onCartClick = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [openMobileSubMenu, setOpenMobileSubMenu] = useState<string | null>(null);
   const location = useLocation();
-
-  const { isAuthenticated, openLoginPopup } = useAuth();
+  
   const { cartCount } = useCart();
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -354,19 +353,21 @@ export default function Header({ onSearchClick = () => {}, onCartClick = () => {
             <button onClick={onSearchClick} className="hover:text-primary transition-colors" aria-label="Search">
               <Search size={22} />
             </button>
-            {isAuthenticated ? (
-                <Link to="/account" className="hover:text-primary transition-colors" aria-label="Account">
+              {/* --- NEW: Clerk Authentication Controls --- */}
+              {/* This component will only render its children if the user is signed IN */}
+              <SignedIn>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
+
+              {/* This component will only render its children if the user is signed OUT */}
+              <SignedOut>
+                {/* This component wraps your button and will open Clerk's beautiful login modal */}
+                <SignInButton mode="modal">
+                  <button className="hover:text-primary transition-colors" aria-label="Login">
                     <User size={22} />
-                </Link>
-            ) : (
-                <button 
-                  onClick={openLoginPopup} 
-                  className="hover:text-primary transition-colors" 
-                  aria-label="Login"
-                >
-                  <User size={22} />
-                </button>
-            )}
+                  </button>
+                </SignInButton>
+              </SignedOut>
             <button onClick={onCartClick} className="relative hover:text-primary transition-colors" aria-label="Shopping Cart">
               <ShoppingCart size={22} />
               {cartCount > 0 && (
@@ -404,7 +405,7 @@ export default function Header({ onSearchClick = () => {}, onCartClick = () => {
                       <NavLink to="/" className={({isActive}) => `block py-2 px-3 rounded-md ${isActive ? 'bg-background font-bold' : ''}`}>Home</NavLink>
                       {(navMenuItems.filter(i => i.name !== 'Home' && i.name !== 'Rudraksha')).map(item => (
                           <div key={item.name} className="border-b">
-                              <div
+                                <div
                                   onClick={() => {
                                       if(!item.subItems) return;
                                       setOpenMobileSubMenu(openMobileSubMenu === item.name ? null : item.name)

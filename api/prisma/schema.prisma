@@ -10,30 +10,18 @@ datasource db {
 // --- UPDATED User Model for Email Authentication ---
 model User {
   id                String    @id @default(cuid())
-  email             String    @unique // NOW REQUIRED AND UNIQUE
+  clerkId           String    @unique // This will store the ID from Clerk
+  email             String    @unique
   name              String?
-  phone             String?   @unique // NOW OPTIONAL, but unique if provided
+  phone             String?   @unique
   alternativePhone  String?
   address           String?
-  isProfileComplete Boolean   @default(false)
+  isProfileComplete Boolean   @default(true) // User is complete on creation
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-  tokens            Token[]
   reviews           Review[]
   orders            Order[]
   role              String    @default("user")
-  // The 'password' field has been removed as it is now managed by Firebase.
-}
-
-model Token {
-  id          String   @id @default(cuid())
-  token       String   @unique
-  type        String
-  expires     DateTime
-  blacklisted Boolean  @default(false)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
 }
 
 model Category {

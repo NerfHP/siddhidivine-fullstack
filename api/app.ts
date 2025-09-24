@@ -7,11 +7,13 @@ import { errorConverter, errorHandler } from './middleware/error.middleware.js';
 import ApiError from './utils/AppError.js';
 import apiRoutes from './routes/index.js';
 import reviewRoutes from './routes/review.routes.js'
-import admin from 'firebase-admin';
+import cors from 'cors';
+import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
 
 const app: Express = express();
 
 // --- Middleware Setup ---
+app.use(cors({ origin: config.clientOrigin || 'http://localhost:5173' }));
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -20,23 +22,14 @@ if (config.env === 'development') {
   app.use(morgan('dev'));
 }
 
-// --- UPDATED: Initialize Firebase Admin SDK from Environment Variables ---
-if (!admin.apps.length) {
-  try {
-    // Instead of reading a file, we now create the credential object
-    // directly from the config file, which reads from your Vercel environment variables.
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: config.firebase.projectId,
-        clientEmail: config.firebase.clientEmail,
-        privateKey: config.firebase.privateKey,
-      }),
-    });
-    console.log('Firebase Admin SDK initialized successfully from environment variables');
-  } catch (error) {
-    console.error('Error initializing Firebase Admin SDK:', error);
-  }
-}
+// --- REMOVED: The old Firebase Admin SDK initialization has been deleted ---
+
+// --- NEW: Add the Clerk middleware ---
+// This middleware will verify the session token for every incoming request
+// and make the authenticated user's ID available on `req.auth`.
+// It should be placed BEFORE your API routes.
+app.use(ClerkExpressWithAuth());
+
 
 // --- Health Check & API Routes ---
 app.get('/', (_req: Request, res: Response) => {
@@ -58,3 +51,4 @@ app.use(errorConverter);
 app.use(errorHandler);
 
 export default app;
+

@@ -1,32 +1,38 @@
 import express from 'express';
 import { authController } from '../controllers/index.js';
-import { validate } from '../middleware/validate.middleware.js';
-import { authValidation } from '../validation/index.js';
+import { Webhook } from 'svix';
+import { buffer } from 'micro';
+import ApiError from '../utils/AppError.js';
+import httpStatus from 'http-status';
 
 const router = express.Router();
 
-// --- NEW: Route for registering a new user ---
-// This endpoint is for the "Sign Up" form.
-router.post(
-  '/register',
-  validate(authValidation.register),
-  authController.register
-);
+// --- REMOVED: All old Firebase and password-based routes have been deleted ---
 
-// --- NEW: Route for logging in an existing user ---
-// This is for the "Login" form and uses Firebase for verification.
+// --- NEW: Clerk Webhook Route ---
+// This single endpoint is responsible for receiving all user events from Clerk.
+// It includes special middleware to securely verify the webhook signature.
 router.post(
-  '/firebase-login', 
-  validate(authValidation.firebaseLogin),
-  authController.firebaseLogin
-);
+  '/webhook',
+  // We need to use `express.raw` to get the raw request body for verification.
+  express.raw({ type: 'application/json' }),
+  async (req, res, next) => {
+    try {
+      const payload = await buffer(req);
+      const headers = req.headers;
 
-// --- Token Refresh Route (Unchanged) ---
-// This remains for managing user sessions.
-router.post(
-  '/refresh-token',
-  validate(authValidation.refreshTokens),
-  authController.refreshTokens,
+      const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET as string);
+      const verifiedPayload = wh.verify(payload, headers as any);
+
+      // Attach the verified payload to the request body for the controller.
+      req.body = verifiedPayload;
+      next();
+    } catch (err) {
+      console.error('[CLERK WEBHOOK VERIFICATION FAILED]', err);
+      return next(new ApiError(httpStatus.BAD_REQUEST, 'Webhook verification failed'));
+    }
+  },
+  authController.clerkWebhook
 );
 
 export default router;
