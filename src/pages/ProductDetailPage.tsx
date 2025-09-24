@@ -72,13 +72,28 @@ export default function ProductDetailPage() {
   const { product, breadcrumbs } = data;
 
   // --- CHANGE: Combined price logic for variants, sales, and energizing cost ---
-  let basePrice = product.salePrice ?? product.price ?? 0;
-  // --- FIX: Add fallback to null to prevent TypeScript error ---
-  let strikethroughPrice: number | null = product.salePrice ? (product.price ?? null) : null;
+  let basePrice = 0;
+  let strikethroughPrice: number | null = null;
 
   if (selectedVariant) {
+    // If a variant is selected, use variant pricing
     basePrice = selectedVariant.salePrice ?? selectedVariant.price;
     strikethroughPrice = selectedVariant.salePrice ? selectedVariant.price : null;
+  } else if (productVariants.length > 0) {
+    // If variants exist but none selected, use the first variant as default
+    const firstVariant = productVariants[0];
+    basePrice = firstVariant.salePrice ?? firstVariant.price;
+    strikethroughPrice = firstVariant.salePrice ? firstVariant.price : null;
+  } else {
+    // No variants - use product's base price (fallback to 0 if null)
+    basePrice = product.salePrice ?? product.price ?? 0;
+    strikethroughPrice = product.salePrice ? (product.price ?? null) : null;
+  }
+
+  // Safety check to prevent invalid prices
+  if (basePrice === null || basePrice === undefined || isNaN(basePrice)) {
+    basePrice = 0;
+    console.warn(`Invalid price for product: ${product.name}`);
   }
   
   const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);

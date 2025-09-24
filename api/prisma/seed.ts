@@ -127,36 +127,16 @@ async function main() {
 
         // If the product has variants, find the lowest price to display on product cards.
         if (item.variants && item.variants.length > 0) {
-            // Filter out variants with null prices and find the lowest valid price
-            const validPrices = item.variants
-                .map(variant => variant.salePrice ?? variant.price)
-                .filter(price => price !== null && price !== undefined && price > 0);
+            // Find the lowest price (considering both salePrice and regular price)
+            const lowestVariantPrice = item.variants.reduce((minPrice, variant) => {
+                const currentPrice = variant.salePrice ?? variant.price;
+                return currentPrice < minPrice ? currentPrice : minPrice;
+            }, Infinity);
 
-            if (validPrices.length > 0) {
-                // Find the lowest price among valid prices
-                const lowestVariantPrice = Math.min(...validPrices);
-                basePrice = lowestVariantPrice;
-            } else {
-                // If no valid variant prices exist, keep the original item price
-                // or set a default price if item.price is also null
-                basePrice = item.price ?? 0;
-                console.warn(`⚠️  Warning: Product "${item.name}" has variants but no valid prices. Using base price: ${basePrice}`);
-            }
-            
+            // Set the product's main price to the lowest variant price.
+            basePrice = lowestVariantPrice;
             // When variants exist, the main salePrice on the item itself should be null.
             salePrice = null; 
-        } else {
-            // For products without variants, ensure we don't store null prices
-            if (basePrice === null || basePrice === undefined) {
-                basePrice = 0;
-                console.warn(`⚠️  Warning: Product "${item.name}" has null price. Setting to 0.`);
-            }
-        }
-
-        // Additional safety check before database insertion
-        if (basePrice === null || basePrice === undefined || isNaN(basePrice) || basePrice === Infinity) {
-            basePrice = 0;
-            console.warn(`⚠️  Warning: Invalid price detected for "${item.name}". Setting to 0.`);
         }
         // --- END OF NEW FEATURE ---
 
