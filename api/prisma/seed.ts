@@ -5,6 +5,15 @@ import path from 'path'
 
 const prisma = new PrismaClient();
 
+// --- ADDED: A specific type for variants for better type safety ---
+type SeedVariant = {
+  id: string;
+  origin: string;
+  price: number;
+  salePrice?: number | null;
+  stock: number;
+}
+
 // This defines the exact shape of your product data from the JSON file
 type SeedItem = {
     name: string;
@@ -22,7 +31,7 @@ type SeedItem = {
     attributes?: string;
     specifications?: Record<string, string>;
     benefits?: any[];
-    variants?: any[];
+    variants?: SeedVariant[]; // --- CHANGE: Use the specific SeedVariant type
     howToUse?: any[];
     packageContents?: string[];
 };
@@ -73,6 +82,7 @@ async function main() {
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.review.deleteMany();
+  await prisma.productFaq.deleteMany(); // Moved up for safety
   await prisma.contentItem.deleteMany();
   await prisma.category.deleteMany();
   await prisma.discount.deleteMany();
@@ -109,18 +119,36 @@ async function main() {
     try {
       const category = await prisma.category.findUnique({ where: { slug: item.categorySlug } });
       if (category) {
-        // Debug log to see what type value we're getting
         console.log(`Creating item "${item.name}" with type: "${item.type}"`);
+        
+        // --- NEW FEATURE: LOGIC TO DETERMINE THE BASE PRICE ---
+        let basePrice = item.price;
+        let salePrice = item.salePrice;
+
+        // If the product has variants, find the lowest price to display on product cards.
+        if (item.variants && item.variants.length > 0) {
+            // Find the lowest price (considering both salePrice and regular price)
+            const lowestVariantPrice = item.variants.reduce((minPrice, variant) => {
+                const currentPrice = variant.salePrice ?? variant.price;
+                return currentPrice < minPrice ? currentPrice : minPrice;
+            }, Infinity);
+
+            // Set the product's main price to the lowest variant price.
+            basePrice = lowestVariantPrice;
+            // When variants exist, the main salePrice on the item itself should be null.
+            salePrice = null; 
+        }
+        // --- END OF NEW FEATURE ---
         
         await prisma.contentItem.create({
           data: {
             name: item.name,
             slug: item.slug,
             description: item.description,
-            type: item.type, // This line is crucial and was missing!
+            type: item.type,
             content: item.content,
-            price: item.price,
-            salePrice: item.salePrice,
+            price: basePrice, // Use the dynamically determined base price
+            salePrice: salePrice, // Use the determined sale price
             vendor: item.vendor,
             sku: item.sku,
             availability: item.availability,
@@ -128,7 +156,7 @@ async function main() {
             images: JSON.stringify(item.images || []),
             specifications: JSON.stringify(item.specifications || null),
             benefits: JSON.stringify(item.benefits || null),
-            variants: JSON.stringify(item.variants || null),
+            variants: JSON.stringify(item.variants || null), // Still store the full variants object
             howToUse: JSON.stringify(item.howToUse || null),
             packageContents: JSON.stringify(item.packageContents || null),
             categories: {
@@ -140,7 +168,6 @@ async function main() {
         });
         createdCount++;
         
-        // Log progress every 50 items instead of 100
         if (createdCount % 50 === 0) {
           console.log(`Created ${createdCount} products so far...`);
         }
@@ -167,30 +194,9 @@ async function main() {
 
   // Create sample discount codes
   console.log('Creating sample discount codes...');
-  await prisma.discount.create({
-    data: {
-        code: 'WELCOME10',
-        discountType: 'PERCENTAGE',
-        value: 10,
-        isActive: true,
-    }
-  });
-  await prisma.discount.create({
-    data: {
-        code: 'DIWALI500',
-        discountType: 'FIXED_AMOUNT',
-        value: 500,
-        isActive: true,
-    }
-  });
-  await prisma.discount.create({
-    data: {
-        code: 'FIRSTTIME',
-        discountType: 'PERCENTAGE',
-        value: 15,
-        isActive: true,
-    }
-  });
+  await prisma.discount.create({ data: { code: 'WELCOME10', discountType: 'PERCENTAGE', value: 10, isActive: true } });
+  await prisma.discount.create({ data: { code: 'DIWALI500', discountType: 'FIXED_AMOUNT', value: 500, isActive: true } });
+  await prisma.discount.create({ data: { code: 'FIRSTTIME', discountType: 'PERCENTAGE', value: 15, isActive: true } });
   console.log('Sample discount codes created.');
 
   // Seed Product FAQs
@@ -208,15 +214,9 @@ async function main() {
       });
 
       if (product) {
-        // Delete existing FAQs for this product to avoid duplicates
         await prisma.productFaq.deleteMany({ where: { productId: product.id } });
-
-        // Create new FAQs
         await prisma.productFaq.createMany({
-          data: faqEntry.faqs.map((faq) => ({
-            ...faq,
-            productId: product.id,
-          })),
+          data: faqEntry.faqs.map((faq) => ({ ...faq, productId: product.id })),
         });
         console.log(`Seeded ${faqEntry.faqs.length} FAQs for ${product.name}.`);
       } else {
