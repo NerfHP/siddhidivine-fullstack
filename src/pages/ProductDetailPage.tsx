@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
-import { ContentItem, Category } from '@/types';
-import Spinner from '@/components/shared/Spinner';
-import Alert from '@/components/shared/Alert';
-import Breadcrumbs from '@/components/shared/Breadcrumbs';
-import Button from '@/components/shared/Button';
-import { formatCurrency } from '@/lib/utils';
-import { useCart } from '@/hooks/useCart';
+import api from '../lib/api';
+import { ContentItem, Category } from '../types';
+import Spinner from '../components/shared/Spinner';
+import Alert from '../components/shared/Alert';
+import Breadcrumbs from '../components/shared/Breadcrumbs';
+import Button from '../components/shared/Button';
+import { formatCurrency } from '../lib/utils';
+import { useCart } from '../hooks/useCart';
 import toast from 'react-hot-toast';
-import SEO from '@/components/shared/SEO';
+import SEO from '../components/shared/SEO';
 import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shield } from 'lucide-react';
-import ProductInfoAccordion from '@/components/shared/ProductInfoAccordion';
-import ProductImageGallery from '@/components/shared/ProductImageGallery';
-import Reviews from '@/components/shared/Reviews';
-import ProductFaqSection from '@/components/shared/ProductFaqSection';
+import ProductInfoAccordion from '../components/shared/ProductInfoAccordion';
+import ProductImageGallery from '../components/shared/ProductImageGallery';
+import Reviews from '../components/shared/Reviews';
+import ProductFaqSection from '../components/shared/ProductFaqSection';
 
 interface ProductVariant {
   id: string;
@@ -58,7 +58,6 @@ export default function ProductDetailPage() {
 
   const { product, breadcrumbs } = data;
   
-  // --- THE FIX: Correctly access variants from the 'product' object ---
   const productVariants: ProductVariant[] = product.variants && typeof product.variants === 'string'
     ? JSON.parse(product.variants)
     : [];
@@ -183,9 +182,10 @@ export default function ProductDetailPage() {
                   <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Share2 size={16}/> Share</button>
                 </div>
               </div>
-              <div className="mt-8 pt-6 border-t">
+              {/* --- DEBUGGING: This component is temporarily disabled --- */}
+              {/* <div className="mt-8 pt-6 border-t">
                 <ProductInfoAccordion />
-              </div>
+              </div> */}
             </div>
           </div>
           
@@ -249,13 +249,20 @@ export default function ProductDetailPage() {
                 </ul>
               </div>
             )}
-            <div className="mt-12 pt-8 border-t">
+
+            {/* --- DEBUGGING: These child components are temporarily disabled to find the source of the error --- */}
+            {/* After confirming the page loads with these disabled, re-enable them one by one to find the component that crashes the page. */}
+            
+            {/* <div className="mt-12 pt-8 border-t">
               <Reviews productId={product.id} />
             </div>
-            <ProductFaqSection productId={product.id} />
+            
+            <ProductFaqSection productId={product.id} /> */}
+
           </div>
         </div>
       </div>
     </>
   );
 }
+
