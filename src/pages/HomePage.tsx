@@ -139,13 +139,13 @@ export default function HomePage() {
           <section className="container mx-auto px-4">
             <div 
               className="relative overflow-hidden rounded-2xl bg-slate-900 p-8 sm:p-12 text-center text-white shadow-2xl"
-              style={{backgroundImage: `url('https://www.toptal.com/designers/subtlepatterns/uploads/double-bubble-outline.png')`}}
+              style={{backgroundImage: `url('/images/service-banner.jpg')`}}
             >
               <div className="relative z-10">
-                <h2 className="font-sans text-4xl font-bold">
+                <h2 className="font-sans text-4xl font-bold text-text-main">
                   Guidance for Your Spiritual Path
                 </h2>
-                <p className="mt-4 mx-auto max-w-2xl text-lg text-slate-300">
+                <p className="mt-4 mx-auto max-w-2xl text-lg text-gray-600">
                   Whether you seek clarity through a personalized Kundali report or wish to perform powerful Puja services, our experts are here to connect you with ancient traditions and unlock your harmony.
                 </p>
                 <div className="mt-8">
