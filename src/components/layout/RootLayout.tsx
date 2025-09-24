@@ -6,7 +6,6 @@ import CartDrawer from '../shared/CartDrawer';
 import { ReactLenis } from '@studio-freight/react-lenis'; 
 import ParticleBackground from '../shared/ParticleBackground';
 import SearchModal from '../shared/SearchModal'; // Using the correct import path for the new modal
-import LoginPopup from '@/components/shared/LoginPopup';
 import WhatsAppPopup from '@/components/shared/WhatsAppPopup';
 
 export default function RootLayout() {
@@ -29,7 +28,6 @@ export default function RootLayout() {
             <Outlet />
           </main>
           <Footer />
-          <LoginPopup />
           <WhatsAppPopup phoneNumber="918433180979" />
         </div>
 
