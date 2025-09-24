@@ -6,7 +6,7 @@ import { useState, useRef, DragEvent } from 'react';
 import Button from './Button';
 import Input from './Input';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@clerk/clerk-react';
 import { z } from 'zod';
 
 // --- TYPES (Updated for anonymous reviews) ---
@@ -408,8 +408,9 @@ const ReviewForm = ({
 
 // --- MAIN COMPONENT ---
 export default function Reviews({ productId }: ReviewsProps) {
+  const { user } = useUser();
+  const isAuthenticated = !!user; // This will be true if a user is logged in, and false otherwise.
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuth(); 
   
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['reviews', productId],
@@ -418,7 +419,7 @@ export default function Reviews({ productId }: ReviewsProps) {
   
   const mutation = useMutation({
     mutationFn: postReview,
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
       
       if (variables.guestName) {
