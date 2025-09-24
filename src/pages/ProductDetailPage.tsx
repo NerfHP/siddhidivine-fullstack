@@ -1,29 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import api from '../lib/api';
-import { ContentItem, Category } from '../types';
-import Spinner from '../components/shared/Spinner';
-import Alert from '../components/shared/Alert';
-import Breadcrumbs from '../components/shared/Breadcrumbs';
-import Button from '../components/shared/Button';
-import { formatCurrency } from '../lib/utils';
-import { useCart } from '../hooks/useCart';
+import api from '@/lib/api';
+import { ContentItem, Category } from '@/types';
+import Spinner from '@/components/shared/Spinner';
+import Alert from '@/components/shared/Alert';
+import Breadcrumbs from '@/components/shared/Breadcrumbs';
+import Button from '@/components/shared/Button';
+import { formatCurrency } from '@/lib/utils';
+import { useCart } from '@/hooks/useCart';
 import toast from 'react-hot-toast';
-import SEO from '../components/shared/SEO';
+import SEO from '@/components/shared/SEO';
 import { Heart, Share2, Minus, Plus, CheckCircle, Package, Target, Sparkles, Shield } from 'lucide-react';
-import ProductInfoAccordion from '../components/shared/ProductInfoAccordion';
-import ProductImageGallery from '../components/shared/ProductImageGallery';
-import Reviews from '../components/shared/Reviews';
+import ProductInfoAccordion from '@/components/shared/ProductInfoAccordion';
+import ProductImageGallery from '@/components/shared/ProductImageGallery';
+import Reviews from '@/components/shared/Reviews';
 import ProductFaqSection from '../components/shared/ProductFaqSection';
-
-interface ProductVariant {
-  id: string;
-  origin: string;
-  price: number;
-  salePrice?: number | null;
-  stock: number;
-}
 
 interface ProductResponse {
   product: ContentItem;
@@ -43,9 +35,10 @@ export default function ProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  
+  // --- NEW: State for the "Energized" checkbox ---
   const [isEnergized, setIsEnergized] = useState(false);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const ENERGIZING_COST = 151;
+  const ENERGIZING_COST = 151; // Define the cost as a constant
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['productDetail', productSlug],
@@ -58,72 +51,28 @@ export default function ProductDetailPage() {
 
   const { product, breadcrumbs } = data;
   
-  // Safe JSON parse helper
-  const safeParse = <T,>(value: unknown, fallback: T): T => {
-    if (value == null) return fallback;
-    try {
-      if (typeof value === 'string') return JSON.parse(value) as unknown as T;
-      return value as T;
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to parse JSON field:', err);
-      return fallback;
-    }
-  };
-
-  // Memoize parsed arrays/objects so identity is stable across renders
-  const productVariants: ProductVariant[] = useMemo(
-    () => safeParse<ProductVariant[]>(product.variants, []),
-    [product.variants]
-  );
-
-  useEffect(() => {
-    if (productVariants.length > 0 && !selectedVariant) {
-      setSelectedVariant(productVariants[0]);
-    }
-    // only run when length or selectedVariant changes
-  }, [productVariants.length, selectedVariant]);
-
-  const imageArray: string[] = useMemo(
-    () => safeParse<string[]>(product.images, []),
-    [product.images]
-  );
+  const imageArray: string[] = JSON.parse(product.images || '[]');
   
-  let basePrice = product.salePrice ?? product.price ?? 0;
-  let strikethroughPrice = product.salePrice ? product.price : null;
-
-  if (selectedVariant) {
-    basePrice = selectedVariant.salePrice ?? selectedVariant.price;
-    strikethroughPrice = selectedVariant.salePrice ? selectedVariant.price : null;
-  }
-
+  // --- CHANGE: Price logic now includes the energizing cost ---
+  const basePrice = product.salePrice || product.price || 0;
   const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);
+  const strikethroughPrice = product.salePrice ? product.price : null;
 
-  const specifications = useMemo(
-    () => safeParse<Record<string, any> | null>(product.specifications, product.specifications ?? null),
-    [product.specifications]
-  );
-  const benefits = useMemo(
-    () => safeParse<any[]>(product.benefits, product.benefits ?? []),
-    [product.benefits]
-  );
-  const howToUse = useMemo(
-    () => safeParse<any[]>(product.howToUse, product.howToUse ?? []),
-    [product.howToUse]
-  );
-  const packageContents = useMemo(
-    () => safeParse<string[]>(product.packageContents, product.packageContents ?? []),
-    [product.packageContents]
-  );
 
+  const specifications = product.specifications ? JSON.parse(product.specifications as unknown as string) : null;
+  const benefits = product.benefits ? JSON.parse(product.benefits as unknown as string) : [];
+  const howToUse = product.howToUse ? JSON.parse(product.howToUse as unknown as string) : [];
+  const packageContents = product.packageContents ? JSON.parse(product.packageContents as unknown as string) : [];
 
   const handleAddToCart = () => {
-    addToCart(product, selectedVariant, quantity, isEnergized);
+    // --- CHANGE: Pass the `isEnergized` state to the cart context ---
+    const itemToAdd = { ...product, price: basePrice };
+    addToCart(itemToAdd, quantity, isEnergized);
     
     const energizedText = isEnergized ? ' (Energized)' : '';
-    const variantText = selectedVariant ? ` (${selectedVariant.origin})` : '';
-    toast.success(`${quantity} x ${product.name}${variantText}${energizedText} added to cart!`);
+    toast.success(`${quantity} x ${product.name}${energizedText} added to cart!`);
     
+    // Reset state after adding
     setQuantity(1);
     setIsEnergized(false);
   };
@@ -144,10 +93,13 @@ export default function ProductDetailPage() {
       <div className="bg-transparent">
         <div className="container mx-auto px-4 py-8">
           <Breadcrumbs items={breadcrumbItems} />
+
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
+            
             <div>
               <ProductImageGallery images={imageArray} productName={product.name} />
             </div>
+
             <div>
               <h1 className="font-sans text-4xl font-bold text-text-main">{product.name}</h1>
               <p className="text-lg text-gray-600 mt-2">{product.description}</p>
@@ -157,27 +109,7 @@ export default function ProductDetailPage() {
                 {strikethroughPrice && <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice)}</p>}
               </div>
 
-              {productVariants.length > 0 && (
-                <div className="my-6">
-                  <h3 className="text-sm font-medium text-gray-800 mb-2">Origin: <span className="font-bold">{selectedVariant?.origin}</span></h3>
-                  <div className="flex gap-2">
-                    {productVariants.map((variant) => (
-                      <button
-                        key={variant.id}
-                        onClick={() => setSelectedVariant(variant)}
-                        className={`px-4 py-2 border rounded-lg text-sm transition-all duration-200 ${
-                          selectedVariant?.id === variant.id
-                            ? 'bg-primary text-white border-primary ring-2 ring-offset-2 ring-primary'
-                            : 'bg-white text-gray-800 border-gray-300 hover:border-gray-500'
-                        }`}
-                      >
-                        {variant.origin}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
+              {/* --- NEW: Energized Product Checkbox Section --- */}
               <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                 <label htmlFor="energize-checkbox" className="flex items-center cursor-pointer">
                   <input
@@ -196,23 +128,22 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-4">
                 <p className="text-sm font-medium">Quantity:</p>
                 <div className="flex items-center border rounded-md bg-white">
-                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-50"><Minus size={14} /></button>
-                  <span className="px-4 text-sm font-bold w-12 text-center">{quantity}</span>
-                  <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus size={14} /></button>
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 hover:bg-gray-50"><Minus size={14} /></button>
+                    <span className="px-4 text-sm font-bold w-12 text-center">{quantity}</span>
+                    <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 hover:bg-gray-50"><Plus size={14} /></button>
                 </div>
               </div>
               <div className="mt-6 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button size="lg" onClick={handleAddToCart} className="w-full flex-grow">Add to Cart</Button>
-                  <Button size="lg" variant="secondary" className="w-full flex-grow">Buy It Now</Button>
-                </div>
-                <div className="flex gap-3 justify-center">
-                  <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Heart size={16}/> Add to Wishlist</button>
-                  <div className="border-l"></div>
-                  <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Share2 size={16}/> Share</button>
-                </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                      <Button size="lg" onClick={handleAddToCart} className="w-full flex-grow">Add to Cart</Button>
+                      <Button size="lg" variant="secondary" className="w-full flex-grow">Buy It Now</Button>
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                      <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Heart size={16}/> Add to Wishlist</button>
+                      <div className="border-l"></div>
+                      <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Share2 size={16}/> Share</button>
+                  </div>
               </div>
-              {/* --- DEBUGGING: This component is temporarily disabled --- */}
               <div className="mt-8 pt-6 border-t">
                 <ProductInfoAccordion />
               </div>
@@ -244,10 +175,10 @@ export default function ProductDetailPage() {
               <div className="mt-8">
                 <h3 className="font-sans text-xl font-bold mb-4">Key Benefits</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {benefits.map((benefit: {icon: string, text: string}, index: number) => {
+                  {benefits.map((benefit: {icon: string, text: string}) => {
                     const Icon = iconMap[benefit.icon] || CheckCircle;
                     return (
-                      <div key={index} className="flex items-center gap-3">
+                      <div key={benefit.text} className="flex items-center gap-3">
                         <Icon className="w-6 h-6 text-primary flex-shrink-0" />
                         <span className="text-gray-700">{benefit.text}</span>
                       </div>
@@ -261,8 +192,8 @@ export default function ProductDetailPage() {
               <div className="mt-8">
                 <h3 className="font-sans text-xl font-bold mb-4">How to Use</h3>
                 <div className="space-y-4">
-                  {howToUse.map((step: {step: number, instruction: string}, index: number) => (
-                    <div key={index} className="flex items-start gap-4">
+                  {howToUse.map((step: {step: number, instruction: string}) => (
+                    <div key={step.step} className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary/10 text-primary font-bold rounded-full">{step.step}</div>
                       <p className="text-gray-700 pt-1">{step.instruction}</p>
                     </div>
@@ -275,14 +206,16 @@ export default function ProductDetailPage() {
               <div className="mt-8">
                 <h3 className="font-sans text-xl font-bold mb-4">What's in the Box</h3>
                 <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                  {packageContents.map((content: string, index: number) => <li key={index}>{content}</li>)}
+                  {packageContents.map((content: string) => <li key={content}>{content}</li>)}
                 </ul>
               </div>
-            )}         
+            )}
             <div className="mt-12 pt-8 border-t">
               <Reviews productId={product.id} />
             </div>
+
             <ProductFaqSection productId={product.id} />
+
           </div>
         </div>
       </div>
