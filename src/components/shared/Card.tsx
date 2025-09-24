@@ -35,7 +35,7 @@ export default function Card({ item, className }: CardProps) {
     e.preventDefault();
     e.stopPropagation();
     // Provide default values since these options can't be selected from the card.
-    addToCart(item, null, 1, false); 
+    addToCart(item, 1, false); 
     toast.success(`${item.name} added to cart!`);
   }
   
