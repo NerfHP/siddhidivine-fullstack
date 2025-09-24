@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import ApiError from '../utils/AppError.js';
 import { prisma } from '../config/prisma.js';
 
+// This is the original, complex include. We will keep it for pages that need it.
 const categoryHierarchyInclude = {
   categories: {
     include: {
@@ -15,7 +16,13 @@ const categoryHierarchyInclude = {
   },
 };
 
-// --- HELPER FUNCTIONS ---
+// --- NEW: A simpler, more robust include for homepage cards ---
+const simpleCategoryInclude = {
+    categories: true,
+};
+
+
+// --- HELPER FUNCTIONS (Unchanged) ---
 async function getDescendantCategoryIds(categoryId: string): Promise<string[]> {
     const children = await prisma.category.findMany({ where: { parentId: categoryId }, select: { id: true } });
     let ids = children.map(child => child.id);
@@ -79,39 +86,36 @@ const getProductDataBySlug = async (slug: string) => {
     include: categoryHierarchyInclude,
   });
   if (!product) { throw new ApiError(httpStatus.NOT_FOUND, 'Product not found'); }
-  
-  // FIX: Ensure breadcrumbs are safely handled even if a product has no categories
-  const breadcrumbs = (product.categories && product.categories.length > 0)
-    ? await getCategoryAncestry(product.categories[0].id)
-    : [];
+  const breadcrumbs = (product.categories && product.categories.length > 0) ? await getCategoryAncestry(product.categories[0].id) : [];
   return { product, breadcrumbs };
 };
 
+// UPDATED: This now uses the simpler include for better performance and stability.
 const getAllProducts = async (sortBy?: string, availability?: string[]) => {
   let orderBy: Prisma.ContentItemOrderByWithRelationInput = { createdAt: 'desc' };
   if (sortBy === 'price-asc') orderBy = { price: 'asc' };
   if (sortBy === 'price-desc') orderBy = { price: 'desc' };
   const where: Prisma.ContentItemWhereInput = { type: 'PRODUCT' };
   if (availability && availability.length > 0) where.availability = { in: availability };
-  return prisma.contentItem.findMany({ where, include: categoryHierarchyInclude, orderBy });
+  return prisma.contentItem.findMany({ where, include: simpleCategoryInclude, orderBy });
 };
 
+// --- FIX: UPDATED HOMEPAGE FUNCTIONS ---
+
 const getFeaturedItems = async () => {
-  const products = await prisma.contentItem.findMany({ where: { type: 'PRODUCT' }, take: 4, include: categoryHierarchyInclude, orderBy: { createdAt: 'desc' } });
-  const services = await prisma.contentItem.findMany({ where: { type: 'SERVICE' }, take: 2, include: categoryHierarchyInclude, orderBy: { createdAt: 'desc' } });
+  const products = await prisma.contentItem.findMany({ where: { type: 'PRODUCT' }, take: 4, include: simpleCategoryInclude, orderBy: { createdAt: 'desc' } });
+  const services = await prisma.contentItem.findMany({ where: { type: 'SERVICE' }, take: 2, include: simpleCategoryInclude, orderBy: { createdAt: 'desc' } });
   return { products, services };
 };
 
-// --- THIS IS THE CORRECTED FUNCTION ---
 const getBestsellers = async () => {
   const items = await prisma.contentItem.findMany({
     where: { type: 'PRODUCT' },
     take: 8,
-    include: categoryHierarchyInclude,
+    include: simpleCategoryInclude, // Using the safer include
     orderBy: { createdAt: 'asc' }
   });
-  // This will now return an empty array [] if no items are found, preventing the 404 error.
-  return items;
+  return items; // Return the array, even if empty
 };
 
 const getFaqs = async () => {
@@ -124,21 +128,22 @@ const getFaqs = async () => {
 };
 
 const getAllServices = async () => {
-  return prisma.contentItem.findMany({ where: { type: 'SERVICE' }, include: { categories: true }, orderBy: { createdAt: 'desc' } });
+  return prisma.contentItem.findMany({ where: { type: 'SERVICE' }, include: simpleCategoryInclude, orderBy: { createdAt: 'desc' } });
 };
 
+
+// --- OTHER FUNCTIONS (Unchanged) ---
 const getItemBySlug = async (slug: string) => {
   const item = await prisma.contentItem.findUnique({ where: { slug }, include: categoryHierarchyInclude });
   if (!item) throw new ApiError(httpStatus.NOT_FOUND, 'Item not found');
   return item;
 };
-
 const getCategories = async () => {
   return prisma.category.findMany({ where: { parentId: null } });
 };
 
 
-// --- ADMIN SERVICE FUNCTIONS (Unchanged) ---
+// --- ADMIN FUNCTIONS (Unchanged) ---
 const createProduct = async (productData: any) => {
     const { categoryIds, ...data } = productData;
     return prisma.contentItem.create({ data: { ...data, categories: { connect: categoryIds.map((id: string) => ({ id })) }, }, });
@@ -152,7 +157,19 @@ const deleteProduct = async (productId: string) => {
 };
 
 
+// --- FINAL EXPORT (Unchanged) ---
 export const contentSerivce = {
-  getItemBySlug, getCategories, getFeaturedItems, getAllProducts, getCategoryDataByPath, getProductDataBySlug, getAllServices, getBestsellers, getFaqs, createProduct, updateProduct, deleteProduct,
+  getItemBySlug, 
+  getCategories, 
+  getFeaturedItems, 
+  getAllProducts, 
+  getCategoryDataByPath, 
+  getProductDataBySlug, 
+  getAllServices, 
+  getBestsellers, 
+  getFaqs, 
+  createProduct, 
+  updateProduct, 
+  deleteProduct,
 };
 
