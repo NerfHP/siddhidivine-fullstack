@@ -1,3 +1,5 @@
+// In client/src/pages/ProductDetailPage.tsx
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -58,8 +60,6 @@ export default function ProductDetailPage() {
 
   const { product, breadcrumbs } = data;
 
-  // --- THE FIX: Use the '||' operator to provide a fallback empty array string ('[]') ---
-  // This robustly handles cases where product.variants or product.images might be null from the database.
   const productVariants: ProductVariant[] = JSON.parse(product.variants || '[]');
   const imageArray: string[] = JSON.parse(product.images || '[]');
 
@@ -68,7 +68,6 @@ export default function ProductDetailPage() {
       setSelectedVariant(productVariants[0]);
     }
   }, [productVariants, selectedVariant]);
-
 
   let basePrice = product.salePrice || product.price || 0;
   let strikethroughPrice: number | null = product.salePrice ? (product.price ?? null) : null;
@@ -197,6 +196,7 @@ export default function ProductDetailPage() {
                     </div>
                 )}
                 
+                {/* --- THE FIX IS APPLIED HERE --- */}
                 {specifications && (
                     <div className="mt-8">
                         <h3 className="font-sans text-xl font-bold mb-4">Specifications</h3>
@@ -204,7 +204,10 @@ export default function ProductDetailPage() {
                             {Object.entries(specifications).map(([key, value]) => (
                                 <div key={key} className="flex justify-between py-3 border-b text-sm">
                                     <dt className="text-gray-600">{key}</dt>
-                                    <dd className="font-medium text-text-main">{value as string}</dd>
+                                    {/* This check prevents the crash. If 'value' is an object, it's converted to a string. */}
+                                    <dd className="font-medium text-text-main">
+                                        {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}
+                                    </dd>
                                 </div>
                             ))}
                         </div>
@@ -215,10 +218,10 @@ export default function ProductDetailPage() {
                     <div className="mt-8">
                         <h3 className="font-sans text-xl font-bold mb-4">Key Benefits</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {benefits.map((benefit: {icon: string, text: string}) => {
+                            {benefits.map((benefit: {icon: string, text: string}, index: number) => {
                                 const Icon = iconMap[benefit.icon] || CheckCircle;
                                 return (
-                                    <div key={benefit.text} className="flex items-center gap-3">
+                                    <div key={benefit.text || index} className="flex items-center gap-3">
                                         <Icon className="w-6 h-6 text-primary flex-shrink-0" />
                                         <span className="text-gray-700">{benefit.text}</span>
                                     </div>
