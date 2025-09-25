@@ -8,12 +8,8 @@ import SEO from '../components/shared/SEO';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCart } from '../hooks/useCart';
 import { CartItem } from '../types';
-// --- MODIFIED: Import the specific createOrder function ---
-import { createOrder } from '../lib/api';
-import api from '../lib/api'; // Keep this for the payment/create-order call
+import api from '../lib/api';
 import toast from 'react-hot-toast';
-// --- ADDED: Import the useUser hook to get the logged-in user ---
-import { useUser } from '@clerk/clerk-react';
 
 // --- CONFIGURATION FOR YOUR STORE ---
 const SHIPPING_COST = 50.00;
@@ -21,9 +17,9 @@ const FREE_SHIPPING_THRESHOLD = 1000;
 const TAX_RATE = 0.05;
 // ------------------------------------
 
-// --- MODIFIED: Removed the email field from the validation schema ---
 const shippingSchema = z.object({
   fullName: z.string().min(3, "Full name is required"),
+  email: z.string().email("A valid email is required for your receipt"),
   address: z.string().min(5, "A valid address is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
@@ -31,22 +27,6 @@ const shippingSchema = z.object({
   phone: z.string().regex(/^[6-9]\d{9}$/, "Must be a valid 10-digit mobile number"),
 });
 type ShippingFormData = z.infer<typeof shippingSchema>;
-
-
-// --- ADDED: Safe Image Parsing Helper to prevent crashes ---
-const getFirstImage = (images: string | unknown): string => {
-  const placeholder = 'https://placehold.co/100x100/f0f0f0/a0a0a0?text=Image';
-  if (typeof images !== 'string' || images.trim() === '') return placeholder;
-  try {
-    const parsedImages = JSON.parse(images);
-    if (Array.isArray(parsedImages) && parsedImages.length > 0 && typeof parsedImages[0] === 'string') {
-      return parsedImages[0];
-    }
-  } catch (e) {
-    console.error("Failed to parse images JSON string:", images, e);
-  }
-  return placeholder;
-};
 
 // --- Sub-Components ---
 const ProgressIndicator = ({ step, setStep }: { step: number; setStep: (newStep: number) => void }) => {
@@ -80,11 +60,10 @@ const OrderSummary = ({ items, totals }: { items: CartItem[], totals: { subtotal
         ) : (
         <>
             <div className="space-y-3">
-                {/* --- ERROR FIX: Added a check to ensure 'items' is an array before mapping --- */}
-                {Array.isArray(items) && items.map(item => (
+                {items.map(item => (
                     <div key={item.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <img src={getFirstImage(item.images)} alt={item.name} className="w-12 h-12 object-cover rounded-md bg-gray-100" />
+                             <img src={JSON.parse(item.images as string)[0] || ''} alt={item.name} className="w-12 h-12 object-cover rounded-md" />
                             <div>
                                 <p className="font-medium text-sm">{item.name}</p>
                                 <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
@@ -112,14 +91,11 @@ const OrderSummary = ({ items, totals }: { items: CartItem[], totals: { subtotal
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(1);
-  const [orderId, setOrderId] = useState<string | null>(null);
   const [shippingDetails, setShippingDetails] = useState<ShippingFormData | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const navigate = useNavigate();
 
   const { cartItems, subtotal, clearCart } = useCart();
-  // --- ADDED: Get authenticated user details from Clerk ---
-  const { user, isLoaded } = useUser();
 
   const totals = useMemo(() => {
     const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : SHIPPING_COST;
@@ -128,28 +104,13 @@ export default function CheckoutPage() {
     return { subtotal, shipping, tax, total };
   }, [subtotal]);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ShippingFormData>({ resolver: zodResolver(shippingSchema) });
-
-  // --- ADDED: Pre-fill the form with user data when it loads ---
-  useEffect(() => {
-    if (isLoaded && user) {
-        reset({
-            fullName: user.fullName || '',
-            phone: user.primaryPhoneNumber?.phoneNumber.slice(3) || '', // Assumes +91 prefix to remove
-        });
-    }
-  }, [isLoaded, user, reset]);
+  const { register, handleSubmit, formState: { errors } } = useForm<ShippingFormData>({ resolver: zodResolver(shippingSchema) });
 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     document.body.appendChild(script);
-    return () => { // Cleanup function to remove script on component unmount
-        if (document.body.contains(script)) {
-            document.body.removeChild(script);
-        }
-    }
   }, []);
 
   const onShippingSubmit = (data: ShippingFormData) => {
@@ -157,25 +118,17 @@ export default function CheckoutPage() {
     setStep(2);
   };
   
-  // --- MODIFIED: Uses the new createOrder function and secure user data ---
   const handlePlaceOrder = async (paymentResponse?: { razorpay_payment_id: string }) => {
     if (!shippingDetails) return;
     try {
       const orderPayload = {
         shippingDetails,
-        cartItems: cartItems.map(item => ({ 
-            id: item.id, 
-            quantity: item.quantity, 
-            // --- FIX APPLIED HERE: Provide a fallback of 0 if price is null/undefined ---
-            price: item.price ?? 0, 
-            salePrice: item.salePrice 
-        })),
+        customerEmail: shippingDetails.email,
+        cartItems: cartItems.map(item => ({ id: item.id, quantity: item.quantity, price: item.price, salePrice: item.salePrice })),
         total: totals.total,
         paymentId: paymentResponse?.razorpay_payment_id
       };
-      // --- FIX APPLIED: The newOrder variable is now used ---
-      const newOrder = await createOrder(orderPayload);
-      setOrderId(newOrder.id); // Store the new order ID
+      await api.post('/orders', orderPayload);
       toast.success("Order placed! Check your email for a receipt.");
       clearCart();
       setStep(3);
@@ -185,7 +138,7 @@ export default function CheckoutPage() {
   };
   
   const handleProceedToPayment = async () => {
-    if (!shippingDetails || !user) return;
+    if (!shippingDetails) return;
     setIsProcessingPayment(true);
     try {
       const { data: order } = await api.post('/payment/create-order', { amount: totals.total });
@@ -197,12 +150,7 @@ export default function CheckoutPage() {
         description: "Order Payment",
         order_id: order.id,
         handler: (response: any) => { handlePlaceOrder(response); },
-        // --- MODIFIED: Prefill data now comes securely from the Clerk user object ---
-        prefill: { 
-            name: shippingDetails.fullName, 
-            email: user.primaryEmailAddress?.emailAddress, 
-            contact: shippingDetails.phone 
-        },
+        prefill: { name: shippingDetails.fullName, email: shippingDetails.email, contact: shippingDetails.phone },
         theme: { color: "#c0392b" }
       };
       const rzp = new (window as any).Razorpay(options);
@@ -221,20 +169,20 @@ export default function CheckoutPage() {
           <motion.div key="step1" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-3 rounded-r-lg mb-6 flex items-center gap-3">
                 <Lightbulb size={20} />
-                <p className="text-xs font-medium">Your name and phone may be pre-filled from your account.</p>
+                <p className="text-xs font-medium">Please double-check your address for timely delivery.</p>
             </div>
             <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2"><Truck size={24} /> Shipping Details</h2>
             <form onSubmit={handleSubmit(onShippingSubmit)} className="space-y-4">
-                <div><input {...register('fullName')} placeholder="Full Name" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.fullName?.message}</p></div>
-                {/* --- REMOVED: Email input is no longer needed --- */}
-                <div><input {...register('address')} placeholder="Street Address" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.address?.message}</p></div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><input {...register('city')} placeholder="City" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.city?.message}</p></div>
-                    <div><input {...register('state')} placeholder="State" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.state?.message}</p></div>
-                    <div><input {...register('zipCode')} placeholder="Zip Code" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.zipCode?.message}</p></div>
-                </div>
-                <div><input {...register('phone')} placeholder="Mobile Number" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.phone?.message}</p></div>
-                <button type="submit" className="w-full bg-red-500 text-white font-bold py-3 rounded-md hover:bg-red-600">Proceed to Payment</button>
+              <div><input {...register('fullName')} placeholder="Full Name" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.fullName?.message}</p></div>
+              <div><input {...register('email')} placeholder="Email for Order Receipt" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.email?.message}</p></div>
+              <div><input {...register('address')} placeholder="Street Address" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.address?.message}</p></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><input {...register('city')} placeholder="City" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.city?.message}</p></div>
+                <div><input {...register('state')} placeholder="State" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.state?.message}</p></div>
+                <div><input {...register('zipCode')} placeholder="Zip Code" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.zipCode?.message}</p></div>
+              </div>
+              <div><input {...register('phone')} placeholder="Mobile Number" className="w-full p-3 border rounded-md" /><p className="text-red-500 text-xs mt-1">{errors.phone?.message}</p></div>
+              <button type="submit" className="w-full bg-red-500 text-white font-bold py-3 rounded-md hover:bg-red-600">Proceed to Payment</button>
             </form>
           </motion.div>
         );
@@ -244,33 +192,31 @@ export default function CheckoutPage() {
              <h2 className="text-2xl font-semibold mb-6">Confirm and Pay</h2>
              <div className="space-y-4 bg-gray-50 p-4 rounded-md border mb-6">
                <div>
-                 <h4 className="font-semibold text-sm text-gray-500">Shipping To:</h4>
-                 <p className="text-sm">{shippingDetails?.fullName}, {shippingDetails?.address}</p>
+                  <h4 className="font-semibold text-sm text-gray-500">Shipping To:</h4>
+                  <p className="text-sm">{shippingDetails?.fullName}, {shippingDetails?.address}</p>
                </div>
              </div>
              <p className="text-sm text-gray-600 mb-6">Clicking "Pay Securely" will open the Razorpay window where you can choose UPI, Paytm, PhonePe, or Card options.</p>
              <div className="flex items-center justify-between gap-4 mt-8">
-               <button onClick={() => setStep(1)} type="button" className="text-sm font-semibold text-gray-600 hover:text-black">← Edit Shipping</button>
-               <button onClick={handleProceedToPayment} disabled={isProcessingPayment} className="w-1/2 bg-green-500 text-white font-bold py-3 rounded-md hover:bg-green-600 flex items-center justify-center gap-2 disabled:bg-gray-400">
-                  {isProcessingPayment ? <LoaderCircle size={16} className="animate-spin" /> : <Lock size={16}/>}
-                  Pay Securely
-               </button>
-             </div>
+                <button onClick={() => setStep(1)} type="button" className="text-sm font-semibold text-gray-600 hover:text-black">← Edit Shipping</button>
+                <button onClick={handleProceedToPayment} disabled={isProcessingPayment} className="w-1/2 bg-green-500 text-white font-bold py-3 rounded-md hover:bg-green-600 flex items-center justify-center gap-2 disabled:bg-gray-400">
+                    {isProcessingPayment ? <LoaderCircle size={16} className="animate-spin" /> : <Lock size={16}/>}
+                    Pay Securely
+                </button>
+              </div>
           </motion.div>
         );
       case 3:
           return (
-            <motion.div key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 flex flex-col items-center">
-                <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold">Thank You!</h2>
-                <p className="text-gray-600 mt-2">Your order has been placed successfully.</p>
-                {/* --- ADDED: Display the order ID --- */}
-                {orderId && <p className="text-sm text-gray-500 mt-2">Order ID: {orderId}</p>}
-                <p className="text-gray-600">A confirmation receipt has been sent to your email.</p>
-                <button onClick={() => navigate('/')} className="mt-8 bg-red-500 text-white font-bold py-3 px-6 rounded-md hover:bg-red-600">
-                    Continue Shopping
-                </button>
-            </motion.div>
+              <motion.div key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 flex flex-col items-center">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-semibold">Thank You!</h2>
+                  <p className="text-gray-600 mt-2">Your order has been placed successfully.</p>
+                  <p className="text-gray-600">A confirmation receipt has been sent to your email.</p>
+                  <button onClick={() => navigate('/')} className="mt-8 bg-red-500 text-white font-bold py-3 px-6 rounded-md hover:bg-red-600">
+                      Continue Shopping
+                  </button>
+              </motion.div>
           );
       default:
         return null;
@@ -295,10 +241,11 @@ export default function CheckoutPage() {
                 <OrderSummary items={cartItems} totals={totals} />
               </div>
             </div>
-              <p className="text-xs text-gray-400 text-center mt-8 flex items-center justify-center gap-1"><Lock size={12}/> Secure Checkout Guaranteed</p>
+             <p className="text-xs text-gray-400 text-center mt-8 flex items-center justify-center gap-1"><Lock size={12}/> Secure Checkout Guaranteed</p>
           </div>
         </div>
       </div>
     </>
   );
 }
+

@@ -1,57 +1,8 @@
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../utils/AppError.js';
-import { AuthObject } from '@clerk/clerk-sdk-node';
 
 const prisma = new PrismaClient();
-
-/**
- * Finds a user in the local database by their Clerk ID.
- * If the user does not exist, it creates them just-in-time using Clerk's token info.
- * This is the primary function to use when a logged-in user performs an action.
- * @param {AuthObject} auth - The req.auth object from Clerk's middleware.
- * @returns {Promise<User>} The user record from the Supabase database.
- */
-const getOrCreateUserFromClerk = async (auth: AuthObject): Promise<User> => {
-    // 1. Get the Clerk user ID from the authenticated request.
-    const clerkId = auth.userId;
-    if (!clerkId) {
-        // This should theoretically never happen if the route is protected.
-        throw new ApiError(httpStatus.UNAUTHORIZED, "Authentication error: Clerk user ID is missing.");
-    }
-
-    // 2. Try to find the user in your database.
-    const user = await prisma.user.findUnique({
-        where: { clerkId: clerkId },
-    });
-
-    // 3. If the user already exists in your database, return them.
-    if (user) {
-        return user;
-    }
-
-    // 4. If the user does NOT exist, create them now.
-    // --- IMPROVEMENT HERE: Simplified and made the email check safer ---
-    const { email, first_name, last_name } = auth.sessionClaims;
-
-    // Validate that the email exists and is a non-empty string.
-    if (typeof email !== 'string' || !email) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "User cannot be created: A valid email was not found in the Clerk token.");
-    }
-
-    const newUser = await prisma.user.create({
-        data: {
-            clerkId: clerkId,
-            email: email,
-            name: `${first_name || ''} ${last_name || ''}`.trim(),
-        },
-    });
-
-    return newUser;
-};
-
-
-// --- Your old functions are below, unchanged ---
 
 /**
  * Get user by their Clerk ID. This will be the new primary way to find users.
@@ -135,12 +86,10 @@ const deleteUserByClerkId = async (clerkId: string) => {
 
 
 export const userService = {
-    getUserByClerkId,
-    getUserByEmail,
-    createUserFromClerk,
-    updateUserByClerkId,
-    deleteUserByClerkId,
-    // --- ADDED: The new JIT function is now exported ---
-    getOrCreateUserFromClerk,
+  getUserByClerkId,
+  getUserByEmail,
+  createUserFromClerk,
+  updateUserByClerkId,
+  deleteUserByClerkId,
 };
 
