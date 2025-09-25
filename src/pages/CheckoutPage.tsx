@@ -80,10 +80,10 @@ const OrderSummary = ({ items, totals }: { items: CartItem[], totals: { subtotal
         ) : (
         <>
             <div className="space-y-3">
-                {items.map(item => (
+                {/* --- ERROR FIX: Added a check to ensure 'items' is an array before mapping --- */}
+                {Array.isArray(items) && items.map(item => (
                     <div key={item.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            {/* --- FIX APPLIED HERE: Use the safe image helper --- */}
                             <img src={getFirstImage(item.images)} alt={item.name} className="w-12 h-12 object-cover rounded-md bg-gray-100" />
                             <div>
                                 <p className="font-medium text-sm">{item.name}</p>
@@ -252,8 +252,8 @@ export default function CheckoutPage() {
              <div className="flex items-center justify-between gap-4 mt-8">
                <button onClick={() => setStep(1)} type="button" className="text-sm font-semibold text-gray-600 hover:text-black">← Edit Shipping</button>
                <button onClick={handleProceedToPayment} disabled={isProcessingPayment} className="w-1/2 bg-green-500 text-white font-bold py-3 rounded-md hover:bg-green-600 flex items-center justify-center gap-2 disabled:bg-gray-400">
-                   {isProcessingPayment ? <LoaderCircle size={16} className="animate-spin" /> : <Lock size={16}/>}
-                   Pay Securely
+                  {isProcessingPayment ? <LoaderCircle size={16} className="animate-spin" /> : <Lock size={16}/>}
+                  Pay Securely
                </button>
              </div>
           </motion.div>
@@ -302,4 +302,3 @@ export default function CheckoutPage() {
     </>
   );
 }
-
