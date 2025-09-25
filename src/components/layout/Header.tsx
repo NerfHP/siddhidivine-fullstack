@@ -99,6 +99,7 @@ const navMenuItems: MenuItem[] = [
       { name: 'Yellow Sapphire (Pukhraj)', path: '/products/gemstones/yellow-sapphire' },
       { name: 'Diamond (Heera)', path: '/products/gemstones/diamond' },
       { name: 'Blue Sapphire (Neelam)', path: '/products/gemstones/blue-sapphire' },
+      { name: 'Turquoise (Firoza)', path: '/products/gemstones/turquoise' },
       { name: 'Hessonite (Gomedh)', path: '/products/gemstones/hessonite' },
       { name: 'Cat,s Eye (Lehsunia)', path: '/products/gemstones/cat-eye' },
     ],
