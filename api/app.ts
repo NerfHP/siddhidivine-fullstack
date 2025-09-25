@@ -22,12 +22,7 @@ if (config.env === 'development') {
   app.use(morgan('dev'));
 }
 
-// --- REMOVED: The old Firebase Admin SDK initialization has been deleted ---
 
-// --- NEW: Add the Clerk middleware ---
-// This middleware will verify the session token for every incoming request
-// and make the authenticated user's ID available on `req.auth`.
-// It should be placed BEFORE your API routes.
 app.use(ClerkExpressWithAuth());
 
 

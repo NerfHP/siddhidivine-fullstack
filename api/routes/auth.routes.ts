@@ -7,11 +7,6 @@ import httpStatus from 'http-status';
 
 const router = express.Router();
 
-// --- REMOVED: All old Firebase and password-based routes have been deleted ---
-
-// --- NEW: Clerk Webhook Route ---
-// This single endpoint is responsible for receiving all user events from Clerk.
-// It includes special middleware to securely verify the webhook signature.
 router.post(
   '/webhook',
   // We need to use `express.raw` to get the raw request body for verification.
