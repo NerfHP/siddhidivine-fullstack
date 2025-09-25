@@ -7,15 +7,17 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const createOrUpdateUser = async (userData: any) => {
-    const { id, first_name, last_name, email_addresses, image_url, created_at, updated_at } = userData;
-    
+    const { id, first_name, last_name, email_addresses, created_at, updated_at } = userData;
     const email = email_addresses[0]?.email_address;
 
     if (!email) {
-        console.error('No email address found for user:', id);
+        console.error(`[Webhook] No email address found for user: ${id}`);
         return;
     }
+
     try {
+        console.log(`[Webhook] Attempting to upsert user with clerkId: ${id}`);
+
         const user = await prisma.user.upsert({
             where: { clerkId: id },
             update: {
@@ -31,9 +33,10 @@ const createOrUpdateUser = async (userData: any) => {
                 updatedAt: new Date(updated_at),
             },
         });
-        console.log('Successfully created/updated user:', user.id);
+        
+        console.log(`[Webhook] Successfully upserted user. DB ID: ${user.id}`);
     } catch (error) {
-        console.error('Error in createOrUpdateUser:', error);
+        console.error('[Webhook] Error during prisma.user.upsert:', error);
     }
 };
 
@@ -41,7 +44,8 @@ export const handleClerkWebhook = async (req: Request, res: Response) => {
     const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!WEBHOOK_SECRET) {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Error: CLERK_WEBHOOK_SECRET is not set in environment variables.');
+        console.error('[Webhook] Error: CLERK_WEBHOOK_SECRET is not set.');
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Webhook secret not configured.');
     }
 
     const svix_id = req.headers['svix-id'] as string;
@@ -63,18 +67,18 @@ export const handleClerkWebhook = async (req: Request, res: Response) => {
             'svix-signature': svix_signature,
         }) as WebhookEvent;
     } catch (err) {
-        console.error('Error verifying webhook:', err);
+        console.error('[Webhook] Error verifying webhook signature:', err);
         return res.status(httpStatus.BAD_REQUEST).send('Error: Webhook verification failed');
     }
 
     const eventType = evt.type;
-    console.log(`Received webhook event: ${eventType}`);
+    console.log(`[Webhook] Verification successful for event: ${eventType}`);
 
     if (eventType === 'user.created' || eventType === 'user.updated') {
         await createOrUpdateUser(evt.data);
     }
-
+    
+    console.log(`[Webhook] Finished processing event: ${eventType}. Sending 200 response.`);
     res.status(httpStatus.OK).send('Webhook received successfully');
 };
-
 
