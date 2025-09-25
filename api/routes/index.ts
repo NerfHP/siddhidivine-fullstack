@@ -6,7 +6,8 @@ import reviewRoutes from './review.routes.js';
 import searchRoute from './search.route.js';
 import paymentRoute from './payment.route.js';
 import orderRoute from './order.route.js';
-import faqRoutes from './faq.routes.js'; // <-- IMPORT THE NEW ROUTES
+import faqRoutes from './faq.routes.js';
+import webhookRoutes from './webhook.route.js'; // <-- IMPORT THE WEBHOOK ROUTES
 
 const router = express.Router();
 
@@ -18,7 +19,8 @@ const defaultRoutes = [
   { path: '/search', route: searchRoute },
   { path: '/payment', route: paymentRoute },
   { path: '/orders', route: orderRoute },
-  { path: '/faqs', route: faqRoutes }, // <-- ADD THE NEW ROUTE CONFIG
+  { path: '/faqs', route: faqRoutes },
+  { path: '/webhooks', route: webhookRoutes }, // <-- ADD THE WEBHOOK ROUTE CONFIG
 ];
 
 defaultRoutes.forEach((route) => {
@@ -26,3 +28,4 @@ defaultRoutes.forEach((route) => {
 });
 
 export default router;
+
