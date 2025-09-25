@@ -11,7 +11,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const envVarsSchema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test']),
   PORT: z.coerce.number().default(4000),
-  DATABASE_URL: z.string().url().or(z.string().startsWith('file:')),
+  DATABASE_URL: z.string(), // Simplified for Supabase pooler URL
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
   JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
@@ -20,6 +20,10 @@ const envVarsSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1, 'RAZORPAY_KEY_ID is required'),
   RAZORPAY_KEY_SECRET: z.string().min(1, 'RAZORPAY_KEY_SECRET is required'),
   CLERK_SECRET_KEY: z.string().min(1, 'CLERK_SECRET_KEY is required'),
+  
+  // --- ADDED: WhatsApp Notification Credentials ---
+  WHATSAPP_PHONE_NUMBER: z.string().min(1, 'Your phone number for WhatsApp is required'),
+  WHATSAPP_API_KEY: z.string().min(1, 'CallMeBot API key is required'),
 });
 
 const envVars = envVarsSchema.parse(process.env);
@@ -42,6 +46,12 @@ const config = {
     keySecret: envVars.RAZORPAY_KEY_SECRET,
   },
   clerkSecretKey: envVars.CLERK_SECRET_KEY,
+  
+  // --- ADDED: Make WhatsApp credentials available to the app ---
+  whatsapp: {
+    phoneNumber: envVars.WHATSAPP_PHONE_NUMBER,
+    apiKey: envVars.WHATSAPP_API_KEY,
+  },
 };
 
 export default config;
