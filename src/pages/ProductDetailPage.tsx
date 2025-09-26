@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // --- ADDED: Import useNavigate ---
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { ContentItem, Category } from '@/types';
@@ -35,10 +35,11 @@ export default function ProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
-  
-  // --- NEW: State for the "Energized" checkbox ---
   const [isEnergized, setIsEnergized] = useState(false);
-  const ENERGIZING_COST = 151; // Define the cost as a constant
+  const ENERGIZING_COST = 151;
+
+  // --- ADDED: Initialize the navigate function for redirection ---
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['productDetail', productSlug],
@@ -53,7 +54,6 @@ export default function ProductDetailPage() {
   
   const imageArray: string[] = JSON.parse(product.images || '[]');
   
-  // --- CHANGE: Price logic now includes the energizing cost ---
   const basePrice = product.salePrice || product.price || 0;
   const displayPrice = basePrice + (isEnergized ? ENERGIZING_COST : 0);
   const strikethroughPrice = product.salePrice ? product.price : null;
@@ -65,16 +65,24 @@ export default function ProductDetailPage() {
   const packageContents = product.packageContents ? JSON.parse(product.packageContents as unknown as string) : [];
 
   const handleAddToCart = () => {
-    // --- CHANGE: Pass the `isEnergized` state to the cart context ---
     const itemToAdd = { ...product, price: basePrice };
     addToCart(itemToAdd, quantity, isEnergized);
     
     const energizedText = isEnergized ? ' (Energized)' : '';
     toast.success(`${quantity} x ${product.name}${energizedText} added to cart!`);
     
-    // Reset state after adding
     setQuantity(1);
     setIsEnergized(false);
+  };
+
+  // --- ADDED: The logic for the "Buy It Now" button ---
+  const handleBuyNow = () => {
+    // Step 1: Add the item to the cart with the selected options.
+    const itemToAdd = { ...product, price: basePrice };
+    addToCart(itemToAdd, quantity, isEnergized);
+    
+    // Step 2: Immediately redirect the user to the checkout page.
+    navigate('/checkout');
   };
 
   const breadcrumbItems = [
@@ -109,7 +117,6 @@ export default function ProductDetailPage() {
                 {strikethroughPrice && <p className="text-xl text-gray-400 line-through">{formatCurrency(strikethroughPrice)}</p>}
               </div>
 
-              {/* --- NEW: Energized Product Checkbox Section --- */}
               <div className="my-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                 <label htmlFor="energize-checkbox" className="flex items-center cursor-pointer">
                   <input
@@ -136,7 +143,8 @@ export default function ProductDetailPage() {
               <div className="mt-6 space-y-4">
                   <div className="flex flex-col sm:flex-row gap-3">
                       <Button size="lg" onClick={handleAddToCart} className="w-full flex-grow">Add to Cart</Button>
-                      <Button size="lg" variant="secondary" className="w-full flex-grow">Buy It Now</Button>
+                      {/* --- FIX APPLIED HERE: Added the onClick handler --- */}
+                      <Button size="lg" variant="secondary" className="w-full flex-grow" onClick={handleBuyNow}>Buy It Now</Button>
                   </div>
                   <div className="flex gap-3 justify-center">
                       <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary"><Heart size={16}/> Add to Wishlist</button>
@@ -222,3 +230,4 @@ export default function ProductDetailPage() {
     </>
   );
 }
+

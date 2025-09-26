@@ -245,11 +245,11 @@ export default function Header({ onSearchClick = () => {}, onCartClick = () => {
               Ganesh Chaturthi Sale: <b>21% OFF Sitewide</b> (Auto Applied)
             </p>
             <div className="hidden md:flex items-center gap-3">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={16} /></a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16} /></a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={16} /></a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={16} /></a>
-              <a href="mailto:support@example.com" aria-label="Email"><Mail size={16} /></a>
+              {/*<a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={16} /></a>*/}
+              <a href="https://instagram.com/siddhidivine.in" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={16} /></a>
+              <a href="https://youtube.com/@siddhidivine-in" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={16} /></a>
+              {/*<a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={16} /></a>*/}
+              <a href="mailto:siddhidivine66@gmail.com" aria-label="Email"><Mail size={16} /></a>
             </div>
           </div>
         </div>
