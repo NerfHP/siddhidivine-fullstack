@@ -20,6 +20,7 @@ const envVarsSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1, 'RAZORPAY_KEY_ID is required'),
   RAZORPAY_KEY_SECRET: z.string().min(1, 'RAZORPAY_KEY_SECRET is required'),
   CLERK_SECRET_KEY: z.string().min(1, 'CLERK_SECRET_KEY is required'),
+  DISCORD_WEBHOOK_URL: z.string().url('A valid Discord Webhook URL is required'),
 });
 
 const envVars = envVarsSchema.parse(process.env);
@@ -42,6 +43,7 @@ const config = {
     keySecret: envVars.RAZORPAY_KEY_SECRET,
   },
   clerkSecretKey: envVars.CLERK_SECRET_KEY,
+  discordWebhookUrl: envVars.DISCORD_WEBHOOK_URL,
 };
 
 export default config;

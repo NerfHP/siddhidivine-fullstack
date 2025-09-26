@@ -25,32 +25,32 @@ model User {
 }
 
 model Category {
-  id          String        @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
-  slug        String        @unique
+  slug        String       @unique
   description String?
   type        String
   image       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   parentId    String?
-  parent      Category?     @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Category[]    @relation("ParentChild")
+  parent      Category?    @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[]   @relation("ParentChild")
   items       ContentItem[]
 }
 
 model ContentItem {
-  id              String      @id @default(cuid())
+  id              String       @id @default(cuid())
   name            String
-  slug            String      @unique
+  slug            String       @unique
   description     String
   content         String?
   price           Float?
   salePrice       Float?
   images          String
   type            String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   categories      Category[]
   vendor          String?
   sku             String?
@@ -63,8 +63,8 @@ model ContentItem {
   packageContents String?
   reviews         Review[]
   orderItems      OrderItem[]
-  stock           Int         @default(0)
-  isPublished     Boolean     @default(true)
+  stock           Int          @default(0)
+  isPublished     Boolean      @default(true)
   faqs            ProductFaq[]
 }
 
@@ -121,13 +121,18 @@ model Discount {
 
 model Order {
   id              String      @id @default(cuid())
-  userId          String?
-  user            User?       @relation(fields: [userId], references: [id])
   total           Float
-  status          String      @default("PENDING")
+  // --- FIX APPLIED: status now correctly uses the OrderStatus enum ---
+  status          OrderStatus @default(PENDING)
   customerName    String
   customerPhone   String
   shippingAddress String
+  paymentId       String?     // Stores the ID from Razorpay
+  
+  // --- FIX APPLIED: userId and user relation are now defined only ONCE ---
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -143,3 +148,9 @@ model OrderItem {
   product   ContentItem @relation(fields: [productId], references: [id])
 }
 
+enum OrderStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}

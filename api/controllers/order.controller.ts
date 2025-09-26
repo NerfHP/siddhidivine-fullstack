@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-// 1. Import the new, single email function from the service you just created
-import { sendOrderEmails } from '../services/email.service.js';
 import { prisma } from '../config/prisma.js';
+import { userService } from '../services/user.service.js';
+import { sendOrderEmails } from '../services/email.service.js';
+// --- ADDED: Import from the new notification service ---
+import { sendAdminNotification } from '../services/notification.service.js';
 
-
-// A helper type to define what the cart items from the frontend will look like
 type CartItemPayload = {
     id: string;
     quantity: number;
@@ -13,55 +13,53 @@ type CartItemPayload = {
 }
 
 export const createOrder = async (req: Request, res: Response) => {
-    // This function expects an email, shipping details, cart items, and total
-    const { shippingDetails, cartItems, total, customerEmail } = req.body as { 
-        shippingDetails: any; 
-        cartItems: CartItemPayload[]; 
-        total: number; 
-        customerEmail: string; 
-    };
+  try {
+    // --- CHANGE 1: Get or Create User ---
+    // Instead of getting email from the body, we securely get the logged-in
+    // user and create them in our database if they don't exist.
+    const userInDb = await userService.getOrCreateUserFromClerk((req as any).auth);
+
+    // --- CHANGE 2: Updated Request Body ---
+    // We no longer need customerEmail, as we get it from the userInDb object.
+    const { shippingDetails, cartItems, total, paymentId } = req.body;
+
+    // Create the order in your Supabase database
+    const newOrder = await prisma.order.create({
+        data: {
+            total,
+            paymentId,
+            customerName: shippingDetails.fullName,
+            customerPhone: shippingDetails.phone,
+            shippingAddress: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.state} ${shippingDetails.zipCode}`,
+            // --- CHANGE 3: Link Order to User ---
+            // The new order is now associated with the authenticated user.
+            userId: userInDb.id,
+            items: {
+                create: cartItems.map((item: CartItemPayload) => ({
+                    quantity: item.quantity,
+                    price: item.salePrice ?? item.price ?? 0,
+                    product: { connect: { id: item.id } },
+                })),
+            },
+        },
+        // We include all the details so we can send them in the notifications
+        include: {
+            items: { include: { product: true } },
+        },
+    });
     
-    // Basic validation to ensure we have all the necessary data
-    if (!shippingDetails || !cartItems || !total || !customerEmail) {
-        return res.status(400).json({ message: 'Missing required order information.' });
-    }
+    // --- CHANGE 4: Trigger All Notifications ---
+    // This now sends the customer email and your admin notification at the same time.
+    await Promise.all([
+        sendOrderEmails(newOrder, userInDb.email),
+        sendAdminNotification(newOrder)
+    ]);
 
-    try {
-        // Create the new order in the database
-        const newOrder = await prisma.order.create({
-            data: {
-                total,
-                customerName: shippingDetails.fullName,
-                customerPhone: shippingDetails.phone,
-                shippingAddress: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.state} ${shippingDetails.zipCode}`,
-                // Create the individual order items and link them to this order
-                items: {
-                    create: cartItems.map((item) => ({
-                        quantity: item.quantity,
-                        price: item.salePrice ?? item.price ?? 0, // Use sale price if available
-                        product: { 
-                            connect: { id: item.id } 
-                        },
-                    })),
-                },
-            },
-            // After creating the order, include all the details needed for the emails
-            include: {
-                items: { include: { product: true } }, 
-            },
-        });
-        
-        // --- TRIGGER EMAILS ---
-        // After successfully creating the order, this single function sends all emails.
-        await sendOrderEmails(newOrder, customerEmail);
-
-        // In a real application, you would also clear the user's cart here on the frontend.
-        
-        // Send a success response back to the website
-        res.status(201).json(newOrder);
-    } catch (error) {
-        console.error("Order creation failed:", error);
-        res.status(500).json({ message: 'Failed to create order.' });
-    }
+    // Send a success response back to the frontend
+    res.status(201).json(newOrder);
+  } catch (error) {
+      console.error("Order creation failed:", error);
+      res.status(500).json({ message: 'Failed to create order.' });
+  }
 };
 
